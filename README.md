@@ -1,3 +1,0 @@
-# LaptopWebsite
-
-Website-selling laptop
