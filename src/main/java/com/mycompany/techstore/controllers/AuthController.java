@@ -28,6 +28,8 @@ import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 
 import com.mycompany.techstore.Models.Objects.User;
+import com.mycompany.techstore.exceptions.AuthException;
+import com.mycompany.techstore.services.AuthService;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
@@ -37,6 +39,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.security.NoSuchAlgorithmException;
 
 @WebServlet(name = "AuthController", urlPatterns = {"/auth"})
 public class AuthController extends HttpServlet {
@@ -57,7 +60,10 @@ public class AuthController extends HttpServlet {
     private String OidcTokenEndpoint;
     private String OidcAuthEndpoint;
     private String OidcJwksUri;
-
+    
+    // Auth Service handler
+    private final AuthService authService;
+    
     private boolean isOidcEnabled;
 
     public AuthController() {
@@ -75,6 +81,8 @@ public class AuthController extends HttpServlet {
                 this.isOidcEnabled = true;
             }
         }
+        
+        this.authService = new AuthService();
     }
 
     /*
@@ -235,16 +243,21 @@ public class AuthController extends HttpServlet {
                     return;
                 }
 
-                
                 String email = claims.getStringClaim("email");
-                
-                // Query for user with email
-                
-                
+                String name = null;
+                try {
+                    name = claims.getStringClaim("name");
+                } catch (ParseException ignore) {
+                    // optional
+                }
+
+                // Query or create user with email
+                User user = this.authService.GetOrCreateUserOIDCSignIn(email, name);
+
                 // Sign in locally
-                session.setAttribute("loggedUser", null);
+                session.setAttribute("loggedUser", user);
                 response.sendRedirect(request.getContextPath() + "/");
-            } catch (JOSEException | BadJOSEException | IOException | ParseException ex) {
+            } catch (JOSEException | BadJOSEException | IOException | ParseException | AuthException ex) {
                 response.sendError(500, "Failed with reason: " + ex.getMessage());
             }
         }
@@ -258,13 +271,17 @@ public class AuthController extends HttpServlet {
         String email = request.getParameter("email");
         String password = request.getParameter("password");
 
-        User user = null;  //
-        if (user != null) {
-            HttpSession session = request.getSession();
-            session.setAttribute("loggedUser", user);
-            response.sendRedirect(request.getContextPath() + "/");
-        } else {
-            response.sendRedirect(request.getContextPath() + "/auth?action=denied");
+        try {
+            User user = this.authService.GetUserSignIn(email, password);
+            if (user != null) {
+                HttpSession session = request.getSession();
+                session.setAttribute("loggedUser", user);
+                response.sendRedirect(request.getContextPath() + "/");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/auth?action=denied");
+            }
+        } catch (AuthException | NoSuchAlgorithmException ex) {
+            response.sendError(500, "Failed with reason: " + ex.getMessage());
         }
     }
 
@@ -273,13 +290,50 @@ public class AuthController extends HttpServlet {
         String password = request.getParameter("password");
         String name = request.getParameter("name");
 
-        // 
+        try {
+            User created = this.authService.CreateUserSignIn(email, password, name);
+            HttpSession session = request.getSession();
+            session.setAttribute("loggedUser", created);
+            response.sendRedirect(request.getContextPath() + "/");
+        } catch (AuthException | NoSuchAlgorithmException ex) {
+            response.sendError(500, "Failed with reason: " + ex.getMessage());
+        }
     }
 
     private void HandleResetPassword(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            response.sendError(400, "Not signed in");
+            return;
+        }
+
+        User logged = (User) session.getAttribute("loggedUser");
+        if (logged == null) {
+            response.sendError(400, "Not signed in");
+            return;
+        }
+
+        String oldPwd = request.getParameter("old_password");
+        String newPwd = request.getParameter("new_password");
+
+        try {
+            // verify old password
+            this.authService.GetUserSignIn(logged.getEmail(), oldPwd);
+
+            boolean ok = this.authService.UpdateUserPassword(logged.getEmail(), newPwd);
+            if (ok) {
+                // refresh user in session
+                User refreshed = this.authService.GetUserOIDCSignIn(logged.getEmail());
+                session.setAttribute("loggedUser", refreshed);
+                response.sendRedirect(request.getContextPath() + "/");
+            } else {
+                response.sendError(500, "Failed to update password");
+            }
+        } catch (AuthException | NoSuchAlgorithmException ex) {
+            response.sendError(500, "Failed with reason: " + ex.getMessage());
+        }
     }
-    
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         switch (request.getParameter("action")) {
@@ -360,17 +414,17 @@ public class AuthController extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         switch (request.getParameter("action")) {
             case "signin" -> {
-                if (this.IsSignedIn(request)) {
+                if (!this.IsSignedIn(request)) {
                     this.HandleSignIn(request, response);
                 } else {
-                    response.sendError(400, "Not signed in");
+                    response.sendError(400, "Already signed in");
                 }
             }
             case "signup" -> {
-                if (this.IsSignedIn(request)) {
+                if (!this.IsSignedIn(request)) {
                     this.HandleSignUp(request, response);
                 } else {
-                    response.sendError(400, "Not signed in");
+                    response.sendError(400, "Already signed in");
                 }
             }
             case "resetpwd" -> {

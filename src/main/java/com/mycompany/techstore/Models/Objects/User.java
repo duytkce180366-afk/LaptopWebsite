@@ -5,7 +5,7 @@ import java.sql.Timestamp;
 public class User {
 
     private final int user_id;
-    private final Role role;
+    private final int role_id;
     private final String full_name;
     private final String email;
     private final String phone;
@@ -15,9 +15,9 @@ public class User {
     private final Timestamp created_at;
     private final Timestamp updated_at;
 
-    public User(int user_id, Role role, String full_name, String email, String phone, String password, String avatar, String status, Timestamp created_at, Timestamp updated_at) {
+    public User(int user_id, int role_id, String full_name, String email, String phone, String password, String avatar, String status, Timestamp created_at, Timestamp updated_at) {
         this.user_id = user_id;
-        this.role = role;
+        this.role_id = role_id;
         this.full_name = full_name;
         this.email = email;
         this.phone = phone;
@@ -32,8 +32,8 @@ public class User {
         return user_id;
     }
 
-    public Role getRole() {
-        return role;
+    public int getRole_id() {
+        return role_id;
     }
 
     public String getFull_name() {
