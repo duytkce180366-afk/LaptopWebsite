@@ -27,7 +27,7 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 
-import com.mycompany.techstore.model.User;
+import com.mycompany.techstore.Models.Objects.User;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
@@ -237,7 +237,9 @@ public class AuthController extends HttpServlet {
 
                 
                 String email = claims.getStringClaim("email");
-                String name = claims.getStringClaim("name");
+                
+                // Query for user with email
+                
                 
                 // Sign in locally
                 session.setAttribute("loggedUser", null);
@@ -258,8 +260,6 @@ public class AuthController extends HttpServlet {
 
         User user = null;  //
         if (user != null) {
-            String encodedName = URLEncoder.encode(user.getName(), StandardCharsets.UTF_8.toString());
-
             HttpSession session = request.getSession();
             session.setAttribute("loggedUser", user);
             response.sendRedirect(request.getContextPath() + "/");
@@ -274,11 +274,6 @@ public class AuthController extends HttpServlet {
         String name = request.getParameter("name");
 
         // 
-        if (sqlExec != 0) {
-            response.sendError(400);
-        } else {
-            response.sendRedirect(request.getContextPath() + "/auth?action=signin");
-        }
     }
 
     private void HandleResetPassword(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -337,9 +332,9 @@ public class AuthController extends HttpServlet {
             // Reset password
             case "resetpwd" -> {
                 if (this.IsSignedIn(request)) {
-                    response.sendRedirect(request.getContextPath() + "/");
-                } else {
                     // 
+                } else {
+                    response.sendError(400, "Not signed in");
                 }
             }
             // Logout and end session
@@ -365,13 +360,25 @@ public class AuthController extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         switch (request.getParameter("action")) {
             case "signin" -> {
-                this.HandleSignIn(request, response);
+                if (this.IsSignedIn(request)) {
+                    this.HandleSignIn(request, response);
+                } else {
+                    response.sendError(400, "Not signed in");
+                }
             }
             case "signup" -> {
-                this.HandleSignUp(request, response);
+                if (this.IsSignedIn(request)) {
+                    this.HandleSignUp(request, response);
+                } else {
+                    response.sendError(400, "Not signed in");
+                }
             }
             case "resetpwd" -> {
-                this.HandleResetPassword(request, response);
+                if (this.IsSignedIn(request)) {
+                    this.HandleResetPassword(request, response);
+                } else {
+                    response.sendError(400, "Not signed in");
+                }
             }
             default -> {
                 response.setStatus(404);

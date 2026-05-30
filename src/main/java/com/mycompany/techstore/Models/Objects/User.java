@@ -1,4 +1,4 @@
-package com.mycompany.techstore.model;
+package com.mycompany.techstore.Models.Objects;
 
 import java.sql.Timestamp;
 

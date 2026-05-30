@@ -1,6 +1,6 @@
 package com.mycompany.techstore.services;
 
-import com.mycompany.techstore.model.User;
+import com.mycompany.techstore.Models.Objects.User;
 
 public class AuthService {
     private final String emailFormat = "^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$";
@@ -11,8 +11,4 @@ public class AuthService {
     }
     
     
-    
-    public User GetUserSignin() {
-        return null;
-    }
 }
