@@ -43,7 +43,7 @@ public class AuthController extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
-    // Root device
+    // Root Url
     private final String RootUrl;
 
     // Consistent OIDC attributes
@@ -151,6 +151,7 @@ public class AuthController extends HttpServlet {
 
         response.sendRedirect(authUrl);
     }
+
     private void HandleOidcCallback(HttpServletRequest request, HttpServletResponse response) throws IOException, URISyntaxException {
         if (!this.isOidcEnabled) {
             response.sendError(500, "OIDC is not enabled");
@@ -182,8 +183,8 @@ public class AuthController extends HttpServlet {
         conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 
         // Set timeouts
-        conn.setConnectTimeout(10000); // 10 seconds
-        conn.setReadTimeout(10000);    // 10 seconds
+        conn.setConnectTimeout(1000);
+        conn.setReadTimeout(1000);
 
         String body = String.format(
                 "grant_type=authorization_code&code=%s&redirect_uri=%s&client_id=%s&client_secret=%s",
@@ -234,15 +235,12 @@ public class AuthController extends HttpServlet {
                     return;
                 }
 
-                String preferred_username = claims.getStringClaim("preferred_username");
+                
                 String email = claims.getStringClaim("email");
                 String name = claims.getStringClaim("name");
-                String country = claims.getStringClaim("country");
-                String iss = claims.getStringClaim("iss");
 
                 // Sign in locally
                 session.setAttribute("loggedUser", null);
-                session.setAttribute("issuer_oidc", iss);
                 response.sendRedirect(request.getContextPath() + "/");
             } catch (JOSEException | BadJOSEException | IOException | ParseException ex) {
                 response.sendError(500, "Failed with reason: " + ex.getMessage());
@@ -258,8 +256,7 @@ public class AuthController extends HttpServlet {
         String email = request.getParameter("email");
         String password = request.getParameter("password");
 
-
-        User user = userObjectMgmt.GetUserSignIn(email, password);
+        User user = null;  //
         if (user != null) {
             String encodedName = URLEncoder.encode(user.getName(), StandardCharsets.UTF_8.toString());
 
@@ -267,7 +264,6 @@ public class AuthController extends HttpServlet {
             session.setAttribute("loggedUser", user);
             response.sendRedirect(request.getContextPath() + "/");
         } else {
-            this.ResetCredentialCookie(response);
             response.sendRedirect(request.getContextPath() + "/auth?action=denied");
         }
     }
@@ -277,12 +273,16 @@ public class AuthController extends HttpServlet {
         String password = request.getParameter("password");
         String name = request.getParameter("name");
 
-        int sqlExec = this.userObjectMgmt.CreateNewUser(email, password, name);
+        // 
         if (sqlExec != 0) {
             response.sendError(400);
         } else {
             response.sendRedirect(request.getContextPath() + "/auth?action=signin");
         }
+    }
+
+    private void HandleResetPassword(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        
     }
     
     @Override
@@ -296,11 +296,19 @@ public class AuthController extends HttpServlet {
                     response.sendRedirect(request.getContextPath() + "/auth?action=signin");
                 }
             }
+            // Regular Password Sign-up
             case "signin" -> {
                 if (this.IsSignedIn(request)) {
                     response.sendRedirect(request.getContextPath() + "/");
                 } else {
-                    request.getRequestDispatcher("/WEB-INF/JSPViews/AuthView/SignIn.jsp").forward(request, response);
+                    // 
+                }
+            }
+            case "signup" -> {
+                if (this.IsSignedIn(request)) {
+                    response.sendRedirect(request.getContextPath() + "/");
+                } else {
+                    // 
                 }
             }
             // OIDC
@@ -312,7 +320,6 @@ public class AuthController extends HttpServlet {
                         this.HandleOidcLogin(request, response);
                     } else {
                         response.sendError(500, "OIDC is not enabled");
-
                     }
                 }
             }
@@ -325,6 +332,14 @@ public class AuthController extends HttpServlet {
                     }
                 } catch (URISyntaxException ex) {
                     Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            // Reset password
+            case "resetpwd" -> {
+                if (this.IsSignedIn(request)) {
+                    response.sendRedirect(request.getContextPath() + "/");
+                } else {
+                    // 
                 }
             }
             // Logout and end session
@@ -349,11 +364,18 @@ public class AuthController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         switch (request.getParameter("action")) {
-            case "login" -> {
-                break;
+            case "signin" -> {
+                this.HandleSignIn(request, response);
+            }
+            case "signup" -> {
+                this.HandleSignUp(request, response);
+            }
+            case "resetpwd" -> {
+                this.HandleResetPassword(request, response);
             }
             default -> {
-                break;
+                response.setStatus(404);
+                request.getRequestDispatcher("/WEB-INF/JSPViews/AuthView/Denied.jsp").forward(request, response);
             }
         }
     }
