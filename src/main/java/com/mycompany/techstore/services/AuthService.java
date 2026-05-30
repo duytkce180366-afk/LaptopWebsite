@@ -14,11 +14,11 @@ public class AuthService extends DbClass {
 
     private final String emailFormat = "^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$";
     private final AuthRepository authRepo;
-    
+
     public AuthService() {
         this.authRepo = new AuthRepository();
     }
-    
+
     public String convertToMD5(String input) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("MD5");
         byte[] hashBytes = md.digest(input.getBytes(StandardCharsets.UTF_8));
@@ -47,15 +47,15 @@ public class AuthService extends DbClass {
         if (!email.matches(this.emailFormat)) {
             throw new AuthException(-1, "Email is not in correct format");
         }
-        
+
         String pwdHash = this.convertToMD5(password);
-        
+
         user = this.authRepo.GetUserSignIn(email, pwdHash);
-        
+
         if (user == null) {
             throw new AuthException(-1, "User not found");
         }
-        
+
         return user;
     }
 
@@ -106,6 +106,4 @@ public class AuthService extends DbClass {
         String pwdHash = this.convertToMD5(newPassword);
         return this.authRepo.UpdatePassword(email, pwdHash);
     }
-    
-    
 }

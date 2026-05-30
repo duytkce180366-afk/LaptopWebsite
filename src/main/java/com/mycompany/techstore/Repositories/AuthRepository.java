@@ -154,6 +154,4 @@ public class AuthRepository extends DbClass {
 
         return user;
     }
-
-    
 }
