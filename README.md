@@ -1,3 +1,3 @@
-# LaptopWebsite
+# Laptop Website
 
 Website-selling laptop
