@@ -238,7 +238,7 @@ public class AuthController extends HttpServlet {
                 
                 String email = claims.getStringClaim("email");
                 String name = claims.getStringClaim("name");
-
+                
                 // Sign in locally
                 session.setAttribute("loggedUser", null);
                 response.sendRedirect(request.getContextPath() + "/");
