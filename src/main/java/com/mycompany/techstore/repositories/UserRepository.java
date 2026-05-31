@@ -1,4 +1,4 @@
-package com.mycompany.techstore.repositories;
+package com.mycompany.techstore.Repositories;
 
 public class UserRepository {
 

@@ -1,4 +1,4 @@
-package com.mycompany.techstore.controllers;
+package com.mycompany.techstore.Controllers;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
