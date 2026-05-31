@@ -143,17 +143,39 @@
     String sortOrder = (String) request.getAttribute("sortOrder");
     String searchTerm = (String) request.getAttribute("searchTerm");
 
-    if (categories == null) categories = new ArrayList<>();
-    if (products == null) products = new ArrayList<>();
-    if (filteredProducts == null) filteredProducts = new ArrayList<>();
-    if (priceRanges == null) priceRanges = new ArrayList<>();
-    if (sortOptions == null) sortOptions = new ArrayList<>();
-    if (secondaryFilters == null) secondaryFilters = Map.of();
-    if (secondaryFilterOptions == null) secondaryFilterOptions = Map.of();
-    if (selectedCategoryId == null) selectedCategoryId = "all";
-    if (selectedPrice == null) selectedPrice = "All prices";
-    if (sortOrder == null) sortOrder = "recommended";
-    if (searchTerm == null) searchTerm = "";
+    if (categories == null) {
+        categories = new ArrayList<>();
+    }
+    if (products == null) {
+        products = new ArrayList<>();
+    }
+    if (filteredProducts == null) {
+        filteredProducts = new ArrayList<>();
+    }
+    if (priceRanges == null) {
+        priceRanges = new ArrayList<>();
+    }
+    if (sortOptions == null) {
+        sortOptions = new ArrayList<>();
+    }
+    if (secondaryFilters == null) {
+        secondaryFilters = Map.of();
+    }
+    if (secondaryFilterOptions == null) {
+        secondaryFilterOptions = Map.of();
+    }
+    if (selectedCategoryId == null) {
+        selectedCategoryId = "all";
+    }
+    if (selectedPrice == null) {
+        selectedPrice = "All prices";
+    }
+    if (sortOrder == null) {
+        sortOrder = "recommended";
+    }
+    if (searchTerm == null) {
+        searchTerm = "";
+    }
 
     String contextPath = request.getContextPath();
     String visibleCategoryId = "all".equals(selectedCategoryId) && !categories.isEmpty() ? categories.get(0).getId() : selectedCategoryId;
@@ -189,25 +211,25 @@
                             <% } %>
                         </div>
 
-                        <% for (Category category : categories) { %>
+                        <% for (Category category : categories) {%>
                         <div class="mega-panel <%= category.getId().equals(visibleCategoryId) ? "visible" : ""%>" data-mega-panel="<%= html(category.getId())%>">
                             <% for (Map<String, Object> group : category.getMenuGroups()) {
-                                String title = String.valueOf(group.get("title"));
-                                List<String> options = (List<String>) group.get("options");
+                                    String title = String.valueOf(group.get("title"));
+                                    List<String> options = (List<String>) group.get("options");
                             %>
                             <section>
                                 <h3><%= html(title)%></h3>
                                 <div class="mega-tags">
                                     <% for (String option : options) {
-                                        String filterKey = filterKeyFromMenuGroup(title);
-                                        String href = contextPath + "/home?category=" + encode(category.getId());
-                                        if ("Prices".equals(title)) {
-                                            href += "&price=" + encode(option);
-                                        } else if (filterKey != null) {
-                                            href += "&" + encode(filterKey) + "=" + encode(option);
-                                        } else {
-                                            href += "&search=" + encode(option);
-                                        }
+                                            String filterKey = filterKeyFromMenuGroup(title);
+                                            String href = contextPath + "/home?category=" + encode(category.getId());
+                                            if ("Prices".equals(title)) {
+                                                href += "&price=" + encode(option);
+                                            } else if (filterKey != null) {
+                                                href += "&" + encode(filterKey) + "=" + encode(option);
+                                            } else {
+                                                href += "&search=" + encode(option);
+                                            }
                                     %>
                                     <a href="<%= href%>#products"><%= html(option)%></a>
                                     <% } %>
@@ -215,7 +237,7 @@
                             </section>
                             <% } %>
                         </div>
-                        <% } %>
+                        <% }%>
                     </div>
                 </div>
 
@@ -265,7 +287,7 @@
                         <span><%= html(category.getName())%></span>
                         <small><%= countProducts(products, category.getId())%> products</small>
                     </a>
-                    <% } %>
+                    <% }%>
                 </div>
             </section>
 
@@ -305,14 +327,14 @@
                         <select name="sort">
                             <% for (SortOption option : sortOptions) {%>
                             <option value="<%= html(option.getValue())%>" <%= selected(sortOrder, option.getValue())%>><%= html(option.getLabel())%></option>
-                            <% } %>
+                            <% }%>
                         </select>
                     </label>
 
                     <button class="primary-action filter-submit" type="submit">Apply</button>
                     <a class="clear-button" href="<%= contextPath%>/home#products">Clear</a>
 
-                    <% if (activeCategory != null) { %>
+                    <% if (activeCategory != null) {%>
                     <div class="secondary-filter-panel">
                         <div>
                             <p class="eyebrow">Secondary filters</p>
@@ -320,7 +342,7 @@
                         </div>
                         <div class="secondary-filter-grid">
                             <% for (Map<String, String> filter : activeCategory.getFilters()) {
-                                String key = filter.get("key");
+                                    String key = filter.get("key");
                             %>
                             <label>
                                 <span><%= html(filter.get("label"))%></span>
@@ -334,14 +356,14 @@
                             <% } %>
                         </div>
                     </div>
-                    <% } %>
+                    <% }%>
                 </form>
 
                 <p class="result-count">Showing <%= filteredProducts.size()%> of <%= products.size()%> products</p>
 
                 <div class="product-grid">
                     <% for (Product product : filteredProducts) {
-                        List<Map.Entry<String, String>> specs = new ArrayList<>(product.getSpecs().entrySet());
+                            List<Map.Entry<String, String>> specs = new ArrayList<>(product.getSpecs().entrySet());
                     %>
                     <article class="product-card">
                         <img src="<%= html(product.getImage())%>" alt="<%= html(product.getName())%>" />
@@ -353,9 +375,9 @@
                             <h3><%= html(product.getName())%></h3>
                             <p><%= html(product.getCategory())%></p>
                             <div class="spec-pills">
-                                <% for (int i = 0; i < specs.size() && i < 3; i++) { %>
+                                <% for (int i = 0; i < specs.size() && i < 3; i++) {%>
                                 <span><%= html(specs.get(i).getValue())%></span>
-                                <% } %>
+                                <% }%>
                             </div>
                             <div class="product-footer">
                                 <strong><%= formatPrice(product.getPrice())%></strong>
@@ -366,13 +388,13 @@
                     <% } %>
                 </div>
 
-                <% if (filteredProducts.isEmpty()) { %>
+                <% if (filteredProducts.isEmpty()) {%>
                 <div class="empty-state">
                     <h3>No products found</h3>
                     <p>Try another keyword, category, price range, sort option, or secondary filter.</p>
                     <a href="<%= contextPath%>/home#products">Reset filters</a>
                 </div>
-                <% } %>
+                <% }%>
             </section>
         </main>
         <%@include file="/WEB-INF/JSPViews/global/footer.jsp" %>

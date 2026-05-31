@@ -38,7 +38,9 @@
 <%
     Product product = (Product) request.getAttribute("product");
     List<Category> categories = (List<Category>) request.getAttribute("categories");
-    if (categories == null) categories = new ArrayList<>();
+    if (categories == null) {
+        categories = new ArrayList<>();
+    }
     String contextPath = request.getContextPath();
 %>
 <!DOCTYPE html>
@@ -68,7 +70,7 @@
                                 <%= html(category.getName())%>
                                 <span aria-hidden="true">&gt;</span>
                             </a>
-                            <% } %>
+                            <% }%>
                         </div>
                     </div>
                 </div>
@@ -83,13 +85,13 @@
                 </button>
             </nav>
 
-            <% if (product == null) { %>
+            <% if (product == null) {%>
             <section class="empty-state">
                 <h3>Product not found</h3>
                 <p>The requested product is not available.</p>
                 <a href="<%= contextPath%>/home">Back to products</a>
             </section>
-            <% } else { %>
+            <% } else {%>
             <div class="product-page">
                 <a class="back-button" href="<%= contextPath%>/home#products">Back to products</a>
 
@@ -110,12 +112,12 @@
                             <p><%= html(product.getDescription())%></p>
                             <h3><%= formatPrice(product.getPrice())%></h3>
                             <dl class="spec-table">
-                                <% for (Map.Entry<String, String> spec : product.getSpecs().entrySet()) { %>
+                                <% for (Map.Entry<String, String> spec : product.getSpecs().entrySet()) {%>
                                 <div>
                                     <dt><%= html(formatSpecLabel(spec.getKey()))%></dt>
                                     <dd><%= html(spec.getValue())%></dd>
                                 </div>
-                                <% } %>
+                                <% }%>
                                 <div>
                                     <dt>Warranty</dt>
                                     <dd><%= html(product.getWarranty())%></dd>
@@ -135,7 +137,7 @@
                         <h2 id="reviews-title">Customer reviews for <%= html(product.getName())%></h2>
                     </div>
                     <div class="reviews-grid">
-                        <% for (Review review : product.getReviews()) { %>
+                        <% for (Review review : product.getReviews()) {%>
                         <article class="review-card">
                             <div>
                                 <strong><%= html(review.getUser())%></strong>
@@ -148,7 +150,7 @@
                     </div>
                 </section>
             </div>
-            <% } %>
+            <% }%>
         </main>
         <%@include file="/WEB-INF/JSPViews/global/footer.jsp" %>
     </body>

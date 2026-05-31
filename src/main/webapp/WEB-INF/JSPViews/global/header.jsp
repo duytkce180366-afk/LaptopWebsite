@@ -12,7 +12,7 @@
 <meta
     name="description"
     content="TechHub computer store demo for browsing products, filters, details, and reviews."
-/>
+    />
 <link rel="stylesheet" href="<%= request.getContextPath()%>/css/styles.css" />
 <script defer src="<%= request.getContextPath()%>/js/theme.js"></script>
 <script defer src="<%= request.getContextPath()%>/js/megaMenu.js"></script>
