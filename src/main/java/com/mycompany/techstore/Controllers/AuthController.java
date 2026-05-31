@@ -350,14 +350,14 @@ public class AuthController extends HttpServlet {
                 if (this.IsSignedIn(request)) {
                     response.sendRedirect(request.getContextPath() + "/");
                 } else {
-                    
+                    request.getRequestDispatcher("/WEB-INF/JSPViews/AuthView/Login.jsp").forward(request, response);
                 }
             }
             case "signup" -> {
                 if (this.IsSignedIn(request)) {
                     response.sendRedirect(request.getContextPath() + "/");
                 } else {
-                    // 
+                    request.getRequestDispatcher("/WEB-INF/JSPViews/AuthView/CreateAccount.jsp").forward(request, response);
                 }
             }
             // OIDC
@@ -386,7 +386,7 @@ public class AuthController extends HttpServlet {
             // Reset password
             case "resetpwd" -> {
                 if (this.IsSignedIn(request)) {
-                    // 
+                    request.getRequestDispatcher("/WEB-INF/JSPViews/AuthView/ResetPwd.jsp").forward(request, response);
                 } else {
                     response.sendError(400, "Not signed in");
                 }

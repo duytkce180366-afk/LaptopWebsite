@@ -17,7 +17,7 @@ import com.mycompany.techstore.Models.Objects.Category;
 import com.mycompany.techstore.Models.Objects.PriceRange;
 import com.mycompany.techstore.Models.Objects.Product;
 
-@WebServlet(name = "ProductController", urlPatterns = {"/product", "/index", "/home"})
+@WebServlet(name = "ProductController", urlPatterns = {"/product", "/index", "/home", ""})
 public class ProductController extends HttpServlet {
 
     private static final long serialVersionUID = 1L;

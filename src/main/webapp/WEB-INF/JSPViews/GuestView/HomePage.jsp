@@ -221,7 +221,8 @@
                             <h3><%= html(activeCategory.getName())%></h3>
                         </div>
                         <div class="secondary-filter-grid">
-                            <% for (Map<String, String> filter : activeCategory.getFilters()) {
+                            <% 
+                                for (Map<String, String> filter : activeCategory.getFilters()) {
                                     String key = filter.get("key");
                             %>
                             <label>
