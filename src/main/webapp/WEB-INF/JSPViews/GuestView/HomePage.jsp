@@ -44,67 +44,6 @@
         return formatter.format(price);
     }
 
-    private String formatSpecLabel(String key) {
-        String label = key.replaceAll("([A-Z])", " $1");
-        label = label.substring(0, 1).toUpperCase() + label.substring(1);
-        return label.replace("Gpu", "GPU")
-                .replace("Cpu", "CPU")
-                .replace("Dpi", "DPI")
-                .replace("Tdp", "TDP")
-                .replace("Vram", "VRAM");
-    }
-
-    private String filterKeyFromMenuGroup(String groupTitle) {
-        switch (groupTitle) {
-            case "Brands":
-                return "brand";
-            case "Purpose":
-                return "purpose";
-            case "CPU":
-                return "cpu";
-            case "GPU":
-                return "gpu";
-            case "Screen":
-                return "display";
-            case "Sensor":
-                return "sensor";
-            case "Connection":
-                return "connection";
-            case "Switch":
-                return "switchType";
-            case "Layout":
-                return "layout";
-            case "Resolution":
-                return "resolution";
-            case "Refresh rate":
-                return "refreshRate";
-            case "Capacity":
-                return "capacity";
-            case "Interface":
-                return "interfaceType";
-            case "Type":
-                return "memoryType";
-            case "Bus RAM":
-                return "bus";
-            case "Socket":
-                return "socket";
-            case "Cores":
-                return "cores";
-            case "Chipset":
-                return "chipset";
-            case "VRAM":
-                return "vram";
-            case "Motherboard":
-                return "motherboardSupport";
-            case "Color":
-                return "color";
-            case "Size":
-                return "size";
-            default:
-                return null;
-        }
-    }
-
     private int countProducts(List<Product> products, String categoryId) {
         int count = 0;
         for (Product product : products) {
@@ -145,6 +84,7 @@
     String sortOrder = (String) request.getAttribute("sortOrder");
     String searchTerm = (String) request.getAttribute("searchTerm");
 
+    // Checking if null
     if (categories == null) {
         categories = new ArrayList<>();
     }
@@ -180,7 +120,6 @@
     }
 
     String contextPath = request.getContextPath();
-    String visibleCategoryId = "all".equals(selectedCategoryId) && !categories.isEmpty() ? categories.get(0).getId() : selectedCategoryId;
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -190,7 +129,7 @@
     </head>
     <body id="top">
         <main class="app-shell" id="app">
-            
+
             <%@include file="/WEB-INF/JSPViews/global/nav.jsp" %>
             <section class="hero" id="home">
                 <div class="hero-copy">
@@ -303,7 +242,8 @@
                 <p class="result-count">Showing <%= filteredProducts.size()%> of <%= products.size()%> products</p>
 
                 <div class="product-grid">
-                    <% for (Product product : filteredProducts) {
+                    <%
+                        for (Product product : filteredProducts) {
                             List<Map.Entry<String, String>> specs = new ArrayList<>(product.getSpecs().entrySet());
                     %>
                     <article class="product-card">
