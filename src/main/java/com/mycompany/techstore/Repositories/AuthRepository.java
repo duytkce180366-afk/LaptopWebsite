@@ -88,7 +88,7 @@ public class AuthRepository extends DbClass {
             } else {
                 ps.setNull(4, java.sql.Types.NVARCHAR);
             }
-            
+
             ps.executeUpdate();
             // fetch created user
             user = GetUserOIDCSignIn(email);
