@@ -1,4 +1,4 @@
-package com.mycompany.techstore.Models.Objects;
+package Models.Objects;
 
 public class Review {
     private String user;

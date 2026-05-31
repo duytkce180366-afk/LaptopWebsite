@@ -4,11 +4,11 @@
    xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
    version="6.0">
     <welcome-file-list>
-        <welcome-file>index</welcome-file>
+        <welcome-file>home</welcome-file>
     </welcome-file-list>
     <session-config>
         <session-timeout>
-            30
+            3600
         </session-timeout>
     </session-config>
 </web-app>

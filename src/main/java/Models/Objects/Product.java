@@ -1,4 +1,4 @@
-package com.mycompany.techstore.Models.Objects;
+package Models.Objects;
 
 import java.util.List;
 import java.util.Map;
