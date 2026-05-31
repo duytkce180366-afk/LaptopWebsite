@@ -1,4 +1,4 @@
-package Models.Objects;
+package com.mycompany.techstore.Models.Objects;
 
 public class SortOption {
     private String label;

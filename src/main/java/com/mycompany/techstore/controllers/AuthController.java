@@ -44,7 +44,7 @@ import java.security.NoSuchAlgorithmException;
 @WebServlet(name = "AuthController", urlPatterns = {"/auth"})
 public class AuthController extends HttpServlet {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L; 
 
     // Root Url
     private final String RootUrl;
@@ -60,10 +60,10 @@ public class AuthController extends HttpServlet {
     private String OidcTokenEndpoint;
     private String OidcAuthEndpoint;
     private String OidcJwksUri;
-    
+
     // Auth Service handler
-    private final AuthService authService;
-    
+    private transient final AuthService authService;
+
     private boolean isOidcEnabled;
 
     public AuthController() {
@@ -81,7 +81,7 @@ public class AuthController extends HttpServlet {
                 this.isOidcEnabled = true;
             }
         }
-        
+
         this.authService = new AuthService();
     }
 
@@ -254,11 +254,12 @@ public class AuthController extends HttpServlet {
                 // Query or create user with email
                 User user = this.authService.GetOrCreateUserOIDCSignIn(email, name);
 
-                // Sign in locally
-                session.setAttribute("loggedUser", user);
+                // Sign in locally (store sanitized copy without password)
+                session.setAttribute("loggedUser", user.withoutPassword());
                 response.sendRedirect(request.getContextPath() + "/");
             } catch (JOSEException | BadJOSEException | IOException | ParseException | AuthException ex) {
-                response.sendError(500, "Failed with reason: " + ex.getMessage());
+                Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, null, ex);
+                response.sendError(500, "Internal server error during token processing.");
             }
         }
     }
@@ -275,13 +276,14 @@ public class AuthController extends HttpServlet {
             User user = this.authService.GetUserSignIn(email, password);
             if (user != null) {
                 HttpSession session = request.getSession();
-                session.setAttribute("loggedUser", user);
+                session.setAttribute("loggedUser", user.withoutPassword());
                 response.sendRedirect(request.getContextPath() + "/");
             } else {
                 response.sendRedirect(request.getContextPath() + "/auth?action=denied");
             }
         } catch (AuthException | NoSuchAlgorithmException ex) {
-            response.sendError(500, "Failed with reason: " + ex.getMessage());
+            Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, null, ex);
+            response.sendError(500, "Internal server error during sign-in.");
         }
     }
 
@@ -293,10 +295,11 @@ public class AuthController extends HttpServlet {
         try {
             User created = this.authService.CreateUserSignIn(email, password, name);
             HttpSession session = request.getSession();
-            session.setAttribute("loggedUser", created);
+            session.setAttribute("loggedUser", created.withoutPassword());
             response.sendRedirect(request.getContextPath() + "/");
         } catch (AuthException | NoSuchAlgorithmException ex) {
-            response.sendError(500, "Failed with reason: " + ex.getMessage());
+            Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, null, ex);
+            response.sendError(500, "Internal server error during sign-up.");
         }
     }
 
@@ -316,7 +319,7 @@ public class AuthController extends HttpServlet {
         String oldPwd = request.getParameter("old_password");
         String newPwd = request.getParameter("new_password");
 
-        try {
+            try {
             // verify old password
             this.authService.GetUserSignIn(logged.getEmail(), oldPwd);
 
@@ -324,13 +327,14 @@ public class AuthController extends HttpServlet {
             if (ok) {
                 // refresh user in session
                 User refreshed = this.authService.GetUserOIDCSignIn(logged.getEmail());
-                session.setAttribute("loggedUser", refreshed);
+                session.setAttribute("loggedUser", refreshed.withoutPassword());
                 response.sendRedirect(request.getContextPath() + "/");
             } else {
                 response.sendError(500, "Failed to update password");
             }
         } catch (AuthException | NoSuchAlgorithmException ex) {
-            response.sendError(500, "Failed with reason: " + ex.getMessage());
+            Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, null, ex);
+            response.sendError(500, "Internal server error during password change.");
         }
     }
 

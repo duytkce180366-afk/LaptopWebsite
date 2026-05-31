@@ -1,7 +1,7 @@
-﻿<%@page import="Models.Objects.Category"%>
-<%@page import="Models.Objects.PriceRange"%>
-<%@page import="Models.Objects.Product"%>
-<%@page import="Models.Objects.SortOption"%>
+﻿<%@page import="com.mycompany.techstore.Models.Objects.Category"%>
+<%@page import="com.mycompany.techstore.Models.Objects.PriceRange"%>
+<%@page import="com.mycompany.techstore.Models.Objects.Product"%>
+<%@page import="com.mycompany.techstore.Models.Objects.SortOption"%>
 <%@page import="java.net.URLEncoder"%>
 <%@page import="java.nio.charset.StandardCharsets"%>
 <%@page import="java.text.NumberFormat"%>
