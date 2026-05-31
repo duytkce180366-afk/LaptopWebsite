@@ -1,7 +1,7 @@
-package com.mycompany.techstore.Repositories;
+package Repositories;
 
-import com.mycompany.techstore.Models.Objects.Product;
-import com.mycompany.techstore.Models.Objects.Review;
+import Models.Objects.Product;
+import Models.Objects.Review;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -256,7 +256,13 @@ public class ProductRepository {
         }
 
         for (Map.Entry<String, String> filter : filters.entrySet()) {
-            String specValue = product.getSpecs().get(filter.getKey());
+            if ("all".equals(filter.getValue())) {
+                continue;
+            }
+
+            String specValue = "brand".equals(filter.getKey())
+                    ? product.getBrand()
+                    : product.getSpecs().get(filter.getKey());
             if (specValue == null || !specValue.equals(filter.getValue())) {
                 return false;
             }

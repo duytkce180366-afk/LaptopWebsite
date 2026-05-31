@@ -1,6 +1,6 @@
-package com.mycompany.techstore.Repositories;
+package Repositories;
 
-import com.mycompany.techstore.Models.Objects.PriceRange;
+import Models.Objects.PriceRange;
 import java.util.*;
 
 public class PriceRangeRepository {
