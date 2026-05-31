@@ -86,6 +86,45 @@
         <span class="brand-mark">Tech Store</span>
         <span class="brand-subtitle">Computer store</span>
     </a>
+
+<%--    <div class="category-menu">
+        <button class="category-menu-button" type="button" data-action="toggle-category-menu" aria-expanded="false">
+            Categories
+            <span aria-hidden="true">v</span>
+        </button>
+        <div class="mega-menu">
+
+                <% for (Category category : navCategories) {%>
+                <div class="mega-panel <%= category.getId().equals(visibleCategoryId) ? "visible" : ""%>" data-mega-panel="<%= nav_html(category.getId())%>">
+                <% for (Map<String, Object> group : category.getMenuGroups()) {
+                    String title = String.valueOf(group.get("title"));
+                    List<String> options = (List<String>) group.get("options");
+                %>
+                <section>
+                    <h3><%= nav_html(title)%></h3>
+                    <div class="mega-tags">
+                        <% for (String option : options) {
+                                String filterKey = nav_filterKeyFromMenuGroup(title);
+                                String href = request.getContextPath() + "/home?category=" + nav_encode(category.getId());
+                                if ("Prices".equals(title)) {
+                                    href += "&price=" + nav_encode(option);
+                                } else if (filterKey != null) {
+                                    href += "&" + nav_encode(filterKey) + "=" + nav_encode(option);
+                                } else {
+                                    href += "&search=" + nav_encode(option);
+                                }
+                        %>
+                        <a href="<%= href%>#products"><%= nav_html(option)%></a>
+                        <% } %>
+                    </div>
+                </section>
+                <% } %>
+            </div>
+            <% }%>
+        </div>
+    </div>
+--%>
+
     <div class="nav-links">
         <a href="<%= request.getContextPath()%>/home#home">Home</a>
         <a href="<%= request.getContextPath()%>/home#products">Products</a>
