@@ -42,7 +42,7 @@ import jakarta.servlet.http.HttpSession;
 import java.security.NoSuchAlgorithmException;
 
 @WebServlet(name = "AuthController", urlPatterns = {"/auth"})
-public class AuthenticationController extends HttpServlet {
+public class AuthController extends HttpServlet {
 
     private static final long serialVersionUID = 1L; 
 
@@ -66,7 +66,7 @@ public class AuthenticationController extends HttpServlet {
 
     private boolean isOidcEnabled;
 
-    public AuthenticationController() {
+    public AuthController() {
         this.RootUrl = (System.getenv("ROOT_ENV") != null) ? System.getenv("ROOT_ENV") : "http://localhost:8080";
 
         this.OidcWellknown = System.getenv("OIDC_WELL_KNOWN");
@@ -115,12 +115,12 @@ public class AuthenticationController extends HttpServlet {
                 this.OidcJwksUri = config.getString("jwks_uri");
                 this.OidcAuthEndpoint = config.getString("authorization_endpoint");
 
-                Logger.getLogger(AuthenticationController.class.getName()).log(Level.INFO, "OIDC configuration loaded successfully.");
+                Logger.getLogger(AuthController.class.getName()).log(Level.INFO, "OIDC configuration loaded successfully.");
                 return true;
             }
         } catch (IOException | URISyntaxException e) {
             // Hard-coded exception handler
-            Logger.getLogger(AuthenticationController.class.getName()).log(Level.SEVERE, "Error loading OIDC configuration: " + e.getMessage(), e);
+            Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, "Error loading OIDC configuration: " + e.getMessage(), e);
             return false;
         }
     }
@@ -258,7 +258,7 @@ public class AuthenticationController extends HttpServlet {
                 session.setAttribute("loggedUser", user.withoutPassword());
                 response.sendRedirect(request.getContextPath() + "/");
             } catch (JOSEException | BadJOSEException | IOException | ParseException | AuthException ex) {
-                Logger.getLogger(AuthenticationController.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, null, ex);
                 response.sendError(500, "Internal server error during token processing.");
             }
         }
@@ -282,7 +282,7 @@ public class AuthenticationController extends HttpServlet {
                 response.sendRedirect(request.getContextPath() + "/auth?action=denied");
             }
         } catch (AuthException | NoSuchAlgorithmException ex) {
-            Logger.getLogger(AuthenticationController.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, null, ex);
             response.sendError(500, "Internal server error during sign-in.");
         }
     }
@@ -298,7 +298,7 @@ public class AuthenticationController extends HttpServlet {
             session.setAttribute("loggedUser", created.withoutPassword());
             response.sendRedirect(request.getContextPath() + "/");
         } catch (AuthException | NoSuchAlgorithmException ex) {
-            Logger.getLogger(AuthenticationController.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, null, ex);
             response.sendError(500, "Internal server error during sign-up.");
         }
     }
@@ -333,7 +333,7 @@ public class AuthenticationController extends HttpServlet {
                 response.sendError(500, "Failed to update password");
             }
         } catch (AuthException | NoSuchAlgorithmException ex) {
-            Logger.getLogger(AuthenticationController.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, null, ex);
             response.sendError(500, "Internal server error during password change.");
         }
     }
@@ -384,7 +384,7 @@ public class AuthenticationController extends HttpServlet {
                         response.sendError(500, "OIDC is not enabled");
                     }
                 } catch (URISyntaxException ex) {
-                    Logger.getLogger(AuthenticationController.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
             // Reset password
