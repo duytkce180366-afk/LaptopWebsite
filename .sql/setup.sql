@@ -58,7 +58,7 @@ BEGIN
         CONSTRAINT UQ_bs_Roles_role_name UNIQUE (role_name)
     );
 
-    INSERT INTO [dbo.bs_Roles] ([role_name])
+    INSERT INTO dbo.bs_Roles ([role_name])
         VALUES ('Admin'),
                 ('User'),
                 ('Guest');
@@ -83,9 +83,11 @@ BEGIN
         created_at     DATETIME2(0) NOT NULL CONSTRAINT DF_bs_user_created_at DEFAULT SYSUTCDATETIME(),
         updated_at     DATETIME2(0) NULL,
         CONSTRAINT UQ_bs_user_email UNIQUE (email),
-        CONSTRAINT UQ_bs_user_phone UNIQUE (phone),
         CONSTRAINT CK_bs_user_status CHECK (status IN ('Active', 'Blocked', 'Inactive', 'Pending'))
     );
+
+    INSERT INTO dbo.bs_user ([role_id], [full_name], [email], [phone], [password], [avatar], [status], [created_at], [updated_at])
+        VALUES (1, 'Administrator', 'administrator@example.com', '012345678', NULL, NULL, 'Active', SYSUTCDATETIME(), SYSUTCDATETIME());
 END
 GO
 

@@ -83,7 +83,11 @@ public class AuthRepository extends DbClass {
             ps.setInt(1, 2);
             ps.setString(2, fullName);
             ps.setString(3, email);
-            ps.setString(4, pwdHash);
+            if (pwdHash != null) {
+                ps.setString(4, pwdHash);
+            } else {
+                ps.setNull(4, java.sql.Types.NVARCHAR);
+            }
             
             ps.executeUpdate();
             // fetch created user
