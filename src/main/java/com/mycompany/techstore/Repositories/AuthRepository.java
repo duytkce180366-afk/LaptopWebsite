@@ -6,12 +6,32 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.mycompany.techstore.Models.Objects.User;
 import com.mycompany.techstore.resources.DbClass;
+import com.mycompany.techstore.Models.Objects.User;
 
 public class AuthRepository extends DbClass {
 
-    // OIDC
+    // Check if user exists
+    public boolean IsEmailExists(String email) {
+        boolean exists = false;
+
+        String sqlCommand = """
+                            SELECT 1 FROM [bs_user]  WHERE [email] = ?;
+                            """;
+
+        try (PreparedStatement ps = super.getConnection().prepareStatement(sqlCommand)) {
+            ps.setString(1, email);
+            try (ResultSet rs = ps.executeQuery()) {
+                exists = rs.next();
+            }
+        } catch (SQLException sqlEx) {
+            Logger.getLogger(AuthRepository.class.getName()).log(Level.SEVERE, null, sqlEx);
+        }
+
+        return exists;
+    }
+
+    // Sign-in with OIDC (Email only)
     public User GetUserOIDCSignIn(String email) {
         User user = null;
 
@@ -41,89 +61,12 @@ public class AuthRepository extends DbClass {
             }
         } catch (SQLException sqlEx) {
             Logger.getLogger(AuthRepository.class.getName()).log(Level.SEVERE, null, sqlEx);
-            System.out.println(sqlEx.toString());
         }
 
         return user;
     }
 
-    public boolean IsEmailExists(String email) {
-        boolean exists = false;
-
-        String sqlCommand = """
-                            SELECT 1 
-                                FROM [bs_user] 
-                                WHERE [email] = ?;
-                            """;
-
-        try (PreparedStatement ps = super.getConnection().prepareStatement(sqlCommand)) {
-            ps.setString(1, email);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    exists = true;
-                }
-            }
-        } catch (SQLException sqlEx) {
-            Logger.getLogger(AuthRepository.class.getName()).log(Level.SEVERE, null, sqlEx);
-            System.out.println(sqlEx.toString());
-        }
-
-        return exists;
-    }
-
-    public User CreateUser(String email, String pwdHash, String fullName) {
-        User user = null;
-
-        String sqlInsert = """
-                           INSERT INTO [bs_user] ([role_id], [full_name], [email], [phone], [password], [avatar], [status], [created_at], [updated_at])
-                                VALUES (?, ?, ?, NULL, ?, NULL, 'Active', SYSUTCDATETIME(), SYSUTCDATETIME());
-                           """;
-
-        try (PreparedStatement ps = super.getConnection().prepareStatement(sqlInsert)) {
-            ps.setInt(1, 2);
-            ps.setString(2, fullName);
-            ps.setString(3, email);
-            if (pwdHash != null) {
-                ps.setString(4, pwdHash);
-            } else {
-                ps.setNull(4, java.sql.Types.NVARCHAR);
-            }
-
-            ps.executeUpdate();
-            // fetch created user
-            user = GetUserOIDCSignIn(email);
-        } catch (SQLException sqlEx) {
-            Logger.getLogger(AuthRepository.class.getName()).log(Level.SEVERE, null, sqlEx);
-            System.out.println(sqlEx.toString());
-        }
-
-        return user;
-    }
-
-    public boolean UpdatePassword(String email, String pwdHash) {
-        boolean updated = false;
-
-        String sqlUpdate = """
-                           UPDATE [bs_user]
-                              SET [password] = ?, [updated_at] = SYSUTCDATETIME()
-                            WHERE [email] = ?;
-                           """;
-
-        try (PreparedStatement ps = super.getConnection().prepareStatement(sqlUpdate)) {
-            ps.setString(1, pwdHash);
-            ps.setString(2, email);
-
-            int rows = ps.executeUpdate();
-            updated = (rows > 0);
-        } catch (SQLException sqlEx) {
-            Logger.getLogger(AuthRepository.class.getName()).log(Level.SEVERE, null, sqlEx);
-            System.out.println(sqlEx.toString());
-        }
-
-        return updated;
-    }
-
-    // Regular User sign in
+    // Regular Sign-in (email and password)
     public User GetUserSignIn(String email, String pwdHash) {
         User user = null;
 
@@ -155,9 +98,60 @@ public class AuthRepository extends DbClass {
             }
         } catch (SQLException sqlEx) {
             Logger.getLogger(AuthRepository.class.getName()).log(Level.SEVERE, null, sqlEx);
-            System.out.println(sqlEx.toString());
         }
 
         return user;
+    }
+
+    // Create new user (OIDC/Password)
+    public User CreateUser(String email, String pwdHash, String fullName) {
+        User user = null;
+
+        String sqlInsert = """
+                           INSERT INTO [bs_user] ([role_id], [full_name], [email], [phone], [password], [avatar], [status], [created_at], [updated_at])
+                                VALUES (?, ?, ?, NULL, ?, NULL, 'Active', SYSUTCDATETIME(), SYSUTCDATETIME());
+                           """;
+
+        try (PreparedStatement ps = super.getConnection().prepareStatement(sqlInsert)) {
+            ps.setInt(1, 2);
+            ps.setString(2, fullName);
+            ps.setString(3, email);
+            if (pwdHash != null) {
+                ps.setString(4, pwdHash);
+            } else {
+                ps.setNull(4, java.sql.Types.NVARCHAR);
+            }
+
+            ps.executeUpdate();
+            user = GetUserOIDCSignIn(email);
+        } catch (SQLException sqlEx) {
+            Logger.getLogger(AuthRepository.class.getName()).log(Level.SEVERE, null, sqlEx);
+        }
+
+        return user;
+    }
+
+    // Update password for existing user
+    public boolean UpdatePassword(String email, String pwdHash) {
+        boolean updated = false;
+
+        String sqlUpdate = """
+                           UPDATE [bs_user]
+                                SET [password] = ?, [updated_at] = SYSUTCDATETIME()
+                                WHERE [email] = ?;
+                           """;
+
+        try (PreparedStatement ps = super.getConnection().prepareStatement(sqlUpdate)) {
+            ps.setString(1, pwdHash);
+            ps.setString(2, email);
+
+            int rows = ps.executeUpdate();
+            updated = (rows > 0);
+        } catch (SQLException sqlEx) {
+            Logger.getLogger(AuthRepository.class.getName()).log(Level.SEVERE, null, sqlEx);
+            System.out.println(sqlEx.toString());
+        }
+
+        return updated;
     }
 }

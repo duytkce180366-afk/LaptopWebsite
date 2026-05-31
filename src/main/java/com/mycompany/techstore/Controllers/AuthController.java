@@ -44,7 +44,7 @@ import java.security.NoSuchAlgorithmException;
 @WebServlet(name = "AuthController", urlPatterns = {"/auth"})
 public class AuthController extends HttpServlet {
 
-    private static final long serialVersionUID = 1L; 
+    private static final long serialVersionUID = 1L;
 
     // Root Url
     private final String RootUrl;
@@ -223,13 +223,9 @@ public class AuthController extends HttpServlet {
                 URL jwksUrl = new URI(this.OidcJwksUri).toURL();
 
                 ResourceRetriever resourceRetriever = new DefaultResourceRetriever(5000, 5000);
-
                 JWKSource<SecurityContext> keySource = JWKSourceBuilder.create(jwksUrl, resourceRetriever).build();
-
                 ConfigurableJWTProcessor<SecurityContext> jwtProcessor = new DefaultJWTProcessor<>();
-
                 jwtProcessor.setJWSKeySelector(new JWSVerificationKeySelector<>(JWSAlgorithm.RS256, keySource));
-
                 JWTClaimsSet claims = jwtProcessor.process(idToken, null);
 
                 if (!claims.getAudience().contains(this.OidcClientId)) {
@@ -244,18 +240,13 @@ public class AuthController extends HttpServlet {
                 }
 
                 String email = claims.getStringClaim("email");
-                String name = null;
-                try {
-                    name = claims.getStringClaim("name");
-                } catch (ParseException ignore) {
-                    // optional
-                }
+                String name = claims.getStringClaim("name");
 
                 // Query or create user with email
                 User user = this.authService.GetOrCreateUserOIDCSignIn(email, name);
 
                 // Sign in locally (store sanitized copy without password)
-                session.setAttribute("loggedUser", user.withoutPassword());
+                session.setAttribute("loggedUser", user);
                 response.sendRedirect(request.getContextPath() + "/");
             } catch (JOSEException | BadJOSEException | IOException | ParseException | AuthException ex) {
                 Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, null, ex);
@@ -276,7 +267,7 @@ public class AuthController extends HttpServlet {
             User user = this.authService.GetUserSignIn(email, password);
             if (user != null) {
                 HttpSession session = request.getSession();
-                session.setAttribute("loggedUser", user.withoutPassword());
+                session.setAttribute("loggedUser", user);
                 response.sendRedirect(request.getContextPath() + "/");
             } else {
                 response.sendRedirect(request.getContextPath() + "/auth?action=denied");
@@ -294,9 +285,10 @@ public class AuthController extends HttpServlet {
         String name = request.getParameter("name");
 
         try {
-            User created = this.authService.CreateUserSignIn(email, password, name);
+            User user = this.authService.CreateUserSignIn(email, password, name);
+
             HttpSession session = request.getSession();
-            session.setAttribute("loggedUser", created.withoutPassword());
+            session.setAttribute("loggedUser", user);
             response.sendRedirect(request.getContextPath() + "/");
         } catch (AuthException | NoSuchAlgorithmException ex) {
             Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, null, ex);
@@ -305,6 +297,14 @@ public class AuthController extends HttpServlet {
     }
 
     private void HandleResetPassword(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String newPwd = request.getParameter("newpwd");
+        String repeatPwd = request.getParameter("repeatPwd");
+
+        if (newPwd == null || repeatPwd == null || !newPwd.equals(repeatPwd)) {
+            response.sendError(400, "Error input. Please validate the password");
+            return;
+        }
+
         HttpSession session = request.getSession(false);
         if (session == null) {
             response.sendError(400, "Not signed in");
@@ -317,18 +317,13 @@ public class AuthController extends HttpServlet {
             return;
         }
 
-        String oldPwd = request.getParameter("old_password");
-        String newPwd = request.getParameter("new_password");
+        try {
+            boolean refreshAction = this.authService.UpdateUserPassword(logged.getEmail(), newPwd);
+            if (refreshAction) {
+                // Refresh User (temporary using OIDC)
+                User userRefresh = this.authService.GetOrCreateUserOIDCSignIn(logged.getEmail(), logged.getFull_name());
 
-            try {
-            // verify old password
-            this.authService.GetUserSignIn(logged.getEmail(), oldPwd);
-
-            boolean ok = this.authService.UpdateUserPassword(logged.getEmail(), newPwd);
-            if (ok) {
-                // refresh user in session
-                User refreshed = this.authService.GetUserOIDCSignIn(logged.getEmail());
-                session.setAttribute("loggedUser", refreshed.withoutPassword());
+                session.setAttribute("loggedUser", userRefresh);
                 response.sendRedirect(request.getContextPath() + "/");
             } else {
                 response.sendError(500, "Failed to update password");

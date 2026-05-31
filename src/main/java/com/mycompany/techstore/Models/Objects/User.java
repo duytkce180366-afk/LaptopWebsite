@@ -67,9 +67,4 @@ public class User {
     public Timestamp getUpdated_at() {
         return updated_at;
     }
-
-    // Return a copy of this user with password removed for safe session storage
-    public User withoutPassword() {
-        return new User(this.user_id, this.role_id, this.full_name, this.email, this.phone, null, this.avatar, this.status, this.created_at, this.updated_at);
-    }
 }

@@ -28,8 +28,11 @@ public class AuthService extends DbClass {
         this.authRepo = new AuthRepository();
     }
 
+    /**
+     * Local Password Hashing functions
+     */
     // Hash password using PBKDF2 and store as: pbkdf2$iterations$base64(salt)$base64(hash)
-    private String hashPassword(String password) throws NoSuchAlgorithmException {
+    private String HashPassword(String password) throws NoSuchAlgorithmException {
         try {
             SecureRandom sr = SecureRandom.getInstanceStrong();
             byte[] salt = new byte[SALT_LENGTH];
@@ -48,12 +51,16 @@ public class AuthService extends DbClass {
         }
     }
 
-    private boolean verifyPassword(String password, String stored) throws NoSuchAlgorithmException {
-        if (stored == null) return false;
+    private boolean VerifyPassword(String password, String stored) throws NoSuchAlgorithmException {
+        if (stored == null) {
+            return false;
+        }
 
         try {
             String[] parts = stored.split("\\$");
-            if (parts.length != 4) return false;
+            if (parts.length != 4) {
+                return false;
+            }
             int iterations = Integer.parseInt(parts[1]);
             byte[] salt = Base64.getDecoder().decode(parts[2]);
             byte[] expectedHash = Base64.getDecoder().decode(parts[3]);
@@ -63,7 +70,9 @@ public class AuthService extends DbClass {
             byte[] computed = skf.generateSecret(spec).getEncoded();
 
             // constant time comparison
-            if (computed.length != expectedHash.length) return false;
+            if (computed.length != expectedHash.length) {
+                return false;
+            }
             int result = 0;
             for (int i = 0; i < computed.length; i++) {
                 result |= computed[i] ^ expectedHash[i];
@@ -74,22 +83,10 @@ public class AuthService extends DbClass {
         }
     }
 
-    public User GetUserOIDCSignIn(String email) throws AuthException {
-        User user;
-
-        if (!email.matches(this.emailFormat)) {
-            throw new AuthException(-1, "Email is not in correct format");
-        }
-
-        user = this.authRepo.GetUserOIDCSignIn(email);
-
-        if (user == null) {
-            throw new AuthException(-1, "User not found");
-        }
-
-        return user;
-    }
-
+    /*
+     * User Sign-in methods
+     */
+    // Sign in with email and password
     public User GetUserSignIn(String email, String password) throws AuthException, NoSuchAlgorithmException {
         User user;
 
@@ -112,7 +109,7 @@ public class AuthService extends DbClass {
 
         if (stored.startsWith("pbkdf2$")) {
             // modern format
-            verified = verifyPassword(password, stored);
+            verified = VerifyPassword(password, stored);
         } else {
             // legacy MD5 format: accept for compatibility, then upgrade to PBKDF2
             try {
@@ -122,7 +119,7 @@ public class AuthService extends DbClass {
                 if (hex.equalsIgnoreCase(stored)) {
                     verified = true;
                     // upgrade stored password to PBKDF2
-                    String newHash = this.hashPassword(password);
+                    String newHash = this.HashPassword(password);
                     this.authRepo.UpdatePassword(email, newHash);
                 }
             } catch (java.security.NoSuchAlgorithmException ex) {
@@ -138,6 +135,7 @@ public class AuthService extends DbClass {
         return user;
     }
 
+    // Sign-up with email and password
     public User CreateUserSignIn(String email, String password, String name) throws AuthException, NoSuchAlgorithmException {
         if (!email.matches(this.emailFormat)) {
             throw new AuthException(-1, "Email is not in correct format");
@@ -149,7 +147,7 @@ public class AuthService extends DbClass {
 
         String pwdHash = null;
         if (password != null) {
-            pwdHash = this.hashPassword(password);
+            pwdHash = this.HashPassword(password);
         }
 
         User created = this.authRepo.CreateUser(email, pwdHash, name);
@@ -161,6 +159,7 @@ public class AuthService extends DbClass {
         return created;
     }
 
+    // Sign-in & Sign-up OIDC
     public User GetOrCreateUserOIDCSignIn(String email, String name) throws AuthException {
         if (!email.matches(this.emailFormat)) {
             throw new AuthException(-1, "Email is not in correct format");
@@ -180,11 +179,13 @@ public class AuthService extends DbClass {
         return created;
     }
 
+    // Reset password
     public boolean UpdateUserPassword(String email, String newPassword) throws NoSuchAlgorithmException, AuthException {
         if (!email.matches(this.emailFormat)) {
             throw new AuthException(-1, "Email is not in correct format");
         }
-        String pwdHash = this.hashPassword(newPassword);
+
+        String pwdHash = this.HashPassword(newPassword);
         return this.authRepo.UpdatePassword(email, pwdHash);
     }
 }
