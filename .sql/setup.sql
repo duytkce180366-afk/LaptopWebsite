@@ -57,6 +57,11 @@ BEGIN
         role_name    NVARCHAR(50) NOT NULL,
         CONSTRAINT UQ_bs_Roles_role_name UNIQUE (role_name)
     );
+
+    INSERT INTO [dbo.bs_Roles] ([role_name])
+        VALUES ('Admin'),
+                ('User'),
+                ('Guest');
 END
 GO
 

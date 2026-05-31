@@ -41,6 +41,7 @@ public class AuthRepository extends DbClass {
             }
         } catch (SQLException sqlEx) {
             Logger.getLogger(AuthRepository.class.getName()).log(Level.SEVERE, null, sqlEx);
+            System.out.println(sqlEx.toString());
         }
 
         return user;
@@ -50,7 +51,9 @@ public class AuthRepository extends DbClass {
         boolean exists = false;
 
         String sqlCommand = """
-                            SELECT 1 FROM [bs_user] WHERE [email] = ?;
+                            SELECT 1 
+                                FROM [bs_user] 
+                                WHERE [email] = ?;
                             """;
 
         try (PreparedStatement ps = super.getConnection().prepareStatement(sqlCommand)) {
@@ -62,6 +65,7 @@ public class AuthRepository extends DbClass {
             }
         } catch (SQLException sqlEx) {
             Logger.getLogger(AuthRepository.class.getName()).log(Level.SEVERE, null, sqlEx);
+            System.out.println(sqlEx.toString());
         }
 
         return exists;
@@ -72,25 +76,21 @@ public class AuthRepository extends DbClass {
 
         String sqlInsert = """
                            INSERT INTO [bs_user] ([role_id], [full_name], [email], [phone], [password], [avatar], [status], [created_at], [updated_at])
-                           VALUES (?, ?, ?, NULL, ?, NULL, 'Active', SYSUTCDATETIME(), NULL);
+                                VALUES (?, ?, ?, NULL, ?, NULL, 'Active', SYSUTCDATETIME(), SYSUTCDATETIME());
                            """;
 
         try (PreparedStatement ps = super.getConnection().prepareStatement(sqlInsert)) {
-            ps.setInt(1, 2); // default regular role
+            ps.setInt(1, 2);
             ps.setString(2, fullName);
             ps.setString(3, email);
-            if (pwdHash != null) {
-                ps.setString(4, pwdHash);
-            } else {
-                ps.setNull(4, java.sql.Types.NVARCHAR);
-            }
-
+            ps.setString(4, pwdHash);
+            
             ps.executeUpdate();
-
             // fetch created user
             user = GetUserOIDCSignIn(email);
         } catch (SQLException sqlEx) {
             Logger.getLogger(AuthRepository.class.getName()).log(Level.SEVERE, null, sqlEx);
+            System.out.println(sqlEx.toString());
         }
 
         return user;
@@ -113,6 +113,7 @@ public class AuthRepository extends DbClass {
             updated = (rows > 0);
         } catch (SQLException sqlEx) {
             Logger.getLogger(AuthRepository.class.getName()).log(Level.SEVERE, null, sqlEx);
+            System.out.println(sqlEx.toString());
         }
 
         return updated;
@@ -150,6 +151,7 @@ public class AuthRepository extends DbClass {
             }
         } catch (SQLException sqlEx) {
             Logger.getLogger(AuthRepository.class.getName()).log(Level.SEVERE, null, sqlEx);
+            System.out.println(sqlEx.toString());
         }
 
         return user;

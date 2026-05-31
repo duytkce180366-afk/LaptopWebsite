@@ -283,6 +283,7 @@ public class AuthController extends HttpServlet {
             }
         } catch (AuthException | NoSuchAlgorithmException ex) {
             Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println(ex.toString());
             response.sendError(500, "Internal server error during sign-in.");
         }
     }

@@ -44,9 +44,7 @@ public class AuthService extends DbClass {
 
             return String.format("pbkdf2$%d$%s$%s", PBKDF2_ITERATIONS, saltB64, hashB64);
         } catch (InvalidKeySpecException ex) {
-            NoSuchAlgorithmException nae = new NoSuchAlgorithmException("Failed to generate password hash");
-            nae.initCause(ex);
-            throw nae;
+            throw new NoSuchAlgorithmException("Failed to generate password hash", ex);
         }
     }
 
@@ -72,9 +70,7 @@ public class AuthService extends DbClass {
             }
             return result == 0;
         } catch (InvalidKeySpecException | NumberFormatException ex) {
-            NoSuchAlgorithmException nae = new NoSuchAlgorithmException("Failed to verify password");
-            nae.initCause(ex);
-            throw nae;
+            throw new NoSuchAlgorithmException("Failed to verify password", ex);
         }
     }
 
@@ -142,7 +138,7 @@ public class AuthService extends DbClass {
         return user;
     }
 
-    public User CreateUserSignIn(String email, String pasword, String name) throws AuthException, NoSuchAlgorithmException {
+    public User CreateUserSignIn(String email, String password, String name) throws AuthException, NoSuchAlgorithmException {
         if (!email.matches(this.emailFormat)) {
             throw new AuthException(-1, "Email is not in correct format");
         }
@@ -152,8 +148,8 @@ public class AuthService extends DbClass {
         }
 
         String pwdHash = null;
-        if (pasword != null) {
-            pwdHash = this.hashPassword(pasword);
+        if (password != null) {
+            pwdHash = this.hashPassword(password);
         }
 
         User created = this.authRepo.CreateUser(email, pwdHash, name);
