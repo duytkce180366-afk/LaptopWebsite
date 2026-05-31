@@ -1,4 +1,4 @@
-package com.mycompany.techstore.exceptions;
+package com.mycompany.techstore.Exceptions;
 
 public class AuthException extends java.lang.Exception {
 

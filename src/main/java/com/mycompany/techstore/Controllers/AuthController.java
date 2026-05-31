@@ -28,7 +28,7 @@ import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 
 import com.mycompany.techstore.Models.Objects.User;
-import com.mycompany.techstore.exceptions.AuthException;
+import com.mycompany.techstore.Exceptions.AuthException;
 import com.mycompany.techstore.services.AuthService;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
@@ -350,7 +350,7 @@ public class AuthController extends HttpServlet {
                 if (this.IsSignedIn(request)) {
                     response.sendRedirect(request.getContextPath() + "/");
                 } else {
-                    // 
+                    
                 }
             }
             case "signup" -> {
