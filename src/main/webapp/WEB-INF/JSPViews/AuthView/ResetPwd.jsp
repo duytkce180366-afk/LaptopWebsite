@@ -8,24 +8,28 @@
     <body id="top">
         <%@include file="/WEB-INF/JSPViews/global/nav.jsp" %>
         <main class="auth-shell">
-            <section class="auth-panel">
-                <h2>Reset password</h2>
-                <% String ctx = request.getContextPath(); %>
-                <form class="auth-form" method="post" action="<%= ctx %>/auth?action=resetpwd">
-                    <label>
-                        <span>New password</span>
-                        <input type="password" name="newpwd" required />
-                    </label>
-                    <label>
-                        <span>Repeat password</span>
-                        <input type="password" name="repeatPwd" required />
-                    </label>
-                    <div class="auth-actions">
-                        <button class="primary-action" type="submit">Change password</button>
-                        <a class="secondary-action" href="<%= ctx %>/auth?action=signin">Back to sign in</a>
+            <% String ctx = request.getContextPath(); %>
+            <div class="container d-flex align-items-center justify-content-center min-vh-75 py-5">
+                <div class="card auth-panel shadow-sm w-100" style="max-width:480px;">
+                    <div class="card-body p-4">
+                        <h2 class="card-title mb-3">Reset password</h2>
+                        <form method="post" action="<%= ctx %>/auth?action=resetpwd">
+                            <div class="mb-3">
+                                <label class="form-label">New password</label>
+                                <input type="password" name="newpwd" class="form-control" required />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Repeat password</label>
+                                <input type="password" name="repeatPwd" class="form-control" required />
+                            </div>
+                            <div class="d-flex gap-2 align-items-center">
+                                <button class="btn btn-primary primary-action" type="submit">Change password</button>
+                                <a class="btn btn-outline-secondary secondary-action" href="<%= ctx %>/auth?action=signin">Back to sign in</a>
+                            </div>
+                        </form>
                     </div>
-                </form>
-            </section>
+                </div>
+            </div>
         </main>
         <%@include file="/WEB-INF/JSPViews/global/footer.jsp" %>
     </body>
