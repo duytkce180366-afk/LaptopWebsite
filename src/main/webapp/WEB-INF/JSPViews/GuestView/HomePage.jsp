@@ -1,7 +1,7 @@
-﻿<%@page import="Models.Objects.Category"%>
-<%@page import="Models.Objects.PriceRange"%>
-<%@page import="Models.Objects.Product"%>
-<%@page import="Models.Objects.SortOption"%>
+﻿<%@page import="com.mycompany.techstore.Models.Objects.Category"%>
+<%@page import="com.mycompany.techstore.Models.Objects.PriceRange"%>
+<%@page import="com.mycompany.techstore.Models.Objects.Product"%>
+<%@page import="com.mycompany.techstore.Models.Objects.SortOption"%>
 <%@page import="java.net.URLEncoder"%>
 <%@page import="java.nio.charset.StandardCharsets"%>
 <%@page import="java.text.NumberFormat"%>
@@ -44,67 +44,6 @@
         return formatter.format(price);
     }
 
-    private String formatSpecLabel(String key) {
-        String label = key.replaceAll("([A-Z])", " $1");
-        label = label.substring(0, 1).toUpperCase() + label.substring(1);
-        return label.replace("Gpu", "GPU")
-                .replace("Cpu", "CPU")
-                .replace("Dpi", "DPI")
-                .replace("Tdp", "TDP")
-                .replace("Vram", "VRAM");
-    }
-
-    private String filterKeyFromMenuGroup(String groupTitle) {
-        switch (groupTitle) {
-            case "Brands":
-                return "brand";
-            case "Purpose":
-                return "purpose";
-            case "CPU":
-                return "cpu";
-            case "GPU":
-                return "gpu";
-            case "Screen":
-                return "display";
-            case "Sensor":
-                return "sensor";
-            case "Connection":
-                return "connection";
-            case "Switch":
-                return "switchType";
-            case "Layout":
-                return "layout";
-            case "Resolution":
-                return "resolution";
-            case "Refresh rate":
-                return "refreshRate";
-            case "Capacity":
-                return "capacity";
-            case "Interface":
-                return "interfaceType";
-            case "Type":
-                return "memoryType";
-            case "Bus RAM":
-                return "bus";
-            case "Socket":
-                return "socket";
-            case "Cores":
-                return "cores";
-            case "Chipset":
-                return "chipset";
-            case "VRAM":
-                return "vram";
-            case "Motherboard":
-                return "motherboardSupport";
-            case "Color":
-                return "color";
-            case "Size":
-                return "size";
-            default:
-                return null;
-        }
-    }
-
     private int countProducts(List<Product> products, String categoryId) {
         int count = 0;
         for (Product product : products) {
@@ -129,7 +68,9 @@
         return new String[0];
     }
 %>
+
 <%
+
     List<Category> categories = (List<Category>) request.getAttribute("categories");
     List<Product> products = (List<Product>) request.getAttribute("products");
     List<Product> filteredProducts = (List<Product>) request.getAttribute("filteredProducts");
@@ -143,6 +84,7 @@
     String sortOrder = (String) request.getAttribute("sortOrder");
     String searchTerm = (String) request.getAttribute("searchTerm");
 
+    // Checking if null
     if (categories == null) {
         categories = new ArrayList<>();
     }
@@ -178,7 +120,6 @@
     }
 
     String contextPath = request.getContextPath();
-    String visibleCategoryId = "all".equals(selectedCategoryId) && !categories.isEmpty() ? categories.get(0).getId() : selectedCategoryId;
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -188,69 +129,8 @@
     </head>
     <body id="top">
         <main class="app-shell" id="app">
-            <nav class="topbar" aria-label="Main navigation">
-                <a class="brand-button" href="<%= contextPath%>/home">
-                    <span class="brand-mark">TechStore</span>
-                    <span class="brand-subtitle">Computer store</span>
-                </a>
 
-                <div class="category-menu">
-                    <button class="category-menu-button" type="button" data-action="toggle-category-menu" aria-expanded="false">
-                        Categories
-                        <span aria-hidden="true">v</span>
-                    </button>
-                    <div class="mega-menu">
-                        <div class="mega-list">
-                            <% for (Category category : categories) {%>
-                            <a class="mega-category<%= active(selectedCategoryId, category.getId())%>"
-                               href="<%= contextPath%>/home?category=<%= encode(category.getId())%>#products"
-                               data-hover-category="<%= html(category.getId())%>">
-                                <%= html(category.getName())%>
-                                <span aria-hidden="true">&gt;</span>
-                            </a>
-                            <% } %>
-                        </div>
-
-                        <% for (Category category : categories) {%>
-                        <div class="mega-panel <%= category.getId().equals(visibleCategoryId) ? "visible" : ""%>" data-mega-panel="<%= html(category.getId())%>">
-                            <% for (Map<String, Object> group : category.getMenuGroups()) {
-                                    String title = String.valueOf(group.get("title"));
-                                    List<String> options = (List<String>) group.get("options");
-                            %>
-                            <section>
-                                <h3><%= html(title)%></h3>
-                                <div class="mega-tags">
-                                    <% for (String option : options) {
-                                            String filterKey = filterKeyFromMenuGroup(title);
-                                            String href = contextPath + "/home?category=" + encode(category.getId());
-                                            if ("Prices".equals(title)) {
-                                                href += "&price=" + encode(option);
-                                            } else if (filterKey != null) {
-                                                href += "&" + encode(filterKey) + "=" + encode(option);
-                                            } else {
-                                                href += "&search=" + encode(option);
-                                            }
-                                    %>
-                                    <a href="<%= href%>#products"><%= html(option)%></a>
-                                    <% } %>
-                                </div>
-                            </section>
-                            <% } %>
-                        </div>
-                        <% }%>
-                    </div>
-                </div>
-
-                <div class="nav-links">
-                    <a href="<%= contextPath%>/home#home">Home</a>
-                    <a href="<%= contextPath%>/home#products">Products</a>
-                </div>
-                <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch to dark mode" aria-pressed="false">
-                    <span class="theme-icon theme-icon-moon" aria-hidden="true">☾</span>
-                    <span class="theme-icon theme-icon-sun" aria-hidden="true">☀</span>
-                </button>
-            </nav>
-
+            <%@include file="/WEB-INF/JSPViews/global/nav.jsp" %>
             <section class="hero" id="home">
                 <div class="hero-copy">
                     <p class="eyebrow">Shop for all kinds of computer's hardware</p>
@@ -341,7 +221,8 @@
                             <h3><%= html(activeCategory.getName())%></h3>
                         </div>
                         <div class="secondary-filter-grid">
-                            <% for (Map<String, String> filter : activeCategory.getFilters()) {
+                            <% 
+                                for (Map<String, String> filter : activeCategory.getFilters()) {
                                     String key = filter.get("key");
                             %>
                             <label>
@@ -362,7 +243,8 @@
                 <p class="result-count">Showing <%= filteredProducts.size()%> of <%= products.size()%> products</p>
 
                 <div class="product-grid">
-                    <% for (Product product : filteredProducts) {
+                    <%
+                        for (Product product : filteredProducts) {
                             List<Map.Entry<String, String>> specs = new ArrayList<>(product.getSpecs().entrySet());
                     %>
                     <article class="product-card">

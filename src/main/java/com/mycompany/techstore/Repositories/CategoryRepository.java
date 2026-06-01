@@ -1,6 +1,6 @@
-package Repositories;
+package com.mycompany.techstore.Repositories;
 
-import Models.Objects.Category;
+import com.mycompany.techstore.Models.Objects.Category;
 import java.util.*;
 
 public class CategoryRepository {

@@ -1,4 +1,4 @@
-package Models.Objects;
+package com.mycompany.techstore.Models.Objects;
 
 public class PriceRange {
     private String label;

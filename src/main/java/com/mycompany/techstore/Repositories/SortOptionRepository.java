@@ -1,6 +1,6 @@
-package Repositories;
+package com.mycompany.techstore.Repositories;
 
-import Models.Objects.SortOption;
+import com.mycompany.techstore.Models.Objects.SortOption;
 import java.util.*;
 
 public class SortOptionRepository {

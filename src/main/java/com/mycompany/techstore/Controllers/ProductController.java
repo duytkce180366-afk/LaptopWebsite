@@ -1,9 +1,9 @@
-package Controllers;
+package com.mycompany.techstore.Controllers;
 
-import Repositories.CategoryRepository;
-import Repositories.PriceRangeRepository;
-import Repositories.ProductRepository;
-import Repositories.SortOptionRepository;
+import com.mycompany.techstore.Repositories.CategoryRepository;
+import com.mycompany.techstore.Repositories.PriceRangeRepository;
+import com.mycompany.techstore.Repositories.ProductRepository;
+import com.mycompany.techstore.Repositories.SortOptionRepository;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -13,9 +13,9 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import Models.Objects.Category;
-import Models.Objects.PriceRange;
-import Models.Objects.Product;
+import com.mycompany.techstore.Models.Objects.Category;
+import com.mycompany.techstore.Models.Objects.PriceRange;
+import com.mycompany.techstore.Models.Objects.Product;
 
 @WebServlet(name = "ProductController", urlPatterns = {"/product", "/index", "/home", ""})
 public class ProductController extends HttpServlet {

@@ -1,7 +1,7 @@
-package Repositories;
+package com.mycompany.techstore.Repositories;
 
-import Models.Objects.Product;
-import Models.Objects.Review;
+import com.mycompany.techstore.Models.Objects.Product;
+import com.mycompany.techstore.Models.Objects.Review;
 import java.util.*;
 import java.util.stream.Collectors;
 
