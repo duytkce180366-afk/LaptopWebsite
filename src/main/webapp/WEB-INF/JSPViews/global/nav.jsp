@@ -82,8 +82,7 @@
     String visibleCategoryId = "all".equals(navSelectedCategoryId) && navCategories != null && !navCategories.isEmpty() ? navCategories.get(0).getId() : navSelectedCategoryId;
 %>
 
-<!-- Bootstrap CSS for dropdown styling (added here for the nav fragment) -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-ENjdO4Dr2bkBIFxQpeoYz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous">
+
 
 <nav class="topbar" aria-label="Main navigation">
     <a class="brand-button" href="<%= request.getContextPath()%>/home">
@@ -157,6 +156,7 @@
             </a>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                 <li><a class="dropdown-item" href="<%= request.getContextPath()%>/profile">Edit profile</a></li>
+                <li><a class="dropdown-item" href="<%= request.getContextPath()%>/auth?action=resetpwd">Reset Password</a></li>
                 <li><a class="dropdown-item" href="<%= request.getContextPath()%>/auth?action=logout">Logout</a></li>
             </ul>
         </div>
@@ -169,5 +169,3 @@
         <span class="theme-icon theme-icon-sun" aria-hidden="true">?</span>
     </button>
 </nav>
-<!-- Bootstrap JS bundle (includes Popper) -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+AMvyTG2xVf6B0c6F0Q5dKU1KzN9c" crossorigin="anonymous"></script>
