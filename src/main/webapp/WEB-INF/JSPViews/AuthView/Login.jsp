@@ -27,14 +27,11 @@
                                 <a class="btn btn-outline-secondary secondary-action" href="<%= ctx %>/auth?action=signup">Create account</a>
                             </div>
                         </form>
-
                         <hr class="my-3" />
                         <div class="oidc-signin mb-2">
                             <p class="mb-2">Or sign in with an external provider</p>
-                            <a class="btn btn-outline-primary w-100" href="<%= ctx %>/auth?action=oidc_signin">Sign in with OIDC</a>
+                            <a class="btn btn-outline-primary w-100" href="<%= ctx %>/auth?action=oidc_signin">Sign in with SSO</a>
                         </div>
-
-                        <p class="help-link mt-3"><a href="<%= ctx %>/auth?action=resetpwd">Reset password</a></p>
                     </div>
                 </div>
             </div>
