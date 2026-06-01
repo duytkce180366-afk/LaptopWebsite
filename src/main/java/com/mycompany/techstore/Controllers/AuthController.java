@@ -191,8 +191,8 @@ public class AuthController extends HttpServlet {
         conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 
         // Set timeouts
-        conn.setConnectTimeout(1000);
-        conn.setReadTimeout(1000);
+        conn.setConnectTimeout(10000);
+        conn.setReadTimeout(10000);
 
         String body = String.format(
                 "grant_type=authorization_code&code=%s&redirect_uri=%s&client_id=%s&client_secret=%s",

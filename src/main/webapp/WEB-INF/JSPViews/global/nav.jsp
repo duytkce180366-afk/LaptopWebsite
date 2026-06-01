@@ -82,6 +82,9 @@
     String visibleCategoryId = "all".equals(navSelectedCategoryId) && navCategories != null && !navCategories.isEmpty() ? navCategories.get(0).getId() : navSelectedCategoryId;
 %>
 
+<!-- Bootstrap CSS for dropdown styling (added here for the nav fragment) -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-ENjdO4Dr2bkBIFxQpeoYz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous">
+
 <nav class="topbar" aria-label="Main navigation">
     <a class="brand-button" href="<%= request.getContextPath()%>/home">
         <span class="brand-mark">Tech Store</span>
@@ -134,28 +137,28 @@
             User loggedUser = (User) session.getAttribute("loggedUser");
             if (loggedUser == null) {
         %>
-        <div class="user-menu">
-            <button class="user-button" type="button" data-action="toggle-user-menu" aria-expanded="false" aria-haspopup="true">
+        <div class="dropdown">
+            <a class="btn btn-sm btn-outline-secondary dropdown-toggle" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                 <span class="user-icon" aria-hidden="true">👤</span>
                 <span class="visually-hidden">Account</span>
-            </button>
-            <div class="user-dropdown" role="menu" hidden>
-                <a href="<%= request.getContextPath()%>/auth?action=signin" role="menuitem">Sign in</a>
-                <a href="<%= request.getContextPath()%>/auth?action=signup" role="menuitem">Sign up</a>
-            </div>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                <li><a class="dropdown-item" href="<%= request.getContextPath()%>/auth?action=signin">Sign in</a></li>
+                <li><a class="dropdown-item" href="<%= request.getContextPath()%>/auth?action=signup">Sign up</a></li>
+            </ul>
         </div>
         <%
-            } else {
+        } else {
         %>
-        <div class="user-menu">
-            <button class="user-button" type="button" data-action="toggle-user-menu" aria-expanded="false" aria-haspopup="true">
+        <div class="dropdown">
+            <a class="btn btn-sm btn-outline-secondary dropdown-toggle" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                 <span class="user-icon" aria-hidden="true">👤</span>
                 <span class="user-email"><%= nav_html(loggedUser.getEmail())%></span>
-            </button>
-            <div class="user-dropdown" role="menu" hidden>
-                <a href="<%= request.getContextPath()%>/profile" role="menuitem">Edit profile</a>
-                <a href="<%= request.getContextPath()%>/auth?action=logout" role="menuitem">Logout</a>
-            </div>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                <li><a class="dropdown-item" href="<%= request.getContextPath()%>/profile">Edit profile</a></li>
+                <li><a class="dropdown-item" href="<%= request.getContextPath()%>/auth?action=logout">Logout</a></li>
+            </ul>
         </div>
         <%
             }
@@ -166,40 +169,5 @@
         <span class="theme-icon theme-icon-sun" aria-hidden="true">?</span>
     </button>
 </nav>
-<script>
-    (function () {
-        function closeAll() {
-            document.querySelectorAll('.user-dropdown').forEach(function (d) { d.hidden = true; });
-            document.querySelectorAll('.user-button').forEach(function (b) { b.setAttribute('aria-expanded', 'false'); });
-        }
-
-        document.addEventListener('click', function (e) {
-            var btn = e.target.closest && e.target.closest('.user-button');
-            if (btn) {
-                var menu = btn.parentNode.querySelector('.user-dropdown');
-                var isOpen = menu && !menu.hidden;
-                // close other menus first
-                closeAll();
-                if (!isOpen && menu) {
-                    menu.hidden = false;
-                    btn.setAttribute('aria-expanded', 'true');
-                }
-                // keep focus on button
-                e.preventDefault();
-                return;
-            }
-
-            // clicking outside any user-menu closes all
-            if (!e.target.closest || !e.target.closest('.user-menu')) {
-                closeAll();
-            }
-        });
-
-        // Close on Escape
-        document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape' || e.key === 'Esc') {
-                closeAll();
-            }
-        });
-    })();
-</script>
+<!-- Bootstrap JS bundle (includes Popper) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+AMvyTG2xVf6B0c6F0Q5dKU1KzN9c" crossorigin="anonymous"></script>
