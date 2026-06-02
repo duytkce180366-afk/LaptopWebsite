@@ -1,6 +1,6 @@
-﻿<%@page import="Models.Objects.Category"%>
-<%@page import="Models.Objects.Product"%>
-<%@page import="Models.Objects.Review"%>
+﻿<%@page import="com.mycompany.techstore.Models.Objects.Category"%>
+<%@page import="com.mycompany.techstore.Models.Objects.Product"%>
+<%@page import="com.mycompany.techstore.Models.Objects.Review"%>
 <%@page import="java.text.NumberFormat"%>
 <%@page import="java.util.ArrayList"%>
 <%@page import="java.util.List"%>

@@ -1,0 +1,21 @@
+name: webstore
+
+services:
+    web-instance:
+        container_name: tomcatweb
+        volumes:
+            - weblogs:/usr/local/tomcat/logs
+        env_file:
+            - ./.env
+        ports:
+            - 127.0.0.1:8080:8080
+        restart: always
+        image: anhvlttfs/webstore:latest
+
+volumes:
+    weblogs:
+        driver: local
+        driver_opts:
+            type: none
+            o: bind
+            device: ./weblogs
