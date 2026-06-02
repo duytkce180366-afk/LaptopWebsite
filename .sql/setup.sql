@@ -87,7 +87,8 @@ BEGIN
     );
 
     INSERT INTO dbo.bs_user ([role_id], [full_name], [email], [phone], [password], [avatar], [status], [created_at], [updated_at])
-        VALUES (1, 'Administrator', 'administrator@example.com', '012345678', NULL, NULL, 'Active', SYSUTCDATETIME(), SYSUTCDATETIME());
+        VALUES (1, 'Administrator', 'administrator@example.com', '012345678', 'pbkdf2$65536$4u0S7QtsuN6xRdP/ibP+NQ==$AZzekFD608x0d6OS0AZUAIPyhysmAz+xjH8kPgtBkpY=', NULL, 'Active', SYSUTCDATETIME(), SYSUTCDATETIME()); 
+        /* Password is 123456 */
 END
 GO
 
