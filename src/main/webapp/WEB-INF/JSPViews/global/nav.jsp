@@ -165,7 +165,7 @@
         %>
         <div class="dropdown">
             <a class="btn btn-sm btn-outline-secondary dropdown-toggle" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                <span>Account</span>
+                <span class="user-icon" aria-hidden="true">&#128100;</span>
                 <span class="visually-hidden">Account</span>
             </a>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
