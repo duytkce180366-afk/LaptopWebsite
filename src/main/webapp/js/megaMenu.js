@@ -9,4 +9,8 @@ function showMegaPanel(categoryId) {
   });
 
   document.querySelector(`[data-mega-panel="${categoryId}"]`)?.classList.add('visible');
+
+  document.querySelectorAll('[data-hover-category]').forEach((categoryLink) => {
+    categoryLink.classList.toggle('active', categoryLink.dataset.hoverCategory === categoryId);
+  });
 }
