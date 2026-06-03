@@ -1,4 +1,4 @@
-<footer class="site-footer">
+<footer class="site-footer mt-5">
     <div>
         <span class="footer-brand">Tech Store</span>
         <span>Made by Group 4 - SWP391</span>
