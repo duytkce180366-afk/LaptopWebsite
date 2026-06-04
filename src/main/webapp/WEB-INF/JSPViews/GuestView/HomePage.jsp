@@ -201,7 +201,7 @@
                             <option value="all">All categories</option>
                             <% for (Category category : categories) {%>
                             <option value="<%= html(category.getId())%>" <%= selected(selectedCategoryId, category.getId())%>><%= html(category.getName())%></option>
-                            <% } %>
+                            <% }%>
                         </select>
                     </label>
 
@@ -252,7 +252,7 @@
                             <h3><%= html(activeCategory.getName())%></h3>
                         </div>
                         <div class="secondary-filter-grid">
-                            <% 
+                            <%
                                 for (Map<String, String> filter : activeCategory.getFilters()) {
                                     String key = filter.get("key");
                             %>

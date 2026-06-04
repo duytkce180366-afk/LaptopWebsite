@@ -138,8 +138,7 @@ public class ProductRepository extends DbClass {
                             ORDER BY product_id, sort_order;
                             """;
 
-        try (PreparedStatement ps = super.getConnection().prepareStatement(sqlCommand);
-                ResultSet rs = ps.executeQuery()) {
+        try (PreparedStatement ps = super.getConnection().prepareStatement(sqlCommand); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 int productId = rs.getInt("product_id");
                 if (!productIds.contains(productId)) {
@@ -165,8 +164,7 @@ public class ProductRepository extends DbClass {
                             ORDER BY r.product_id, r.created_at DESC, r.review_id DESC;
                             """;
 
-        try (PreparedStatement ps = super.getConnection().prepareStatement(sqlCommand);
-                ResultSet rs = ps.executeQuery()) {
+        try (PreparedStatement ps = super.getConnection().prepareStatement(sqlCommand); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 int productId = rs.getInt("product_id");
                 if (!productIds.contains(productId)) {
@@ -244,6 +242,7 @@ public class ProductRepository extends DbClass {
     }
 
     private class ProductRow {
+
         private final int id;
         private final String categorySlug;
         private final String categoryName;

@@ -61,8 +61,7 @@ public class CategoryRepository extends DbClass {
                             ORDER BY c.category_id, cf.sort_order, cfo.sort_order;
                             """;
 
-        try (PreparedStatement ps = super.getConnection().prepareStatement(sqlCommand);
-                ResultSet rs = ps.executeQuery()) {
+        try (PreparedStatement ps = super.getConnection().prepareStatement(sqlCommand); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 int categoryId = rs.getInt("category_id");
                 String filterKey = rs.getString("filter_key");
@@ -110,8 +109,7 @@ public class CategoryRepository extends DbClass {
                             ORDER BY category_id;
                             """;
 
-        try (PreparedStatement ps = super.getConnection().prepareStatement(sqlCommand);
-                ResultSet rs = ps.executeQuery()) {
+        try (PreparedStatement ps = super.getConnection().prepareStatement(sqlCommand); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 int categoryId = rs.getInt("category_id");
                 String categoryName = rs.getString("category_name");
@@ -134,8 +132,7 @@ public class CategoryRepository extends DbClass {
                             ORDER BY cmg.category_id, cmg.sort_order, cmo.sort_order;
                             """;
 
-        try (PreparedStatement ps = super.getConnection().prepareStatement(sqlCommand);
-                ResultSet rs = ps.executeQuery()) {
+        try (PreparedStatement ps = super.getConnection().prepareStatement(sqlCommand); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 int categoryId = rs.getInt("category_id");
                 int menuGroupId = rs.getInt("menu_group_id");
@@ -172,8 +169,7 @@ public class CategoryRepository extends DbClass {
                             ORDER BY category_id, sort_order;
                             """;
 
-        try (PreparedStatement ps = super.getConnection().prepareStatement(sqlCommand);
-                ResultSet rs = ps.executeQuery()) {
+        try (PreparedStatement ps = super.getConnection().prepareStatement(sqlCommand); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 Map<String, String> filter = new HashMap<>();
                 filter.put("key", rs.getString("filter_key"));
@@ -195,6 +191,7 @@ public class CategoryRepository extends DbClass {
     }
 
     private class CategoryRow {
+
         private final int categoryId;
         private final String name;
         private final String slug;
@@ -207,6 +204,7 @@ public class CategoryRepository extends DbClass {
     }
 
     private class FilterOptionRow {
+
         private final String key;
         private final String label;
         private final List<String> values = new ArrayList<>();
