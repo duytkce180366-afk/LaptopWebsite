@@ -1,9 +1,9 @@
 package com.mycompany.techstore.Controllers;
 
-import com.mycompany.techstore.Repositories.CategoryRepository;
 import com.mycompany.techstore.Repositories.PriceRangeRepository;
-import com.mycompany.techstore.Repositories.ProductRepository;
 import com.mycompany.techstore.Repositories.SortOptionRepository;
+import com.mycompany.techstore.services.CategoryService;
+import com.mycompany.techstore.services.ProductService;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -24,17 +24,25 @@ public class ProductController extends HttpServlet {
     private static final String NUMBER_REGEX = "^[0-9]+$";
     private static final String ALL_CATEGORIES = "all";
 
+    private transient final CategoryService categoryService;
+    private transient final ProductService productService;
+
+    public ProductController() {
+        this.categoryService = new CategoryService();
+        this.productService = new ProductService();
+    }
+
     private void setCatalogAttributes(HttpServletRequest request) {
-        List<Category> categories = CategoryRepository.getAll();
+        List<Category> categories = this.categoryService.getAll();
         List<PriceRange> priceRanges = PriceRangeRepository.getAll();
         String searchTerm = getParameterOrDefault(request, "search", "");
         String selectedCategoryId = getParameterOrDefault(request, "category", ALL_CATEGORIES);
         String selectedPrice = getParameterOrDefault(request, "price", priceRanges.get(0).getLabel());
         String sortOrder = getParameterOrDefault(request, "sort", "recommended");
         PriceRange priceRange = getPriceRange(selectedPrice, priceRanges);
-        Category activeCategory = ALL_CATEGORIES.equals(selectedCategoryId) ? null : CategoryRepository.getById(selectedCategoryId);
+        Category activeCategory = ALL_CATEGORIES.equals(selectedCategoryId) ? null : this.categoryService.getById(selectedCategoryId);
         Map<String, String> secondaryFilters = getSecondaryFilters(request, activeCategory);
-        List<Product> filteredProducts = ProductRepository.search(
+        List<Product> filteredProducts = this.productService.search(
                 searchTerm,
                 selectedCategoryId,
                 priceRange.getMin(),
@@ -44,12 +52,12 @@ public class ProductController extends HttpServlet {
         );
 
         request.setAttribute("categories", categories);
-        request.setAttribute("products", ProductRepository.getAll());
+        request.setAttribute("products", this.productService.getAll());
         request.setAttribute("filteredProducts", filteredProducts);
         request.setAttribute("activeCategory", activeCategory);
         request.setAttribute("priceRanges", priceRanges);
         request.setAttribute("sortOptions", SortOptionRepository.getAll());
-        request.setAttribute("secondaryFilterOptions", CategoryRepository.getSecondaryFilterOptions());
+        request.setAttribute("secondaryFilterOptions", this.categoryService.getSecondaryFilterOptions());
         request.setAttribute("searchTerm", searchTerm);
         request.setAttribute("selectedCategoryId", selectedCategoryId);
         request.setAttribute("selectedPrice", selectedPrice);
@@ -99,7 +107,7 @@ public class ProductController extends HttpServlet {
             return;
         }
 
-        Product product = ProductRepository.getById(Integer.parseInt(id));
+        Product product = this.productService.getById(Integer.parseInt(id));
         if (product == null) {
             response.sendError(404, "Product not found");
             return;

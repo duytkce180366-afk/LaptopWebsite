@@ -18,21 +18,23 @@ import java.util.stream.Collectors;
 
 public class ProductRepository extends DbClass {
 
-    public static List<Product> getAll() {
-        return new ProductRepository().getAllProducts();
+    public List<Product> getAll() {
+        return hydrateProducts(queryProducts(null));
     }
 
-    public static Product getById(int id) {
-        return new ProductRepository().getProductById(id);
+    public Product getById(int id) {
+        List<ProductRow> rows = queryProducts(id);
+        List<Product> products = hydrateProducts(rows);
+        return products.isEmpty() ? null : products.get(0);
     }
 
-    public static List<Product> getByCategory(String categoryId) {
+    public List<Product> getByCategory(String categoryId) {
         return getAll().stream()
                 .filter(product -> product.getCategoryId().equals(categoryId))
                 .collect(Collectors.toList());
     }
 
-    public static List<Product> search(String query, String categoryId, long minPrice, long maxPrice,
+    public List<Product> search(String query, String categoryId, long minPrice, long maxPrice,
             Map<String, String> filters, String sortOrder) {
         String normalizedQuery = query == null ? "" : query.toLowerCase();
         List<Product> results = getAll().stream()
@@ -44,16 +46,6 @@ public class ProductRepository extends DbClass {
 
         sortResults(results, sortOrder);
         return results;
-    }
-
-    private List<Product> getAllProducts() {
-        return hydrateProducts(queryProducts(null));
-    }
-
-    private Product getProductById(int id) {
-        List<ProductRow> rows = queryProducts(id);
-        List<Product> products = hydrateProducts(rows);
-        return products.isEmpty() ? null : products.get(0);
     }
 
     private List<ProductRow> queryProducts(Integer productId) {
@@ -82,7 +74,7 @@ public class ProductRepository extends DbClass {
                 while (rs.next()) {
                     products.add(new ProductRow(
                             rs.getInt("product_id"),
-                            CategoryRepository.toSlug(rs.getString("category_name")),
+                            toSlug(rs.getString("category_name")),
                             rs.getString("category_name"),
                             rs.getString("product_name"),
                             rs.getString("brand_name"),
@@ -202,7 +194,14 @@ public class ProductRepository extends DbClass {
         return reviewsByProduct;
     }
 
-    private static String getSearchableText(Product product) {
+    private String toSlug(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.trim().toLowerCase().replaceAll("[^a-z0-9]+", "-").replaceAll("(^-|-$)", "");
+    }
+
+    private String getSearchableText(Product product) {
         List<String> values = new ArrayList<>();
         values.add(product.getName());
         values.add(product.getBrand());
@@ -212,7 +211,7 @@ public class ProductRepository extends DbClass {
         return String.join(" ", values).toLowerCase();
     }
 
-    private static boolean matchesFilters(Product product, Map<String, String> filters) {
+    private boolean matchesFilters(Product product, Map<String, String> filters) {
         if (filters == null || filters.isEmpty()) {
             return true;
         }
@@ -232,7 +231,7 @@ public class ProductRepository extends DbClass {
         return true;
     }
 
-    private static void sortResults(List<Product> results, String sortOrder) {
+    private void sortResults(List<Product> results, String sortOrder) {
         if (sortOrder == null || sortOrder.isEmpty() || sortOrder.equals("recommended")) {
             return;
         }
@@ -244,7 +243,7 @@ public class ProductRepository extends DbClass {
         }
     }
 
-    private static class ProductRow {
+    private class ProductRow {
         private final int id;
         private final String categorySlug;
         private final String categoryName;

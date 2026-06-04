@@ -1,7 +1,7 @@
 <%@page import="java.util.Map"%>
 <%@page import="java.net.URLEncoder"%>
 <%@page import="java.nio.charset.StandardCharsets"%>
-<%@page import="com.mycompany.techstore.Repositories.CategoryRepository"%>
+<%@page import="com.mycompany.techstore.services.CategoryService"%>
 <%@page import="com.mycompany.techstore.Models.Objects.Category"%>
 <%@page import="com.mycompany.techstore.Models.Objects.User"%>
 <%@page import="java.util.List"%>
@@ -78,7 +78,8 @@
 %>
 
 <%
-    List<Category> navCategories = CategoryRepository.getAll();
+    CategoryService navCategoryService = new CategoryService();
+    List<Category> navCategories = navCategoryService.getAll();
     String navSelectedCategoryId = request.getParameter("category");
 
     if (navSelectedCategoryId == null || navSelectedCategoryId.isBlank()) {

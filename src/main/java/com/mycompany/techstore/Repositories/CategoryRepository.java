@@ -15,23 +15,7 @@ import java.util.logging.Logger;
 
 public class CategoryRepository extends DbClass {
 
-    public static List<Category> getAll() {
-        return new CategoryRepository().getAllCategories();
-    }
-
-    public static Category getById(String id) {
-        return new CategoryRepository().getCategoryById(id);
-    }
-
-    public static Map<String, List<Map<String, String>>> getSecondaryFilterOptions() {
-        return new CategoryRepository().getAllSecondaryFilterOptions();
-    }
-
-    public static List<Map<String, String>> getSecondaryFilterOptionsByCategory(String categoryId) {
-        return getSecondaryFilterOptions().getOrDefault(categoryId, new ArrayList<>());
-    }
-
-    private List<Category> getAllCategories() {
+    public List<Category> getAll() {
         Map<Integer, CategoryRow> categoryRows = getCategoryRows();
         Map<Integer, List<Map<String, Object>>> menuGroups = getMenuGroups();
         Map<Integer, List<Map<String, String>>> filters = getFilters();
@@ -49,12 +33,12 @@ public class CategoryRepository extends DbClass {
         return categories;
     }
 
-    private Category getCategoryById(String id) {
+    public Category getById(String id) {
         if (id == null || id.isBlank()) {
             return null;
         }
 
-        for (Category category : getAllCategories()) {
+        for (Category category : getAll()) {
             if (category.getId().equals(id)) {
                 return category;
             }
@@ -63,7 +47,7 @@ public class CategoryRepository extends DbClass {
         return null;
     }
 
-    private Map<String, List<Map<String, String>>> getAllSecondaryFilterOptions() {
+    public Map<String, List<Map<String, String>>> getSecondaryFilterOptions() {
         Map<String, List<Map<String, String>>> optionsByCategory = new LinkedHashMap<>();
         Map<Integer, CategoryRow> categoryRows = getCategoryRows();
         Map<Integer, Map<String, FilterOptionRow>> filterRowsByCategory = new LinkedHashMap<>();
@@ -111,6 +95,10 @@ public class CategoryRepository extends DbClass {
         }
 
         return optionsByCategory;
+    }
+
+    public List<Map<String, String>> getSecondaryFilterOptionsByCategory(String categoryId) {
+        return getSecondaryFilterOptions().getOrDefault(categoryId, new ArrayList<>());
     }
 
     private Map<Integer, CategoryRow> getCategoryRows() {
@@ -199,14 +187,14 @@ public class CategoryRepository extends DbClass {
         return filtersByCategory;
     }
 
-    static String toSlug(String value) {
+    private String toSlug(String value) {
         if (value == null) {
             return "";
         }
         return value.trim().toLowerCase().replaceAll("[^a-z0-9]+", "-").replaceAll("(^-|-$)", "");
     }
 
-    private static class CategoryRow {
+    private class CategoryRow {
         private final int categoryId;
         private final String name;
         private final String slug;
@@ -218,7 +206,7 @@ public class CategoryRepository extends DbClass {
         }
     }
 
-    private static class FilterOptionRow {
+    private class FilterOptionRow {
         private final String key;
         private final String label;
         private final List<String> values = new ArrayList<>();
