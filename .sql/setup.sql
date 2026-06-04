@@ -1262,74 +1262,74 @@ WHEN NOT MATCHED THEN
     VALUES (source.product_id, source.spec_key, source.spec_label, source.spec_value, source.sort_order, SYSDATETIME(), SYSDATETIME());
 
 
-DECLARE @KienHaoUserId INT;
-SELECT TOP (1) @KienHaoUserId = user_id
+DECLARE @AdministratorUserId INT;
+SELECT TOP (1) @AdministratorUserId = user_id
 FROM dbo.bs_user
-WHERE email = N'vuongkienhao2006@gmail.com' OR full_name = N'Kien Hao'
-ORDER BY CASE WHEN email = N'vuongkienhao2006@gmail.com' THEN 1 ELSE 2 END, user_id;
+WHERE email = N'administrator@example.com' OR full_name = N'Administrator'
+ORDER BY CASE WHEN email = N'administrator@example.com' THEN 1 ELSE 2 END, user_id;
 
-IF @KienHaoUserId IS NULL
+IF @AdministratorUserId IS NULL
 BEGIN
-    THROW 50001, 'Cannot seed reviews because Kien Hao does not exist in dbo.bs_user.', 1;
+    THROW 50001, 'Cannot seed reviews because Administrator does not exist in dbo.bs_user.', 1;
 END;
 
 DECLARE @Reviews TABLE (sku NVARCHAR(80), user_id INT, rating INT, comment NVARCHAR(1000));
 INSERT INTO @Reviews (sku, user_id, rating, comment) VALUES
-    (N'LAPTOPS-0001', @KienHaoUserId, 5, N'Good laptops for the price. The specifications match my current setup.'),
-    (N'LAPTOPS-0002', @KienHaoUserId, 4, N'Good laptops for the price. The specifications match my current setup.'),
-    (N'LAPTOPS-0003', @KienHaoUserId, 5, N'Good laptops for the price. The specifications match my current setup.'),
-    (N'LAPTOPS-0004', @KienHaoUserId, 4, N'Good laptops for the price. The specifications match my current setup.'),
-    (N'LAPTOPS-0005', @KienHaoUserId, 5, N'Good laptops for the price. The specifications match my current setup.'),
-    (N'MOUSE-0006', @KienHaoUserId, 4, N'Good mouse for the price. The specifications match my current setup.'),
-    (N'MOUSE-0007', @KienHaoUserId, 5, N'Good mouse for the price. The specifications match my current setup.'),
-    (N'MOUSE-0008', @KienHaoUserId, 4, N'Good mouse for the price. The specifications match my current setup.'),
-    (N'MOUSE-0009', @KienHaoUserId, 5, N'Good mouse for the price. The specifications match my current setup.'),
-    (N'MOUSE-0010', @KienHaoUserId, 4, N'Good mouse for the price. The specifications match my current setup.'),
-    (N'KEYBOARDS-0011', @KienHaoUserId, 5, N'Good keyboards for the price. The specifications match my current setup.'),
-    (N'KEYBOARDS-0012', @KienHaoUserId, 4, N'Good keyboards for the price. The specifications match my current setup.'),
-    (N'KEYBOARDS-0013', @KienHaoUserId, 5, N'Good keyboards for the price. The specifications match my current setup.'),
-    (N'KEYBOARDS-0014', @KienHaoUserId, 4, N'Good keyboards for the price. The specifications match my current setup.'),
-    (N'KEYBOARDS-0015', @KienHaoUserId, 5, N'Good keyboards for the price. The specifications match my current setup.'),
-    (N'MONITORS-0016', @KienHaoUserId, 4, N'Good monitors for the price. The specifications match my current setup.'),
-    (N'MONITORS-0017', @KienHaoUserId, 5, N'Good monitors for the price. The specifications match my current setup.'),
-    (N'MONITORS-0018', @KienHaoUserId, 4, N'Good monitors for the price. The specifications match my current setup.'),
-    (N'MONITORS-0019', @KienHaoUserId, 5, N'Good monitors for the price. The specifications match my current setup.'),
-    (N'MONITORS-0020', @KienHaoUserId, 4, N'Good monitors for the price. The specifications match my current setup.'),
-    (N'SSD-0021', @KienHaoUserId, 5, N'Good ssd for the price. The specifications match my current setup.'),
-    (N'SSD-0022', @KienHaoUserId, 4, N'Good ssd for the price. The specifications match my current setup.'),
-    (N'SSD-0023', @KienHaoUserId, 5, N'Good ssd for the price. The specifications match my current setup.'),
-    (N'SSD-0024', @KienHaoUserId, 4, N'Good ssd for the price. The specifications match my current setup.'),
-    (N'SSD-0025', @KienHaoUserId, 5, N'Good ssd for the price. The specifications match my current setup.'),
-    (N'RAM-0026', @KienHaoUserId, 4, N'Good ram for the price. The specifications match my current setup.'),
-    (N'RAM-0027', @KienHaoUserId, 5, N'Good ram for the price. The specifications match my current setup.'),
-    (N'RAM-0028', @KienHaoUserId, 4, N'Good ram for the price. The specifications match my current setup.'),
-    (N'RAM-0029', @KienHaoUserId, 5, N'Good ram for the price. The specifications match my current setup.'),
-    (N'RAM-0030', @KienHaoUserId, 4, N'Good ram for the price. The specifications match my current setup.'),
-    (N'CPU-0031', @KienHaoUserId, 5, N'Good cpu for the price. The specifications match my current setup.'),
-    (N'CPU-0032', @KienHaoUserId, 4, N'Good cpu for the price. The specifications match my current setup.'),
-    (N'CPU-0033', @KienHaoUserId, 5, N'Good cpu for the price. The specifications match my current setup.'),
-    (N'CPU-0034', @KienHaoUserId, 4, N'Good cpu for the price. The specifications match my current setup.'),
-    (N'CPU-0035', @KienHaoUserId, 5, N'Good cpu for the price. The specifications match my current setup.'),
-    (N'GPU-0036', @KienHaoUserId, 4, N'Good gpu for the price. The specifications match my current setup.'),
-    (N'GPU-0037', @KienHaoUserId, 5, N'Good gpu for the price. The specifications match my current setup.'),
-    (N'GPU-0038', @KienHaoUserId, 4, N'Good gpu for the price. The specifications match my current setup.'),
-    (N'GPU-0039', @KienHaoUserId, 5, N'Good gpu for the price. The specifications match my current setup.'),
-    (N'GPU-0040', @KienHaoUserId, 4, N'Good gpu for the price. The specifications match my current setup.'),
-    (N'PCCASE-0041', @KienHaoUserId, 5, N'Good pc case for the price. The specifications match my current setup.'),
-    (N'PCCASE-0042', @KienHaoUserId, 4, N'Good pc case for the price. The specifications match my current setup.'),
-    (N'PCCASE-0043', @KienHaoUserId, 5, N'Good pc case for the price. The specifications match my current setup.'),
-    (N'PCCASE-0044', @KienHaoUserId, 4, N'Good pc case for the price. The specifications match my current setup.'),
-    (N'PCCASE-0045', @KienHaoUserId, 5, N'Good pc case for the price. The specifications match my current setup.'),
-    (N'MAINBOARD-0046', @KienHaoUserId, 4, N'Good mainboard for the price. The specifications match my current setup.'),
-    (N'MAINBOARD-0047', @KienHaoUserId, 5, N'Good mainboard for the price. The specifications match my current setup.'),
-    (N'MAINBOARD-0048', @KienHaoUserId, 4, N'Good mainboard for the price. The specifications match my current setup.'),
-    (N'MAINBOARD-0049', @KienHaoUserId, 5, N'Good mainboard for the price. The specifications match my current setup.'),
-    (N'MAINBOARD-0050', @KienHaoUserId, 4, N'Good mainboard for the price. The specifications match my current setup.'),
-    (N'PCFAN-0051', @KienHaoUserId, 5, N'Good pc fan for the price. The specifications match my current setup.'),
-    (N'PCFAN-0052', @KienHaoUserId, 4, N'Good pc fan for the price. The specifications match my current setup.'),
-    (N'PCFAN-0053', @KienHaoUserId, 5, N'Good pc fan for the price. The specifications match my current setup.'),
-    (N'PCFAN-0054', @KienHaoUserId, 4, N'Good pc fan for the price. The specifications match my current setup.'),
-    (N'PCFAN-0055', @KienHaoUserId, 5, N'Good pc fan for the price. The specifications match my current setup.');
+    (N'LAPTOPS-0001', @AdministratorUserId, 5, N'Good laptops for the price. The specifications match my current setup.'),
+    (N'LAPTOPS-0002', @AdministratorUserId, 4, N'Good laptops for the price. The specifications match my current setup.'),
+    (N'LAPTOPS-0003', @AdministratorUserId, 5, N'Good laptops for the price. The specifications match my current setup.'),
+    (N'LAPTOPS-0004', @AdministratorUserId, 4, N'Good laptops for the price. The specifications match my current setup.'),
+    (N'LAPTOPS-0005', @AdministratorUserId, 5, N'Good laptops for the price. The specifications match my current setup.'),
+    (N'MOUSE-0006', @AdministratorUserId, 4, N'Good mouse for the price. The specifications match my current setup.'),
+    (N'MOUSE-0007', @AdministratorUserId, 5, N'Good mouse for the price. The specifications match my current setup.'),
+    (N'MOUSE-0008', @AdministratorUserId, 4, N'Good mouse for the price. The specifications match my current setup.'),
+    (N'MOUSE-0009', @AdministratorUserId, 5, N'Good mouse for the price. The specifications match my current setup.'),
+    (N'MOUSE-0010', @AdministratorUserId, 4, N'Good mouse for the price. The specifications match my current setup.'),
+    (N'KEYBOARDS-0011', @AdministratorUserId, 5, N'Good keyboards for the price. The specifications match my current setup.'),
+    (N'KEYBOARDS-0012', @AdministratorUserId, 4, N'Good keyboards for the price. The specifications match my current setup.'),
+    (N'KEYBOARDS-0013', @AdministratorUserId, 5, N'Good keyboards for the price. The specifications match my current setup.'),
+    (N'KEYBOARDS-0014', @AdministratorUserId, 4, N'Good keyboards for the price. The specifications match my current setup.'),
+    (N'KEYBOARDS-0015', @AdministratorUserId, 5, N'Good keyboards for the price. The specifications match my current setup.'),
+    (N'MONITORS-0016', @AdministratorUserId, 4, N'Good monitors for the price. The specifications match my current setup.'),
+    (N'MONITORS-0017', @AdministratorUserId, 5, N'Good monitors for the price. The specifications match my current setup.'),
+    (N'MONITORS-0018', @AdministratorUserId, 4, N'Good monitors for the price. The specifications match my current setup.'),
+    (N'MONITORS-0019', @AdministratorUserId, 5, N'Good monitors for the price. The specifications match my current setup.'),
+    (N'MONITORS-0020', @AdministratorUserId, 4, N'Good monitors for the price. The specifications match my current setup.'),
+    (N'SSD-0021', @AdministratorUserId, 5, N'Good ssd for the price. The specifications match my current setup.'),
+    (N'SSD-0022', @AdministratorUserId, 4, N'Good ssd for the price. The specifications match my current setup.'),
+    (N'SSD-0023', @AdministratorUserId, 5, N'Good ssd for the price. The specifications match my current setup.'),
+    (N'SSD-0024', @AdministratorUserId, 4, N'Good ssd for the price. The specifications match my current setup.'),
+    (N'SSD-0025', @AdministratorUserId, 5, N'Good ssd for the price. The specifications match my current setup.'),
+    (N'RAM-0026', @AdministratorUserId, 4, N'Good ram for the price. The specifications match my current setup.'),
+    (N'RAM-0027', @AdministratorUserId, 5, N'Good ram for the price. The specifications match my current setup.'),
+    (N'RAM-0028', @AdministratorUserId, 4, N'Good ram for the price. The specifications match my current setup.'),
+    (N'RAM-0029', @AdministratorUserId, 5, N'Good ram for the price. The specifications match my current setup.'),
+    (N'RAM-0030', @AdministratorUserId, 4, N'Good ram for the price. The specifications match my current setup.'),
+    (N'CPU-0031', @AdministratorUserId, 5, N'Good cpu for the price. The specifications match my current setup.'),
+    (N'CPU-0032', @AdministratorUserId, 4, N'Good cpu for the price. The specifications match my current setup.'),
+    (N'CPU-0033', @AdministratorUserId, 5, N'Good cpu for the price. The specifications match my current setup.'),
+    (N'CPU-0034', @AdministratorUserId, 4, N'Good cpu for the price. The specifications match my current setup.'),
+    (N'CPU-0035', @AdministratorUserId, 5, N'Good cpu for the price. The specifications match my current setup.'),
+    (N'GPU-0036', @AdministratorUserId, 4, N'Good gpu for the price. The specifications match my current setup.'),
+    (N'GPU-0037', @AdministratorUserId, 5, N'Good gpu for the price. The specifications match my current setup.'),
+    (N'GPU-0038', @AdministratorUserId, 4, N'Good gpu for the price. The specifications match my current setup.'),
+    (N'GPU-0039', @AdministratorUserId, 5, N'Good gpu for the price. The specifications match my current setup.'),
+    (N'GPU-0040', @AdministratorUserId, 4, N'Good gpu for the price. The specifications match my current setup.'),
+    (N'PCCASE-0041', @AdministratorUserId, 5, N'Good pc case for the price. The specifications match my current setup.'),
+    (N'PCCASE-0042', @AdministratorUserId, 4, N'Good pc case for the price. The specifications match my current setup.'),
+    (N'PCCASE-0043', @AdministratorUserId, 5, N'Good pc case for the price. The specifications match my current setup.'),
+    (N'PCCASE-0044', @AdministratorUserId, 4, N'Good pc case for the price. The specifications match my current setup.'),
+    (N'PCCASE-0045', @AdministratorUserId, 5, N'Good pc case for the price. The specifications match my current setup.'),
+    (N'MAINBOARD-0046', @AdministratorUserId, 4, N'Good mainboard for the price. The specifications match my current setup.'),
+    (N'MAINBOARD-0047', @AdministratorUserId, 5, N'Good mainboard for the price. The specifications match my current setup.'),
+    (N'MAINBOARD-0048', @AdministratorUserId, 4, N'Good mainboard for the price. The specifications match my current setup.'),
+    (N'MAINBOARD-0049', @AdministratorUserId, 5, N'Good mainboard for the price. The specifications match my current setup.'),
+    (N'MAINBOARD-0050', @AdministratorUserId, 4, N'Good mainboard for the price. The specifications match my current setup.'),
+    (N'PCFAN-0051', @AdministratorUserId, 5, N'Good pc fan for the price. The specifications match my current setup.'),
+    (N'PCFAN-0052', @AdministratorUserId, 4, N'Good pc fan for the price. The specifications match my current setup.'),
+    (N'PCFAN-0053', @AdministratorUserId, 5, N'Good pc fan for the price. The specifications match my current setup.'),
+    (N'PCFAN-0054', @AdministratorUserId, 4, N'Good pc fan for the price. The specifications match my current setup.'),
+    (N'PCFAN-0055', @AdministratorUserId, 5, N'Good pc fan for the price. The specifications match my current setup.');
 
 MERGE dbo.bs_Reviews AS target
 USING (
