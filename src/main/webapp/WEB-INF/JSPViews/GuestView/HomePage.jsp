@@ -81,6 +81,9 @@
     Category activeCategory = (Category) request.getAttribute("activeCategory");
     String selectedCategoryId = (String) request.getAttribute("selectedCategoryId");
     String selectedPrice = (String) request.getAttribute("selectedPrice");
+    Long selectedMinPrice = (Long) request.getAttribute("selectedMinPrice");
+    Long selectedMaxPrice = (Long) request.getAttribute("selectedMaxPrice");
+    Long priceSliderMaxPrice = (Long) request.getAttribute("priceSliderMaxPrice");
     String sortOrder = (String) request.getAttribute("sortOrder");
     String searchTerm = (String) request.getAttribute("searchTerm");
 
@@ -111,6 +114,15 @@
     }
     if (selectedPrice == null) {
         selectedPrice = "All prices";
+    }
+    if (priceSliderMaxPrice == null) {
+        priceSliderMaxPrice = 200000000L;
+    }
+    if (selectedMinPrice == null) {
+        selectedMinPrice = 0L;
+    }
+    if (selectedMaxPrice == null) {
+        selectedMaxPrice = priceSliderMaxPrice;
     }
     if (sortOrder == null) {
         sortOrder = "recommended";
@@ -193,14 +205,33 @@
                         </select>
                     </label>
 
-                    <label>
+                    <div class="price-slider-field" data-price-slider>
                         <span>Price</span>
-                        <select name="price">
-                            <% for (PriceRange range : priceRanges) {%>
-                            <option value="<%= html(range.getLabel())%>" <%= selected(selectedPrice, range.getLabel())%>><%= html(range.getLabel())%></option>
-                            <% } %>
-                        </select>
-                    </label>
+                        <button class="price-filter-button" type="button" data-price-toggle aria-expanded="false">
+                            <span data-price-button-label>Price: <%= formatPrice(selectedMinPrice)%> - <%= formatPrice(selectedMaxPrice)%></span>
+                            <span aria-hidden="true">v</span>
+                        </button>
+                        <input type="hidden" name="price" value="<%= html(selectedPrice)%>" />
+                        <div class="price-slider-panel" data-price-panel hidden>
+                            <div class="price-slider-heading">
+                                <strong>Choose your price range</strong>
+                                <output data-price-output><%= formatPrice(selectedMinPrice)%> - <%= formatPrice(selectedMaxPrice)%></output>
+                            </div>
+                            <div class="price-slider-values">
+                                <input type="number" name="minPrice" min="0" max="<%= priceSliderMaxPrice%>" step="100000" value="<%= selectedMinPrice%>" aria-label="Minimum price" data-price-min-input />
+                                <span aria-hidden="true">-</span>
+                                <input type="number" name="maxPrice" min="0" max="<%= priceSliderMaxPrice%>" step="100000" value="<%= selectedMaxPrice%>" aria-label="Maximum price" data-price-max-input />
+                            </div>
+                            <div class="price-slider-track">
+                                <input type="range" min="0" max="<%= priceSliderMaxPrice%>" step="100000" value="<%= selectedMinPrice%>" aria-label="Minimum price slider" data-price-min-range />
+                                <input type="range" min="0" max="<%= priceSliderMaxPrice%>" step="100000" value="<%= selectedMaxPrice%>" aria-label="Maximum price slider" data-price-max-range />
+                            </div>
+                            <div class="price-slider-actions">
+                                <button class="clear-button" type="button" data-price-close>Close</button>
+                                <button class="primary-action" type="submit">View results</button>
+                            </div>
+                        </div>
+                    </div>
 
                     <label>
                         <span>Sort</span>
