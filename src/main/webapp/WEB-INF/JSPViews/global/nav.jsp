@@ -1,6 +1,7 @@
 <%@page import="java.util.Map"%>
 <%@page import="java.net.URLEncoder"%>
 <%@page import="java.nio.charset.StandardCharsets"%>
+<%@page import="com.mycompany.techstore.services.CategoryService"%>
 <%@page import="com.mycompany.techstore.Models.Objects.Category"%>
 <%@page import="com.mycompany.techstore.Models.Objects.User"%>
 <%@page import="java.util.List"%>
@@ -77,9 +78,27 @@
 %>
 
 <%
-    List<Category> navCategories = (List<Category>) request.getAttribute("categories");
-    String navSelectedCategoryId = (String) request.getAttribute("selectedCategoryId");
-    String visibleCategoryId = "all".equals(navSelectedCategoryId) && navCategories != null && !navCategories.isEmpty() ? navCategories.get(0).getId() : navSelectedCategoryId;
+    CategoryService navCategoryService = new CategoryService();
+    List<Category> navCategories = navCategoryService.getAll();
+    String navSelectedCategoryId = request.getParameter("category");
+
+    if (navSelectedCategoryId == null || navSelectedCategoryId.isBlank()) {
+        Object selectedCategoryAttribute = request.getAttribute("selectedCategoryId");
+        navSelectedCategoryId = selectedCategoryAttribute == null ? "all" : String.valueOf(selectedCategoryAttribute);
+    }
+
+    String visibleCategoryId = navSelectedCategoryId;
+    boolean hasVisibleCategory = false;
+    for (Category category : navCategories) {
+        if (category.getId().equals(visibleCategoryId)) {
+            hasVisibleCategory = true;
+            break;
+        }
+    }
+
+    if (("all".equals(navSelectedCategoryId) || !hasVisibleCategory) && !navCategories.isEmpty()) {
+        visibleCategoryId = navCategories.get(0).getId();
+    }
 %>
 
 
@@ -90,18 +109,28 @@
         <span class="brand-subtitle">Computer store</span>
     </a>
 
-    <%--    <div class="category-menu">
-            <button class="category-menu-button" type="button" data-action="toggle-category-menu" aria-expanded="false">
-                Categories
-                <span aria-hidden="true">v</span>
-            </button>
-            <div class="mega-menu">
-
+    <div class="category-menu">
+        <button class="category-menu-button" type="button" data-action="toggle-category-menu" aria-expanded="false">
+            Categories
+            <span aria-hidden="true">v</span>
+        </button>
+        <div class="mega-menu">
+            <div class="mega-list">
                 <% for (Category category : navCategories) {%>
-                <div class="mega-panel <%= category.getId().equals(visibleCategoryId) ? "visible" : ""%>" data-mega-panel="<%= nav_html(category.getId())%>">
+                <a class="mega-category<%= nav_active(visibleCategoryId, category.getId())%>"
+                   href="<%= request.getContextPath()%>/home?category=<%= nav_encode(category.getId())%>#products"
+                   data-hover-category="<%= nav_html(category.getId())%>">
+                    <%= nav_html(category.getName())%>
+                    <span aria-hidden="true">&gt;</span>
+                </a>
+                <% } %>
+            </div>
+
+            <% for (Category category : navCategories) {%>
+            <div class="mega-panel <%= category.getId().equals(visibleCategoryId) ? "visible" : ""%>" data-mega-panel="<%= nav_html(category.getId())%>">
                 <% for (Map<String, Object> group : category.getMenuGroups()) {
-                    String title = String.valueOf(group.get("title"));
-                    List<String> options = (List<String>) group.get("options");
+                        String title = String.valueOf(group.get("title"));
+                        List<String> options = (List<String>) group.get("options");
                 %>
                 <section>
                     <h3><%= nav_html(title)%></h3>
@@ -126,7 +155,6 @@
             <% }%>
         </div>
     </div>
-    --%>
 
     <div class="nav-links">
         <a href="<%= request.getContextPath()%>/home#home">Home</a>
@@ -138,7 +166,7 @@
         %>
         <div class="dropdown">
             <a class="btn btn-sm btn-outline-secondary dropdown-toggle" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                <span class="user-icon" aria-hidden="true">👤</span>
+                <span class="user-icon" aria-hidden="true">&#128100;</span>
                 <span class="visually-hidden">Account</span>
             </a>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
@@ -151,7 +179,7 @@
         %>
         <div class="dropdown">
             <a class="btn btn-sm btn-outline-secondary dropdown-toggle" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                <span class="user-icon" aria-hidden="true">👤</span>
+                <span>Account</span>
                 <span class="user-email"><%= nav_html(loggedUser.getEmail())%></span>
             </a>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
@@ -165,7 +193,7 @@
         %>
     </div>
     <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch to dark mode" aria-pressed="false">
-        <span class="theme-icon theme-icon-moon" aria-hidden="true">?</span>
-        <span class="theme-icon theme-icon-sun" aria-hidden="true">?</span>
+        <span class="theme-icon theme-icon-moon" aria-hidden="true">&#9790;</span>
+        <span class="theme-icon theme-icon-sun" aria-hidden="true">&#9728;</span>
     </button>
 </nav>

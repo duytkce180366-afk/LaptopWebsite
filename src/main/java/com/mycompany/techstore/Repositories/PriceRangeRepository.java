@@ -4,12 +4,13 @@ import com.mycompany.techstore.Models.Objects.PriceRange;
 import java.util.*;
 
 public class PriceRangeRepository {
+
     private static final List<PriceRange> priceRanges = new ArrayList<>();
-    
+
     static {
         initializePriceRanges();
     }
-    
+
     private static void initializePriceRanges() {
         priceRanges.add(new PriceRange("All prices", 0, Long.MAX_VALUE));
         priceRanges.add(new PriceRange("Under 300K", 0, 300000));
@@ -53,7 +54,7 @@ public class PriceRangeRepository {
         priceRanges.add(new PriceRange("Over 30M", 30000000, Long.MAX_VALUE));
         priceRanges.add(new PriceRange("Over 40M", 40000000, Long.MAX_VALUE));
     }
-    
+
     public static List<PriceRange> getAll() {
         return new ArrayList<>(priceRanges);
     }
