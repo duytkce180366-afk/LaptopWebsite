@@ -1,9 +1,9 @@
 package com.mycompany.techstore.Controllers;
 
-import com.mycompany.techstore.Repositories.CategoryRepository;
 import com.mycompany.techstore.Repositories.PriceRangeRepository;
-import com.mycompany.techstore.Repositories.ProductRepository;
 import com.mycompany.techstore.Repositories.SortOptionRepository;
+import com.mycompany.techstore.services.CategoryService;
+import com.mycompany.techstore.services.ProductService;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -24,35 +24,56 @@ public class ProductController extends HttpServlet {
     private static final String NUMBER_REGEX = "^[0-9]+$";
     private static final String ALL_CATEGORIES = "all";
 
+    private transient final CategoryService categoryService;
+    private transient final ProductService productService;
+
+    public ProductController() {
+        this.categoryService = new CategoryService();
+        this.productService = new ProductService();
+    }
+
     private void setCatalogAttributes(HttpServletRequest request) {
-        List<Category> categories = CategoryRepository.getAll();
+        List<Category> categories = this.categoryService.getAll();
+        List<Product> products = this.productService.getAll();
         List<PriceRange> priceRanges = PriceRangeRepository.getAll();
         String searchTerm = getParameterOrDefault(request, "search", "");
         String selectedCategoryId = getParameterOrDefault(request, "category", ALL_CATEGORIES);
         String selectedPrice = getParameterOrDefault(request, "price", priceRanges.get(0).getLabel());
         String sortOrder = getParameterOrDefault(request, "sort", "recommended");
         PriceRange priceRange = getPriceRange(selectedPrice, priceRanges);
-        Category activeCategory = ALL_CATEGORIES.equals(selectedCategoryId) ? null : CategoryRepository.getById(selectedCategoryId);
+        long sliderMaxPrice = getSliderMaxPrice(products);
+        long selectedMinPrice = getPriceParameter(request, "minPrice", priceRange.getMin());
+        long selectedMaxPrice = getPriceParameter(request, "maxPrice", priceRange.getMax() == Long.MAX_VALUE ? sliderMaxPrice : priceRange.getMax());
+        selectedMinPrice = clampPrice(selectedMinPrice, 0, sliderMaxPrice);
+        selectedMaxPrice = clampPrice(selectedMaxPrice, 0, sliderMaxPrice);
+        if (selectedMinPrice > selectedMaxPrice) {
+            selectedMinPrice = selectedMaxPrice;
+        }
+        long effectiveMaxPrice = selectedMaxPrice >= sliderMaxPrice ? Long.MAX_VALUE : selectedMaxPrice + 1;
+        Category activeCategory = ALL_CATEGORIES.equals(selectedCategoryId) ? null : this.categoryService.getById(selectedCategoryId);
         Map<String, String> secondaryFilters = getSecondaryFilters(request, activeCategory);
-        List<Product> filteredProducts = ProductRepository.search(
+        List<Product> filteredProducts = this.productService.search(
                 searchTerm,
                 selectedCategoryId,
-                priceRange.getMin(),
-                priceRange.getMax(),
+                selectedMinPrice,
+                effectiveMaxPrice,
                 secondaryFilters,
                 sortOrder
         );
 
         request.setAttribute("categories", categories);
-        request.setAttribute("products", ProductRepository.getAll());
+        request.setAttribute("products", products);
         request.setAttribute("filteredProducts", filteredProducts);
         request.setAttribute("activeCategory", activeCategory);
         request.setAttribute("priceRanges", priceRanges);
         request.setAttribute("sortOptions", SortOptionRepository.getAll());
-        request.setAttribute("secondaryFilterOptions", CategoryRepository.getSecondaryFilterOptions());
+        request.setAttribute("secondaryFilterOptions", this.categoryService.getSecondaryFilterOptions());
         request.setAttribute("searchTerm", searchTerm);
         request.setAttribute("selectedCategoryId", selectedCategoryId);
         request.setAttribute("selectedPrice", selectedPrice);
+        request.setAttribute("selectedMinPrice", selectedMinPrice);
+        request.setAttribute("selectedMaxPrice", selectedMaxPrice);
+        request.setAttribute("priceSliderMaxPrice", sliderMaxPrice);
         request.setAttribute("sortOrder", sortOrder);
         request.setAttribute("secondaryFilters", secondaryFilters);
     }
@@ -69,6 +90,33 @@ public class ProductController extends HttpServlet {
             }
         }
         return priceRanges.get(0);
+    }
+
+    private long getPriceParameter(HttpServletRequest request, String name, long defaultValue) {
+        String value = request.getParameter(name);
+        if (value == null || value.isBlank()) {
+            return defaultValue;
+        }
+
+        try {
+            return Long.parseLong(value.trim());
+        } catch (NumberFormatException ex) {
+            return defaultValue;
+        }
+    }
+
+    private long clampPrice(long price, long min, long max) {
+        return Math.max(min, Math.min(price, max));
+    }
+
+    private long getSliderMaxPrice(List<Product> products) {
+        long maxPrice = 0;
+        for (Product product : products) {
+            maxPrice = Math.max(maxPrice, product.getPrice());
+        }
+
+        long roundedMax = ((maxPrice + 999999) / 1000000) * 1000000;
+        return Math.max(200000000L, roundedMax);
     }
 
     private Map<String, String> getSecondaryFilters(HttpServletRequest request, Category activeCategory) {
@@ -99,7 +147,7 @@ public class ProductController extends HttpServlet {
             return;
         }
 
-        Product product = ProductRepository.getById(Integer.parseInt(id));
+        Product product = this.productService.getById(Integer.parseInt(id));
         if (product == null) {
             response.sendError(404, "Product not found");
             return;
