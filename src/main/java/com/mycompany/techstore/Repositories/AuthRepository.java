@@ -16,7 +16,9 @@ public class AuthRepository extends DbClass {
         boolean exists = false;
 
         String sqlCommand = """
-                            SELECT 1 FROM [bs_user]  WHERE [email] = ?;
+                            SELECT 1
+                                FROM [bs_user]
+                                WHERE [email] = ?;
                             """;
 
         try (PreparedStatement ps = super.getConnection().prepareStatement(sqlCommand)) {
@@ -36,7 +38,7 @@ public class AuthRepository extends DbClass {
         User user = null;
 
         String sqlCommand = """
-                            SELECT TOP(1) [user_id], [role_id], [full_name], [email], [phone], [password], [avatar], [status], [created_at], [updated_at]
+                            SELECT TOP(1) [user_id], [role_id], [full_name], [email], [phone], [password], [isverified], [status], [created_at], [updated_at]
                                 FROM [bs_user]
                                 WHERE [email] = ?;
                             """;
@@ -52,7 +54,7 @@ public class AuthRepository extends DbClass {
                             rs.getString("email"),
                             rs.getString("phone"),
                             rs.getString("password"),
-                            rs.getString("avatar"),
+                            rs.getBoolean("isverified"),
                             rs.getString("status"),
                             rs.getTimestamp("created_at"),
                             rs.getTimestamp("updated_at")
@@ -71,7 +73,7 @@ public class AuthRepository extends DbClass {
         User user = null;
 
         String sqlCommand = """
-                            SELECT TOP(1) [user_id], [role_id], [full_name], [email], [phone], [password], [avatar], [status], [created_at], [updated_at]
+                            SELECT TOP(1) [user_id], [role_id], [full_name], [email], [phone], [password], [isverified], [status], [created_at], [updated_at]
                                 FROM [bs_user]
                                 WHERE [email] = ? AND password = ?;
                             """;
@@ -89,7 +91,7 @@ public class AuthRepository extends DbClass {
                             rs.getString("email"),
                             rs.getString("phone"),
                             rs.getString("password"),
-                            rs.getString("avatar"),
+                            rs.getBoolean("isverified"),
                             rs.getString("status"),
                             rs.getTimestamp("created_at"),
                             rs.getTimestamp("updated_at")
@@ -108,18 +110,22 @@ public class AuthRepository extends DbClass {
         User user = null;
 
         String sqlInsert = """
-                           INSERT INTO [bs_user] ([role_id], [full_name], [email], [phone], [password], [avatar], [status], [created_at], [updated_at])
-                                VALUES (?, ?, ?, NULL, ?, NULL, 'Active', SYSUTCDATETIME(), SYSUTCDATETIME());
+                           INSERT INTO [bs_user] ([role_id], [full_name], [email], [phone], [password], [isverified], [status], [created_at], [updated_at])
+                                VALUES (?, ?, ?, NULL, ?, ?, 'Active', SYSUTCDATETIME(), SYSUTCDATETIME());
                            """;
 
         try (PreparedStatement ps = super.getConnection().prepareStatement(sqlInsert)) {
             ps.setInt(1, 2);
             ps.setString(2, fullName);
             ps.setString(3, email);
+
             if (pwdHash != null) {
+                // Non-OIDC (Not trusted)
                 ps.setString(4, pwdHash);
+                ps.setBoolean(5, true);
             } else {
                 ps.setNull(4, java.sql.Types.NVARCHAR);
+                ps.setBoolean(5, false);
             }
 
             ps.executeUpdate();
@@ -129,6 +135,29 @@ public class AuthRepository extends DbClass {
         }
 
         return user;
+    }
+    
+    public boolean VerifiedUser(String email) {
+        boolean updated = false;
+
+        String sqlUpdate = """
+                           UPDATE [bs_user]
+                                SET [isverified] = ?, [updated_at] = SYSUTCDATETIME()
+                                WHERE [email] = ?;
+                           """;
+
+        try (PreparedStatement ps = super.getConnection().prepareStatement(sqlUpdate)) {
+            ps.setBoolean(1, true);
+            ps.setString(2, email);
+            
+            int rows = ps.executeUpdate();
+            updated = (rows > 0);
+        } catch (SQLException sqlEx) {
+            Logger.getLogger(AuthRepository.class.getName()).log(Level.SEVERE, null, sqlEx);
+            System.out.println(sqlEx.toString());
+        }
+
+        return updated;
     }
 
     // Update password for existing user
