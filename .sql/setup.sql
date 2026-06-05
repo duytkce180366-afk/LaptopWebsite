@@ -78,7 +78,7 @@ BEGIN
         email          NVARCHAR(255) NOT NULL,
         phone          NVARCHAR(20) NULL,
         password       NVARCHAR(255) NULL, -- store hashed password
-        avatar         NVARCHAR(500) NULL,
+        isverified     BIT NOT NULL DEFAULT 0,
         status         NVARCHAR(20) NOT NULL CONSTRAINT DF_bs_user_status DEFAULT ('Active'),
         created_at     DATETIME2(0) NOT NULL CONSTRAINT DF_bs_user_created_at DEFAULT SYSUTCDATETIME(),
         updated_at     DATETIME2(0) NULL,
@@ -86,8 +86,8 @@ BEGIN
         CONSTRAINT CK_bs_user_status CHECK (status IN ('Active', 'Blocked', 'Inactive', 'Pending'))
     );
 
-    INSERT INTO dbo.bs_user ([role_id], [full_name], [email], [phone], [password], [avatar], [status], [created_at], [updated_at])
-        VALUES (1, 'Administrator', 'administrator@example.com', '012345678', 'pbkdf2$65536$4u0S7QtsuN6xRdP/ibP+NQ==$AZzekFD608x0d6OS0AZUAIPyhysmAz+xjH8kPgtBkpY=', NULL, 'Active', SYSUTCDATETIME(), SYSUTCDATETIME()); 
+    INSERT INTO dbo.bs_user ([role_id], [full_name], [email], [phone], [password], [isverified], [status], [created_at], [updated_at])
+        VALUES (1, 'Administrator', 'administrator@example.com', '012345678', 'pbkdf2$65536$4u0S7QtsuN6xRdP/ibP+NQ==$AZzekFD608x0d6OS0AZUAIPyhysmAz+xjH8kPgtBkpY=', 1, 'Active', SYSUTCDATETIME(), SYSUTCDATETIME()); 
         /* Password is 123456 */
 END
 GO
