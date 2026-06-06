@@ -356,8 +356,8 @@ public class AuthController extends HttpServlet {
                 response.sendError(500, "Failed to update password");
             }
         } catch (AuthException | NoSuchAlgorithmException ex) {
-            Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, null, ex);
-            response.sendError(500, "Internal server error during password change.");
+            Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, ex.getLocalizedMessage(), ex);
+            response.sendError(500, ex.getLocalizedMessage());
         }
     }
 

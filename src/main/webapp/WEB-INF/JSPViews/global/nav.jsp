@@ -183,6 +183,9 @@
                 <span class="user-email"><%= nav_html(loggedUser.getEmail())%></span>
             </a>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                <% if (!loggedUser.isIsVerified()) { %>
+                <li><a class="dropdown-item" href="<%= request.getContextPath()%>/auth?action=verify">Verify email</a></li>
+                <% } %>
                 <li><a class="dropdown-item" href="<%= request.getContextPath()%>/profile">Edit profile</a></li>
                 <li><a class="dropdown-item" href="<%= request.getContextPath()%>/auth?action=resetpwd">Reset Password</a></li>
                 <li><a class="dropdown-item" href="<%= request.getContextPath()%>/auth?action=logout">Logout</a></li>

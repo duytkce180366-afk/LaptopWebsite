@@ -18,6 +18,7 @@ public class AuthService extends DbClass {
 
     // Allow case-insensitive email local-part/domain validation
     private final String emailFormat = "(?i)^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$";
+    
     private final AuthRepository authRepo;
     
     private static final String PBKDF2_ALGORITHM = "PBKDF2WithHmacSHA256";
@@ -197,7 +198,7 @@ public class AuthService extends DbClass {
         if (!email.matches(this.emailFormat)) {
             throw new AuthException(-1, "Email is not in correct format");
         }
-
+        
         String pwdHash = this.HashPassword(newPassword);
         return this.authRepo.UpdatePassword(email, pwdHash);
     }
