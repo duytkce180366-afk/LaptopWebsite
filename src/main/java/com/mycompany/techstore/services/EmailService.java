@@ -1,5 +1,6 @@
 package com.mycompany.techstore.services;
 
+import java.util.Arrays;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -21,10 +22,27 @@ public class EmailService {
     public EmailService() {
         this.mailProps = new Properties();
 
-        this.mailProps.put("mail.smtp.host", System.getenv("SMTP_HOST"));
-        this.mailProps.put("mail.smtp.port", System.getenv("SMTP_PORT"));
-        this.mailProps.put("mail.smtp.auth", System.getenv("SMTP_AUTH"));
-        this.mailProps.put("mail.smtp.starttls.enable", System.getenv("SMTP_START_TLS_ENABLE"));
+        String smtpHost = System.getenv("SMTP_HOST");
+        String smtpPort = System.getenv("SMTP_PORT");
+        String smtpAuth = System.getenv("SMTP_AUTH");
+        String smtpStartTls = System.getenv("SMTP_START_TLS_ENABLE");
+
+        this.mailProps.put("mail.smtp.host", smtpHost);
+        this.mailProps.put("mail.smtp.port", smtpPort);
+        this.mailProps.put("mail.smtp.auth", smtpAuth);
+        this.mailProps.put("mail.smtp.connectiontimeout", "25000");
+        this.mailProps.put("mail.smtp.timeout", "25000");
+
+        // If using implicit SSL (SMTPS) on port 465, enable SSL instead of STARTTLS.
+        if ("465".equals(smtpPort)) {
+            this.mailProps.put("mail.smtp.ssl.enable", "true");
+            this.mailProps.put("mail.smtp.starttls.enable", "false");
+            if (smtpHost != null) {
+                this.mailProps.put("mail.smtp.ssl.trust", smtpHost);
+            }
+        } else {
+            this.mailProps.put("mail.smtp.starttls.enable", smtpStartTls != null ? smtpStartTls : "false");
+        }
 
         this.mailSession = Session.getInstance(this.mailProps, new Authenticator() {
             @Override
@@ -48,7 +66,7 @@ public class EmailService {
             Transport.send(message);
             Logger.getLogger(EmailService.class.getName()).log(Level.INFO, "OTP email sent to {0}", toEmail);
         } catch (MessagingException mex) {
-            Logger.getLogger(EmailService.class.getName()).log(Level.SEVERE, "Failed to send OTP email: " + mex.getMessage(), mex);
+            Logger.getLogger(EmailService.class.getName()).log(Level.SEVERE, "Failed to send OTP email: " + mex.getMessage() + ", with email: " + Arrays.toString(message.getFrom()), mex);
             throw mex;
         }
 
