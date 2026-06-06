@@ -66,9 +66,6 @@ public class AuthController extends HttpServlet {
     // Verify if OIDC is enabled
     private boolean isOidcEnabled;
 
-    // Reauthentication timeout for sensitive actions (milliseconds)
-    private static final long REAUTH_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
-
     // Auth Service handler
     private transient final AuthService authService;
     private transient final EmailService emailService;
@@ -321,6 +318,7 @@ public class AuthController extends HttpServlet {
     }
 
     private void HandleResetPassword(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String otp = request.getParameter("otp");
         String newPwd = request.getParameter("newpwd");
         String repeatPwd = request.getParameter("repeatPwd");
 
@@ -341,11 +339,8 @@ public class AuthController extends HttpServlet {
             return;
         }
 
-        // Require recent reauthentication for sensitive operations
-        Object reauthObj = session.getAttribute("reauth_time");
-        if (reauthObj == null || !(reauthObj instanceof Long) || (System.currentTimeMillis() - (Long) reauthObj) > REAUTH_TIMEOUT_MS) {
-            // Not reauthenticated or timed out
-            response.sendError(403, "Reauthentication required to change password.");
+        if (otp == null || !session.getAttribute("otp").equals(otp)) {
+            response.sendError(400, "Invalid OTP");
             return;
         }
 
@@ -356,8 +351,6 @@ public class AuthController extends HttpServlet {
                 User userRefresh = this.authService.GetOrCreateUserOIDCSignIn(logged.getEmail(), logged.getFull_name());
 
                 session.setAttribute("loggedUser", userRefresh);
-                    // Clear reauth timestamp after successful password change
-                    session.removeAttribute("reauth_time");
                 response.sendRedirect(request.getContextPath() + "/");
             } else {
                 response.sendError(500, "Failed to update password");
@@ -431,7 +424,6 @@ public class AuthController extends HttpServlet {
                         return;
                     }
                 }
-
                 // Attempt to send OTP email only if EmailService is available; log failures but continue to verification page
                 if (this.emailService != null) {
                     try {
@@ -473,31 +465,14 @@ public class AuthController extends HttpServlet {
                 if (this.IsSignedIn(request)) {
                     HttpSession session = request.getSession(false);
                     User logged = (User) session.getAttribute("loggedUser");
-
-                    // OIDC users must reauthenticate via OIDC flow
-                    if (logged.getPassword() == null) {
-                        response.sendRedirect(request.getContextPath() + "/auth?action=oidc_signin");
-                        return;
+                    try {
+                        session.setAttribute("otp", this.emailService.sendOtpEmail(logged.getEmail()));
+                    } catch (MessagingException mex) {
+                        Logger.getLogger(AuthController.class.getName()).log(Level.WARNING, "Failed to send OTP email: " + mex.getMessage(), mex);
                     }
-
-                    Object reauthObj = session.getAttribute("reauth_time");
-                    boolean reauthOk = reauthObj instanceof Long && (System.currentTimeMillis() - (Long) reauthObj) <= REAUTH_TIMEOUT_MS;
-                    if (!reauthOk) {
-                        // Require reauthentication before showing reset form
-                        response.sendRedirect(request.getContextPath() + "/auth?action=reauth");
-                        return;
-                    }
-
                     request.getRequestDispatcher("/WEB-INF/JSPViews/AuthView/ResetPwd.jsp").forward(request, response);
                 } else {
                     response.sendError(400, "Not signed in");
-                }
-            }
-            case "reauth" -> {
-                if (this.IsSignedIn(request)) {
-                    request.getRequestDispatcher("/WEB-INF/JSPViews/AuthView/Reauthenticate.jsp").forward(request, response);
-                } else {
-                    response.sendRedirect(request.getContextPath() + "/auth?action=signin");
                 }
             }
             // Logout and end session
@@ -541,47 +516,6 @@ public class AuthController extends HttpServlet {
                     this.HandleResetPassword(request, response);
                 } else {
                     response.sendError(400, "Not signed in");
-                }
-            }
-            case "reauth" -> {
-                HttpSession session = request.getSession(false);
-                if (session == null) {
-                    response.sendError(400, "Not signed in");
-                    return;
-                }
-
-                User logged = (User) session.getAttribute("loggedUser");
-                if (logged == null) {
-                    response.sendError(400, "Not signed in");
-                    return;
-                }
-
-                // OIDC users must reauthenticate via OIDC flow
-                if (logged.getPassword() == null) {
-                    response.sendRedirect(request.getContextPath() + "/auth?action=oidc_signin");
-                    return;
-                }
-
-                String currentPwd = request.getParameter("current_password");
-                if (currentPwd == null || currentPwd.isBlank()) {
-                    request.setAttribute("error", "Please enter your current password.");
-                    request.getRequestDispatcher("/WEB-INF/JSPViews/AuthView/Reauthenticate.jsp").forward(request, response);
-                    return;
-                }
-
-                try {
-                    User verified = this.authService.GetUserSignIn(logged.getEmail(), currentPwd);
-                    if (verified != null) {
-                        // mark reauth time and redirect to reset form
-                        session.setAttribute("reauth_time", System.currentTimeMillis());
-                        response.sendRedirect(request.getContextPath() + "/auth?action=resetpwd");
-                    } else {
-                        request.setAttribute("error", "Invalid password. Please try again.");
-                        request.getRequestDispatcher("/WEB-INF/JSPViews/AuthView/Reauthenticate.jsp").forward(request, response);
-                    }
-                } catch (AuthException | NoSuchAlgorithmException ex) {
-                    Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, null, ex);
-                    response.sendError(500, "Internal server error during reauthentication.");
                 }
             }
             case "verify" -> {

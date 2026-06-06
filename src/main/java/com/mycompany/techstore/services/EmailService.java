@@ -39,7 +39,7 @@ public class EmailService {
             this.mailProps.put("mail.smtp.ssl.enable", "true");
             this.mailProps.put("mail.smtp.starttls.enable", "false");
 
-            boolean trustAll = "true".equalsIgnoreCase(trustMailTLS);
+            boolean trustAll = trustMailTLS.equalsIgnoreCase("true");
             if (trustAll) {
                 Logger.getLogger(EmailService.class.getName()).log(Level.WARNING, "SMTP_TRUST_ALL is enabled — hostname verification and certificate name checks will be disabled. Use only for testing.");
                 this.mailProps.put("mail.smtp.ssl.trust", smtpHost);
@@ -48,7 +48,7 @@ public class EmailService {
                 this.mailProps.put("mail.smtp.ssl.trust", smtpHost);
             }
         } else {
-            this.mailProps.put("mail.smtp.starttls.enable", smtpStartTls != null ? smtpStartTls : "false");
+            this.mailProps.put("mail.smtp.starttls.enable", (smtpStartTls != null) ? smtpStartTls : "false");
         }
 
         this.mailSession = Session.getInstance(this.mailProps, new Authenticator() {
