@@ -22,7 +22,7 @@ public class EmailService {
         this.mailProps = new Properties();
 
         this.mailProps.put("mail.smtp.host", System.getenv("SMTP_HOST"));
-        this.mailProps.put("mail.smtp.port", System.getenv("SMTP_HOST"));
+        this.mailProps.put("mail.smtp.port", System.getenv("SMTP_PORT"));
         this.mailProps.put("mail.smtp.auth", System.getenv("SMTP_AUTH"));
         this.mailProps.put("mail.smtp.starttls.enable", System.getenv("SMTP_START_TLS_ENABLE"));
 
