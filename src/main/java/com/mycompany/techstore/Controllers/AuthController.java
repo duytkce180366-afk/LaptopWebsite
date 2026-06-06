@@ -90,13 +90,12 @@ public class AuthController extends HttpServlet {
         }
 
         this.authService = new AuthService();
-
+        
         if (System.getenv("SMTP_HOST") == null) {
-            Logger.getLogger(EmailService.class.getName()).log(Level.WARNING, "SMTP_HOST is not configured; skipping OTP email.");
-            this.emailService = null;
-        } else {
-            this.emailService = new EmailService();
+             Logger.getLogger(EmailService.class.getName()).log(Level.WARNING, "SMTP_HOST is not configured; skipping OTP email.");
         }
+        
+        this.emailService = new EmailService();
     }
 
     /*
@@ -400,34 +399,14 @@ public class AuthController extends HttpServlet {
                     return;
                 }
 
-                // If SMTP is not configured, auto-verify the user and redirect home
-                if (System.getenv("SMTP_HOST") == null) {
-                    try {
-                        boolean verifyStatus = this.authService.VerifyEmail(logged.getEmail());
-                        if (verifyStatus) {
-                            User userRefresh = this.authService.GetUserByEmail(logged.getEmail());
-                            session.setAttribute("loggedUser", userRefresh);
-                            response.sendRedirect(request.getContextPath() + "/");
-                            return;
-                        } else {
-                            Logger.getLogger(AuthController.class.getName()).log(Level.WARNING, "SMTP_HOST not set and auto-verification failed for {0}", logged.getEmail());
-                        }
-                    } catch (AuthException ex) {
-                        Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, null, ex);
-                        response.sendError(500, "Internal server error during auto-verification.");
-                        return;
-                    }
-                }
+                // Generate 6-digit OTP via EmailService and store in session
+                
 
-                // Attempt to send OTP email only if EmailService is available; log failures but continue to verification page
-                if (this.emailService != null) {
-                    try {
-                        session.setAttribute("otp", this.emailService.sendOtpEmail(logged.getEmail()));
-                    } catch (MessagingException mex) {
-                        Logger.getLogger(AuthController.class.getName()).log(Level.WARNING, "Failed to send OTP email: " + mex.getMessage(), mex);
-                    }
-                } else {
-                    Logger.getLogger(AuthController.class.getName()).log(Level.INFO, "EmailService disabled; not sending OTP email.");
+                // Attempt to send OTP email; log failures but continue to verification page
+                try {
+                    session.setAttribute("otp", this.emailService.sendOtpEmail(logged.getEmail()));
+                } catch (MessagingException mex) {
+                    Logger.getLogger(AuthController.class.getName()).log(Level.WARNING, "Failed to send OTP email: " + mex.getMessage(), mex);
                 }
 
                 request.getRequestDispatcher("/WEB-INF/JSPViews/AuthView/VerifyOTP.jsp").forward(request, response);
