@@ -6,8 +6,8 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.mycompany.techstore.resources.DbClass;
 import com.mycompany.techstore.Models.Objects.User;
+import com.mycompany.techstore.resources.DbClass;
 
 public class AuthRepository extends DbClass {
 
@@ -122,10 +122,12 @@ public class AuthRepository extends DbClass {
             if (pwdHash != null) {
                 // Non-OIDC (Not trusted)
                 ps.setString(4, pwdHash);
-                ps.setBoolean(5, true);
-            } else {
-                ps.setNull(4, java.sql.Types.NVARCHAR);
+                // New users registered with email/password must verify their email via OTP
                 ps.setBoolean(5, false);
+            } else {
+                // OIDC
+                ps.setNull(4, java.sql.Types.NVARCHAR);
+                ps.setBoolean(5, true);
             }
 
             ps.executeUpdate();

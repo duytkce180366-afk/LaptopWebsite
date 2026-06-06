@@ -62,6 +62,24 @@
             <version>6.1.0</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <version>4.1.0-RC1</version>
+            <type>module</type>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+            <version>4.1.0-RC1</version>
+            <type>module</type>
+        </dependency>
+        <dependency>
+            <groupId>net.xdob.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+            <version>2.7.22</version>
+            <type>pom.sha512</type>
+        </dependency>
     </dependencies>
     
     <build>

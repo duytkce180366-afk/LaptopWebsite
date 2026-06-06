@@ -186,6 +186,11 @@ public class AuthService extends DbClass {
     public boolean VerifyEmail(String email) throws AuthException {
         return this.authRepo.VerifiedUser(email);
     }
+
+    // Get user by email (refresh user state)
+    public User GetUserByEmail(String email) {
+        return this.authRepo.GetUserOIDCSignIn(email);
+    }
     
     // Reset password
     public boolean UpdateUserPassword(String email, String newPassword) throws NoSuchAlgorithmException, AuthException {

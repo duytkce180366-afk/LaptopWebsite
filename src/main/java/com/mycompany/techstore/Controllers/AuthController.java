@@ -7,6 +7,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.time.Instant;
 import java.util.Date;
@@ -14,6 +15,10 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.mycompany.techstore.Exceptions.AuthException;
+import com.mycompany.techstore.Models.Objects.User;
+import com.mycompany.techstore.services.AuthService;
+import com.mycompany.techstore.services.EmailService;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.jwk.source.JWKSource;
@@ -27,19 +32,16 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 
-import com.mycompany.techstore.Models.Objects.User;
-import com.mycompany.techstore.Exceptions.AuthException;
-import com.mycompany.techstore.services.AuthService;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
+import jakarta.mail.MessagingException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import java.security.NoSuchAlgorithmException;
 
 @WebServlet(name = "AuthController", urlPatterns = {"/auth"})
 public class AuthController extends HttpServlet {
@@ -61,10 +63,12 @@ public class AuthController extends HttpServlet {
     private String OidcAuthEndpoint;
     private String OidcJwksUri;
 
+    // Verify if OIDC is enabled
+    private boolean isOidcEnabled;
+
     // Auth Service handler
     private transient final AuthService authService;
-
-    private boolean isOidcEnabled;
+    private transient final EmailService emailService;
 
     public AuthController() {
         this.RootUrl = (System.getenv("ROOT_ENV") != null) ? System.getenv("ROOT_ENV") : "http://localhost:8080";
@@ -76,6 +80,9 @@ public class AuthController extends HttpServlet {
 
         String OidcIssuerProvided = System.getenv("OIDC_ISSUER");
 
+        // Default values for external configuration
+        this.isOidcEnabled = false;
+
         if (this.OidcClientId != null && this.OidcClientSecret != null && this.OidcWellknown != null && this.OidcScope != null && this.LoadOidcConfiguration()) {
             if (OidcIssuerProvided != null && this.OidcIssuer.equals(OidcIssuerProvided)) {
                 this.isOidcEnabled = true;
@@ -83,6 +90,12 @@ public class AuthController extends HttpServlet {
         }
 
         this.authService = new AuthService();
+        
+        if (System.getenv("SMTP_HOST") == null) {
+             Logger.getLogger(EmailService.class.getName()).log(Level.WARNING, "SMTP_HOST is not configured; skipping OTP email.");
+        }
+        
+        this.emailService = new EmailService();
     }
 
     /*
@@ -268,6 +281,12 @@ public class AuthController extends HttpServlet {
             if (user != null) {
                 HttpSession session = request.getSession();
                 session.setAttribute("loggedUser", user);
+
+                if (!user.isIsVerified()) {
+                    response.sendRedirect(request.getContextPath() + "/auth?action=verify");
+                    return;
+                }
+
                 response.sendRedirect(request.getContextPath() + "/");
             } else {
                 response.sendRedirect(request.getContextPath() + "/auth?action=denied");
@@ -289,7 +308,8 @@ public class AuthController extends HttpServlet {
 
             HttpSession session = request.getSession();
             session.setAttribute("loggedUser", user);
-            response.sendRedirect(request.getContextPath() + "/");
+
+            response.sendRedirect(request.getContextPath() + "/auth?action=verify");
         } catch (AuthException | NoSuchAlgorithmException ex) {
             Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, null, ex);
             response.sendError(500, "Internal server error during sign-up.");
@@ -359,6 +379,37 @@ public class AuthController extends HttpServlet {
                 } else {
                     request.getRequestDispatcher("/WEB-INF/JSPViews/AuthView/CreateAccount.jsp").forward(request, response);
                 }
+            }
+            case "verify" -> {
+                HttpSession session = request.getSession(false);
+                if (session == null) {
+                    response.sendRedirect(request.getContextPath() + "/auth?action=signin");
+                    return;
+                }
+
+                User logged = (User) session.getAttribute("loggedUser");
+                if (logged == null) {
+                    response.sendRedirect(request.getContextPath() + "/auth?action=signin");
+                    return;
+                }
+
+                // OIDC users (no password) or already verified should be redirected home
+                if (logged.getPassword() == null || logged.isIsVerified()) {
+                    response.sendRedirect(request.getContextPath() + "/");
+                    return;
+                }
+
+                // Generate 6-digit OTP via EmailService and store in session
+                
+
+                // Attempt to send OTP email; log failures but continue to verification page
+                try {
+                    session.setAttribute("otp", this.emailService.sendOtpEmail(logged.getEmail()));
+                } catch (MessagingException mex) {
+                    Logger.getLogger(AuthController.class.getName()).log(Level.WARNING, "Failed to send OTP email: " + mex.getMessage(), mex);
+                }
+
+                request.getRequestDispatcher("/WEB-INF/JSPViews/AuthView/VerifyOTP.jsp").forward(request, response);
             }
             // OIDC
             case "oidc_signin" -> {
@@ -432,6 +483,48 @@ public class AuthController extends HttpServlet {
                     this.HandleResetPassword(request, response);
                 } else {
                     response.sendError(400, "Not signed in");
+                }
+            }
+            case "verify" -> {
+                HttpSession session = request.getSession(false);
+                if (session == null) {
+                    response.sendError(400, "Not signed in");
+                    return;
+                }
+
+                User logged = (User) session.getAttribute("loggedUser");
+                if (logged == null) {
+                    response.sendError(400, "Not signed in");
+                    return;
+                }
+
+                if (logged.getPassword() == null || logged.isIsVerified()) {
+                    response.sendRedirect(request.getContextPath() + "/");
+                    return;
+                }
+
+                String otp = request.getParameter("otp");
+                String expected = (String) session.getAttribute("otp");
+                if (otp == null || expected == null || !otp.equals(expected)) {
+                    request.setAttribute("error", "Invalid verification code. Please try again.");
+                    response.sendRedirect(request.getContextPath() + "/auth?action=verify");
+                    return;
+                }
+
+                try {
+                    boolean verifyStatus = this.authService.VerifyEmail(logged.getEmail());
+                    if (verifyStatus) {
+                        // Refresh user and update session
+                        User user = this.authService.GetUserByEmail(logged.getEmail());
+                        session.setAttribute("loggedUser", user);
+                        session.removeAttribute("otp");
+                        response.sendRedirect(request.getContextPath() + "/");
+                    } else {
+                        response.sendError(500, "Failed to verify email");
+                    }
+                } catch (AuthException ex) {
+                    Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, null, ex);
+                    response.sendError(500, "Internal server error during verification.");
                 }
             }
             default -> {
