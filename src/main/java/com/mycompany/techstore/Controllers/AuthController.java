@@ -263,8 +263,8 @@ public class AuthController extends HttpServlet {
                 session.setAttribute("loggedUser", user);
                 response.sendRedirect(request.getContextPath() + "/");
             } catch (JOSEException | BadJOSEException | IOException | ParseException | AuthException ex) {
-                Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, null, ex);
-                response.sendError(500, "Internal server error during token processing.");
+                Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, ex.getLocalizedMessage(), ex);
+                response.sendError(500, ex.getLocalizedMessage());
             }
         }
     }
@@ -295,7 +295,7 @@ public class AuthController extends HttpServlet {
         } catch (AuthException | NoSuchAlgorithmException ex) {
             Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, null, ex);
             System.out.println(ex.toString());
-            response.sendError(500, "Internal server error during sign-in.");
+            response.sendError(500, ex.getLocalizedMessage());
         }
     }
 
@@ -313,7 +313,7 @@ public class AuthController extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/auth?action=verify");
         } catch (AuthException | NoSuchAlgorithmException ex) {
             Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, null, ex);
-            response.sendError(500, "Internal server error during sign-up.");
+            response.sendError(500, ex.getLocalizedMessage());
         }
     }
 
