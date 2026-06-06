@@ -17,7 +17,7 @@
                         <form method="post" action="<%= ctx %>/auth?action=verify">
                             <div class="mb-3">
                                 <label class="form-label">Verification code</label>
-                                <input type="text" name="otp" class="form-control" pattern="\\d{6}" required />
+                                <input type="text" name="otp" class="form-control" required />
                             </div>
                             <div class="d-flex gap-2 align-items-center">
                                 <button class="btn btn-primary primary-action" type="submit">Verify</button>

@@ -26,6 +26,7 @@ public class EmailService {
         String smtpPort = System.getenv("SMTP_PORT");
         String smtpAuth = System.getenv("SMTP_AUTH");
         String smtpStartTls = System.getenv("SMTP_START_TLS_ENABLE");
+        String trustMailTLS = System.getenv("SMTP_TRUST_ALL");
 
         this.mailProps.put("mail.smtp.host", smtpHost);
         this.mailProps.put("mail.smtp.port", smtpPort);
@@ -34,10 +35,16 @@ public class EmailService {
         this.mailProps.put("mail.smtp.timeout", "25000");
 
         // If using implicit SSL (SMTPS) on port 465, enable SSL instead of STARTTLS.
-        if ("465".equals(smtpPort)) {
+        if (smtpPort.equals("465")) {
             this.mailProps.put("mail.smtp.ssl.enable", "true");
             this.mailProps.put("mail.smtp.starttls.enable", "false");
-            if (smtpHost != null) {
+
+            boolean trustAll = "true".equalsIgnoreCase(trustMailTLS);
+            if (trustAll) {
+                Logger.getLogger(EmailService.class.getName()).log(Level.WARNING, "SMTP_TRUST_ALL is enabled — hostname verification and certificate name checks will be disabled. Use only for testing.");
+                this.mailProps.put("mail.smtp.ssl.trust", smtpHost);
+                this.mailProps.put("mail.smtp.ssl.checkserveridentity", "false");
+            } else if (smtpHost != null) {
                 this.mailProps.put("mail.smtp.ssl.trust", smtpHost);
             }
         } else {
