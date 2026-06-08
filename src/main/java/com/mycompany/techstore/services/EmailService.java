@@ -63,8 +63,8 @@ public class EmailService {
     public String sendOtpEmail(User user, int expireIn) throws MessagingException {
         String otp = String.valueOf((int) (Math.floor(100000 + Math.random() * 900000)));
 
-        Message message = new MimeMessage(mailSession);
         try {
+            Message message = new MimeMessage(mailSession);
             message.setFrom(new InternetAddress(System.getenv("SMTP_USERNAME")));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(user.getEmail()));
             message.setSubject("Verify your Tech Store account");
@@ -82,7 +82,7 @@ public class EmailService {
             Transport.send(message);
             Logger.getLogger(EmailService.class.getName()).log(Level.INFO, "OTP %s email sent to %s".formatted(otp, user.getEmail()));
         } catch (MessagingException mex) {
-            Logger.getLogger(EmailService.class.getName()).log(Level.SEVERE, "Failed to send OTP " + otp + " to email adress: " + mex.getMessage() + ", with email: " + Arrays.toString(message.getFrom()), mex);
+            Logger.getLogger(EmailService.class.getName()).log(Level.SEVERE, "Failed to send OTP " + otp + " to email adress: " + mex.getMessage() + ", with email: " + user.getEmail(), mex);
             throw mex;
         }
 
