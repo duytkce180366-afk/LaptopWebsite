@@ -1,5 +1,6 @@
 package com.mycompany.techstore.services;
 
+import com.mycompany.techstore.Models.Objects.User;
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -59,21 +60,29 @@ public class EmailService {
         });
     }
 
-    public String sendOtpEmail(String toEmail) throws MessagingException {
+    public String sendOtpEmail(User user, int expireIn) throws MessagingException {
         String otp = String.valueOf((int) (Math.floor(100000 + Math.random() * 900000)));
 
         Message message = new MimeMessage(mailSession);
         try {
             message.setFrom(new InternetAddress(System.getenv("SMTP_USERNAME")));
-            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(user.getEmail()));
             message.setSubject("Verify your Tech Store account");
-            String body = "Hello,\n\nYour verification code is: " + otp + "\n\nIf you didn't request this, ignore this email.";
-            message.setText(body);
+            String body = """
+                          Hi %s,
+                          
+                          Your email verification code is %s. It will be expire in %d.
+                          
+                          If you didn't request this, ignore this email.
+                          
+                          Best regards
+                          """.formatted(user.getFull_name(), otp, expireIn);
 
+            message.setText(body);
             Transport.send(message);
-            Logger.getLogger(EmailService.class.getName()).log(Level.INFO, "OTP email sent to {0}", toEmail);
+            Logger.getLogger(EmailService.class.getName()).log(Level.INFO, "OTP %s email sent to %s".formatted(otp, user.getEmail()));
         } catch (MessagingException mex) {
-            Logger.getLogger(EmailService.class.getName()).log(Level.SEVERE, "Failed to send OTP email: " + mex.getMessage() + ", with email: " + Arrays.toString(message.getFrom()), mex);
+            Logger.getLogger(EmailService.class.getName()).log(Level.SEVERE, "Failed to send OTP " + otp + " to email adress: " + mex.getMessage() + ", with email: " + Arrays.toString(message.getFrom()), mex);
             throw mex;
         }
 
