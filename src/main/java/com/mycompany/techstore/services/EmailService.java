@@ -1,8 +1,9 @@
 package com.mycompany.techstore.services;
 
 import com.mycompany.techstore.Models.Objects.User;
-import java.util.Arrays;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -19,6 +20,7 @@ public class EmailService {
 
     private final Properties mailProps;
     private final Session mailSession;
+    private final ExecutorService emailExecutor;
 
     public EmailService() {
         this.mailProps = new Properties();
@@ -58,34 +60,55 @@ public class EmailService {
                 return new PasswordAuthentication(System.getenv("SMTP_USERNAME"), System.getenv("SMTP_PASSWORD"));
             }
         });
+
+        // Single-threaded daemon executor for sending emails asynchronously.
+        this.emailExecutor = Executors.newSingleThreadExecutor((Runnable r) -> {
+            Thread t = new Thread(r, "email-sender");
+            t.setDaemon(true);
+            return t;
+        });
     }
 
     public String sendOtpEmail(User user, int expireIn) throws MessagingException {
-        String otp = String.valueOf((int) (Math.floor(100000 + Math.random() * 900000)));
+        String otp = String.valueOf((int) (Math.floor(100000 + Math.random() * 900000))); 
 
-        try {
-            Message message = new MimeMessage(mailSession);
-            message.setFrom(new InternetAddress(System.getenv("SMTP_USERNAME")));
-            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(user.getEmail()));
-            message.setSubject("Verify your Tech Store account");
-            String body = """
-                          Hi %s,
-                          
-                          Your email verification code is %s. It will be expire in %d.
-                          
-                          If you didn't request this, ignore this email.
-                          
-                          Best regards
-                          """.formatted(user.getFull_name(), otp, expireIn);
+        // Send the email asynchronously so callers don't block on network I/O.
+        this.emailExecutor.submit(() -> {
+            try {
+                Message message = new MimeMessage(mailSession);
+                message.setFrom(new InternetAddress(System.getenv("SMTP_USERNAME")));
+                message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(user.getEmail()));
+                message.setSubject("Verify your Tech Store account");
+                String body = """
+                              Hi %s,
+                              
+                              Your email verification code is %s. It will be expire in %d.
+                              
+                              If you didn't request this, ignore this email.
+                              
+                              Best regards
+                              """.formatted(user.getFull_name(), otp, expireIn);
 
-            message.setText(body);
-            Transport.send(message);
-            Logger.getLogger(EmailService.class.getName()).log(Level.INFO, "OTP %s email sent to %s".formatted(otp, user.getEmail()));
-        } catch (MessagingException mex) {
-            Logger.getLogger(EmailService.class.getName()).log(Level.SEVERE, "Failed to send OTP " + otp + " to email adress: " + mex.getMessage() + ", with email: " + user.getEmail(), mex);
-            throw mex;
-        }
-
+                message.setText(body);
+                Transport.send(message);
+                Logger.getLogger(EmailService.class.getName()).log(Level.INFO, "OTP %s email sent to %s".formatted(otp, user.getEmail()));
+            } catch (MessagingException mex) {
+                Logger.getLogger(EmailService.class.getName()).log(Level.SEVERE, "Failed to send OTP " + otp + " to email adress: " + mex.getMessage() + ", with email: " + user.getEmail(), mex);
+            } catch (Exception ex) {
+                Logger.getLogger(EmailService.class.getName()).log(Level.SEVERE, "Unexpected error sending OTP to " + user.getEmail(), ex);
+            }
+        });
+        
         return otp;
+    }
+
+    // Optional: allow graceful shutdown of executor if the application wants to
+    // close resources. Not invoked automatically.
+    public void shutdown() {
+        try {
+            this.emailExecutor.shutdownNow();
+        } catch (Exception ex) {
+            Logger.getLogger(EmailService.class.getName()).log(Level.WARNING, "Error shutting down email executor", ex);
+        }
     }
 }
