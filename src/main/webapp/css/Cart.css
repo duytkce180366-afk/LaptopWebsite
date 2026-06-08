@@ -1,0 +1,145 @@
+.cart-section{
+    max-width:1200px;
+    margin:0 auto;
+    padding:40px 20px;
+}
+
+.section-heading{
+    text-align:center;
+    margin-bottom:30px;
+}
+
+.section-heading h2{
+    font-size:32px;
+    margin-top:10px;
+}
+
+.eyebrow{
+    color:#2563eb;
+    font-weight:600;
+    letter-spacing:1px;
+}
+.cart-table{
+    width:100%;
+    background:#fff;
+    border-collapse:collapse;
+    border-radius:20px;
+    overflow:hidden;
+
+    box-shadow:
+        0 10px 30px rgba(0,0,0,0.08);
+}
+.cart-table thead{
+    background:#111827;
+}
+
+.cart-table th{
+    color:white;
+    padding:18px;
+    text-align:center;
+    font-size:15px;
+    letter-spacing:.5px;
+}
+.cart-table td{
+    padding:20px;
+    text-align:center;
+    border-bottom:1px solid #eee;
+}
+
+.cart-table tbody tr{
+    transition:0.25s;
+}
+
+.cart-table tbody tr:hover{
+    background:#f8fafc;
+}
+.cart-table td:first-child{
+    font-weight:600;
+    color:#111827;
+}
+.cart-price{
+    font-weight:700;
+    color:#2563eb;
+    font-size:17px;
+}
+.cart-subtotal{
+    font-weight:700;
+    color:#16a34a;
+    font-size:17px;
+}
+.qty-input{
+    width:70px;
+    padding:8px;
+    text-align:center;
+
+    border:1px solid #d1d5db;
+    border-radius:10px;
+
+    font-size:15px;
+}
+.cart-actions{
+    display:flex;
+    justify-content:center;
+    gap:10px;
+}
+.btn-update{
+    background:#2563eb;
+    color:white;
+
+    border:none;
+    border-radius:10px;
+
+    padding:10px 16px;
+    cursor:pointer;
+
+    transition:.25s;
+}
+
+.btn-update:hover{
+    background:#1d4ed8;
+    transform:translateY(-2px);
+}
+.btn-remove{
+    background:#dc2626;
+    color:white;
+
+    border:none;
+    border-radius:10px;
+
+    padding:10px 16px;
+    cursor:pointer;
+
+    transition:.25s;
+}
+
+.btn-remove:hover{
+    background:#b91c1c;
+    transform:translateY(-2px);
+}
+.cart-container{
+    max-width:1100px;
+    margin:0 auto;
+}
+.cart-footer{
+    margin-top:25px;
+    text-align:center;
+}
+
+.continue-shopping{
+    display:inline-block;
+
+    background:#111827;
+    color:white;
+
+    padding:12px 24px;
+
+    border-radius:12px;
+    text-decoration:none;
+
+    transition:.25s;
+}
+
+.continue-shopping:hover{
+    background:#1f2937;
+    transform:translateY(-2px);
+}

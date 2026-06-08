@@ -111,6 +111,29 @@
                             </div>
                             <p><%= html(product.getDescription())%></p>
                             <h3><%= formatPrice(product.getPrice())%></h3>
+                            <h3><%= formatPrice(product.getPrice())%></h3>
+
+                            <form action="<%= request.getContextPath()%>/cart/add"
+                                  method="post">
+
+                                <input type="hidden"
+                                       name="productId"
+                                       value="<%= product.getId()%>"/>
+
+                                <input type="hidden"
+                                       name="price"
+                                       value="<%= product.getPrice()%>"/>
+
+                                <input type="number"
+                                       name="quantity"
+                                       value="1"
+                                       min="1"/>
+
+                                <button type="submit">
+                                    Add To Cart
+                                </button>
+
+                            </form>
                             <dl class="spec-table">
                                 <% for (Map.Entry<String, String> spec : product.getSpecs().entrySet()) {%>
                                 <div>
