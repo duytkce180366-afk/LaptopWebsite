@@ -658,4 +658,9 @@ public class AuthController extends HttpServlet {
             }
         }
     }
+    
+    @Override
+    public void destroy() {
+        this.emailService.shutdown();
+    }
 }
