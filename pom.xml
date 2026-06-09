@@ -62,8 +62,17 @@
             <version>6.1.0</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <version>4.1.0-RC1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+            <version>4.1.0-RC1</version>
+        </dependency>
     </dependencies>
-    
     <build>
         <plugins>
             <plugin>
@@ -73,9 +82,6 @@
                 <configuration>
                     <source>21</source>
                     <target>21</target>
-                    <compilerArgs>
-                        <arg>-Xlint</arg>
-                    </compilerArgs>
                 </configuration>
             </plugin>
             <plugin>

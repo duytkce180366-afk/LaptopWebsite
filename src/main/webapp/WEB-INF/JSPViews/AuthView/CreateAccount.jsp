@@ -35,7 +35,7 @@
                         <hr class="my-3" />
                         <div class="oidc-signin">
                             <p class="mb-2">Or sign up using an external provider</p>
-                            <a class="btn btn-outline-primary w-100" href="<%= ctx %>/auth?action=oidc_signin">Sign up with OIDC</a>
+                            <a class="btn btn-outline-primary w-100" href="<%= ctx %>/auth?action=oidc_signin">Sign up with SSO</a>
                         </div>
                     </div>
                 </div>
