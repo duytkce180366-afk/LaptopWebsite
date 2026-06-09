@@ -397,7 +397,7 @@ public class AuthController extends HttpServlet {
 
         // If no previous OTP, or previous OTP expired, create a fresh one
         if (otp == null || expireReq == null || curr.isAfter(expireReq)) {
-            String newOtp = this.emailService.sendOtpEmail(logged, this.otpRelax);
+            String newOtp = this.emailService.sendOtpEmail(logged);
             session.setAttribute("otp", newOtp);
             session.setAttribute("otpReq", curr);
             session.setAttribute("otpExpire", curr.plusHours(1));
@@ -409,7 +409,7 @@ public class AuthController extends HttpServlet {
             throw new AuthException(-1, "Requesting OTP too frequently. Please wait %s seconds.".formatted(this.otpRelax));
         }
 
-        String newOtp = this.emailService.sendOtpEmail(logged, this.otpRelax);
+        String newOtp = this.emailService.sendOtpEmail(logged);
         session.setAttribute("otp", newOtp);
         session.setAttribute("otpReq", curr);
         session.setAttribute("otpExpire", curr.plusHours(1));

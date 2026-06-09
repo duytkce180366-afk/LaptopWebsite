@@ -86,7 +86,7 @@ public class EmailService {
         return otp.toString();
     }
 
-    public String sendOtpEmail(User user, int expireIn) throws MessagingException {
+    public String sendOtpEmail(User user) throws MessagingException {
         String otp = this.generateOtp(6);
 
         // Send the email asynchronously so callers don't block on network I/O.
@@ -99,12 +99,12 @@ public class EmailService {
                 String body = """
                               Hi %s,
                               
-                              Your email verification code is %s. It will be expire in %d.
+                              Your email verification code is %s. It will be expire in an hour.
                               
                               If you didn't request this, ignore this email.
                               
                               Best regards
-                              """.formatted(user.getFull_name(), otp, expireIn);
+                              """.formatted(user.getFull_name(), otp);
 
                 message.setText(body);
                 Transport.send(message);
