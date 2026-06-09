@@ -446,7 +446,7 @@ public class AuthController extends HttpServlet {
     /*
      * GET/POST methods
      */
-    /////////////////////////////////////
+    ////////////////////////////////////
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

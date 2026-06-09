@@ -1,6 +1,7 @@
 package com.mycompany.techstore.services;
 
 import com.mycompany.techstore.Models.Objects.User;
+
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -15,14 +16,17 @@ import jakarta.mail.Session;
 import jakarta.mail.Transport;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
+import java.security.SecureRandom;
 
 public class EmailService {
 
     private final Properties mailProps;
     private final Session mailSession;
     private final ExecutorService emailExecutor;
+    private final SecureRandom random;
 
     public EmailService() {
+        this.random = new SecureRandom();
         this.mailProps = new Properties();
 
         String smtpHost = System.getenv("SMTP_HOST");
@@ -69,8 +73,21 @@ public class EmailService {
         });
     }
 
+    /**
+     * OTP Functions
+     */
+    ////////////////////
+    
+    public String generateOtp(int length) {
+        StringBuilder otp = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            otp.append(random.nextInt(10));
+        }
+        return otp.toString();
+    }
+
     public String sendOtpEmail(User user, int expireIn) throws MessagingException {
-        String otp = String.valueOf((int) (Math.floor(100000 + Math.random() * 900000))); 
+        String otp = this.generateOtp(6);
 
         // Send the email asynchronously so callers don't block on network I/O.
         this.emailExecutor.submit(() -> {
@@ -98,7 +115,7 @@ public class EmailService {
                 Logger.getLogger(EmailService.class.getName()).log(Level.SEVERE, "Unexpected error sending OTP to " + user.getEmail(), ex);
             }
         });
-        
+
         return otp;
     }
 
