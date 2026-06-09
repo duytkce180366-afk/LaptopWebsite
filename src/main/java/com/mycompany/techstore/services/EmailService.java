@@ -108,9 +108,9 @@ public class EmailService {
 
                 message.setText(body);
                 Transport.send(message);
-                Logger.getLogger(EmailService.class.getName()).log(Level.INFO, "OTP %s email sent to %s".formatted(otp, user.getEmail()));
+                Logger.getLogger(EmailService.class.getName()).log(Level.INFO, "OTP sent to %s".formatted(user.getEmail()));
             } catch (MessagingException mex) {
-                Logger.getLogger(EmailService.class.getName()).log(Level.SEVERE, "Failed to send OTP " + otp + " to email adress: " + mex.getMessage() + ", with email: " + user.getEmail(), mex);
+                Logger.getLogger(EmailService.class.getName()).log(Level.SEVERE, "Failed to send OTP to email adress: " + mex.getMessage() + ", with email: " + user.getEmail(), mex);
             } catch (Exception ex) {
                 Logger.getLogger(EmailService.class.getName()).log(Level.SEVERE, "Unexpected error sending OTP to " + user.getEmail(), ex);
             }
