@@ -109,7 +109,7 @@ public class AddToCartController extends HttpServlet {
     /**
      * Returns a short description of the servlet.
      *
-     * @return a String containing servlet description
+     * @return a String containing servlet descriiiption
      */
     @Override
     public String getServletInfo() {
