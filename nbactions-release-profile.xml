@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<actions>
+        <action>
+            <actionName>CUSTOM-Update dependecies</actionName>
+            <displayName>Update dependecies</displayName>
+            <goals>
+                <goal>versions:use-latest-releases</goal>
+            </goals>
+        </action>
+        <action>
+            <actionName>CUSTOM-Force redownload dependencies</actionName>
+            <displayName>Force redownload dependencies</displayName>
+            <goals>
+                <goal>clean</goal>
+                <goal>compile</goal>
+                <goal>-U</goal>
+            </goals>
+        </action>
+        <action>
+            <actionName>CUSTOM-Resolve dependencies</actionName>
+            <displayName>Resolve dependencies</displayName>
+            <goals>
+                <goal>dependency:resolve</goal>
+            </goals>
+        </action>
+        <action>
+            <actionName>CUSTOM-Resolve dependecies for offline</actionName>
+            <displayName>Resolve dependecies for offline</displayName>
+            <goals>
+                <goal>dependency:go-offline</goal>
+            </goals>
+        </action>
+    </actions>
