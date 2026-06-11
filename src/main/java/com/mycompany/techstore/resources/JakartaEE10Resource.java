@@ -13,8 +13,6 @@ public class JakartaEE10Resource {
     
     @GET
     public Response ping(){
-        return Response
-                .ok("ping Jakarta EE")
-                .build();
+        return Response.ok("ping Jakarta EE").build();
     }
 }
