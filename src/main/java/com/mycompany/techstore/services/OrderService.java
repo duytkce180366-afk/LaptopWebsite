@@ -1,0 +1,23 @@
+package com.mycompany.techstore.services;
+
+import com.mycompany.techstore.Repositories.OrderRepository;
+
+
+public class OrderService {
+
+    private OrderRepository repo =
+            new OrderRepository();
+
+    public boolean placeOrder(
+            int userId,
+            String paymentMethod,
+            String address,
+            String phone) {
+
+        return repo.placeOrder(
+                userId,
+                paymentMethod,
+                address,
+                phone);
+    }
+}
