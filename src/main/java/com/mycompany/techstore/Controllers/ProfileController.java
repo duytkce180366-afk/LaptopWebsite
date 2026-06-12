@@ -43,10 +43,41 @@ public class ProfileController extends HttpServlet {
                 return;
             }
 
-            // default: show profile page
+            if ("address_add".equalsIgnoreCase(action)) {
+                request.setAttribute("user", logged);
+                request.getRequestDispatcher("/WEB-INF/JSPViews/ProfileView/AddressForm.jsp").forward(request, response);
+                return;
+            }
+
+            if ("address_edit".equalsIgnoreCase(action)) {
+                String idStr = request.getParameter("id");
+                int id = -1;
+                try {
+                    id = Integer.parseInt(idStr);
+                } catch (NumberFormatException ignore) {
+
+                }
+
+                java.util.List<com.mycompany.techstore.Models.Objects.Address> addrs = this.profileService.GetAddressesForUser(logged.getUser_id());
+                com.mycompany.techstore.Models.Objects.Address found = null;
+                for (com.mycompany.techstore.Models.Objects.Address a : addrs) {
+                    if (a.getAddress_id() == id) {
+                        found = a;
+                        break;
+                    }
+                }
+
+                request.setAttribute("user", logged);
+                request.setAttribute("address", found);
+                request.getRequestDispatcher("/WEB-INF/JSPViews/ProfileView/AddressForm.jsp").forward(request, response);
+                return;
+            }
+
+            // default: show profile page with addresses
             request.setAttribute("user", logged);
+            request.setAttribute("addresses", this.profileService.GetAddressesForUser(logged.getUser_id()));
             request.getRequestDispatcher("/WEB-INF/JSPViews/ProfileView/ProfilePage.jsp").forward(request, response);
-        } catch (Exception ex) {
+        } catch (ServletException | IOException ex) {
             Logger.getLogger(ProfileController.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
             response.sendError(500, ex.getMessage());
         }
@@ -84,6 +115,63 @@ public class ProfileController extends HttpServlet {
                 response.sendError(500, ex.getMessage());
                 return;
             }
+        }
+
+        if ("address_save".equalsIgnoreCase(action)) {
+            String addrId = request.getParameter("address_id");
+            int addressId = -1;
+            try {
+                addressId = Integer.parseInt(addrId);
+            } catch (NumberFormatException ignore) {
+                // ignored
+            }
+
+            String line1 = request.getParameter("line1");
+            String line2 = request.getParameter("line2");
+            String city = request.getParameter("city");
+            String state = request.getParameter("state");
+            String postal = request.getParameter("postal_code");
+            String country = request.getParameter("country");
+            boolean isDefault = request.getParameter("is_default") != null;
+
+            boolean ok;
+            if (addressId > 0) {
+                ok = this.profileService.UpdateAddress(addressId, logged.getUser_id(), line1, line2, city, state, postal, country, isDefault);
+            } else {
+                ok = this.profileService.CreateAddress(logged.getUser_id(), line1, line2, city, state, postal, country, isDefault);
+            }
+
+            if (!ok) {
+                response.sendError(500, "Failed to save address");
+                return;
+            }
+
+            response.sendRedirect(request.getContextPath() + "/profile");
+            return;
+        }
+
+        if ("address_delete".equalsIgnoreCase(action)) {
+            String idStr = request.getParameter("id");
+            int id = -1;
+            try {
+                id = Integer.parseInt(idStr);
+            } catch (NumberFormatException ignore) {
+
+            }
+
+            if (id <= 0) {
+                response.sendError(400, "Invalid address id");
+                return;
+            }
+
+            boolean ok = this.profileService.DeleteAddress(id, logged.getUser_id());
+            if (!ok) {
+                response.sendError(500, "Failed to delete address");
+                return;
+            }
+
+            response.sendRedirect(request.getContextPath() + "/profile");
+            return;
         }
 
         response.sendError(400, "Invalid action");
