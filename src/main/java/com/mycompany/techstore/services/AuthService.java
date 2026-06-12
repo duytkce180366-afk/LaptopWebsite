@@ -12,9 +12,8 @@ import java.security.spec.InvalidKeySpecException;
 import com.mycompany.techstore.Models.Objects.User;
 import com.mycompany.techstore.Repositories.AuthRepository;
 import com.mycompany.techstore.Exceptions.AuthException;
-import com.mycompany.techstore.resources.DbClass;
 
-public class AuthService extends DbClass {
+public class AuthService {
 
     // Allow case-insensitive email local-part/domain validation
     private final String emailFormat = "(?i)^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$";
