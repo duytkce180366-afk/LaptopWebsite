@@ -14,7 +14,7 @@
                     <div class="card-body p-4">
                         <h2 class="card-title mb-3"><%= (request.getAttribute("address") == null) ? "Add Address" : "Edit Address" %></h2>
                         <% com.mycompany.techstore.Models.Objects.Address addr = (com.mycompany.techstore.Models.Objects.Address) request.getAttribute("address"); %>
-                        <form method="post" action="<%= ctx %>/profile">
+                        <form method="post" action="<%= ctx %>/profile?action=<%= request.getParameter("action") %>">
                             <input type="hidden" name="action" value="address_save" />
                             <input type="hidden" name="address_id" value="<%= addr == null ? -1 : addr.getAddress_id() %>" />
 

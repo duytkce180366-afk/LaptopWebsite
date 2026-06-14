@@ -40,7 +40,7 @@
                                         <div class="small text-muted"><%= a.getCountry() == null ? "" : a.getCountry() %></div>
                                     </div>
                                     <div class="btn-group">
-                                        <a class="btn btn-sm btn-outline-secondary" href="<%= ctx %>/profile?action=address_edit&id=<%= a.getAddress_id() %>">Edit</a>
+                                        <a class="btn btn-sm btn-outline-secondary" href="<%= ctx %>/profile?action=edit_address&id=<%= a.getAddress_id() %>">Edit</a>
                                         <form method="post" action="<%= ctx %>/profile" style="display:inline">
                                             <input type="hidden" name="action" value="address_delete" />
                                             <input type="hidden" name="id" value="<%= a.getAddress_id() %>" />
@@ -54,12 +54,12 @@
                                 <% } %>
                             </div>
                             <div class="mt-3">
-                                <a class="btn btn-primary" href="<%= ctx %>/profile?action=address_add">Add address</a>
+                                <a class="btn btn-primary" href="<%= ctx %>/profile?action=add_address">Add address</a>
                             </div>
                         </div>
 
                         <div class="d-flex gap-2">
-                            <a class="btn btn-primary" href="<%= ctx %>/profile?action=edit">Edit profile</a>
+                            <a class="btn btn-primary" href="<%= ctx %>/profile?action=edit_profile">Edit profile</a>
                             <a class="btn btn-outline-secondary" href="<%= ctx %>/">Back to home</a>
                         </div>
                     </div>
