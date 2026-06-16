@@ -13,7 +13,7 @@
                 <div class="card auth-panel shadow-sm w-100" style="max-width:680px;">
                     <div class="card-body p-4">
                         <h2 class="card-title mb-3">Edit Profile</h2>
-                        <form method="post" action="<%= ctx %>/profile?action=update">
+                        <form method="post" action="<%= ctx %>/profile?action=edit_profile">
                             <div class="mb-3">
                                 <label class="form-label">Full name</label>
                                 <input type="text" name="full_name" class="form-control" value="<%= ((com.mycompany.techstore.Models.Objects.User)request.getAttribute("user")).getFull_name() %>" required />
