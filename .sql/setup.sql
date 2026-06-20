@@ -97,7 +97,7 @@ BEGIN
     CREATE TABLE dbo.bs_Addresses (
         address_id       INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_bs_Addresses PRIMARY KEY,
         user_id          INT NOT NULL,
-        receiver_name    NVARCHAR(150) NOT NULL,
+        home_address    NVARCHAR(150) NOT NULL,
         phone            NVARCHAR(20) NOT NULL,
         province         NVARCHAR(100) NOT NULL,
         postal_code      NVARCHAR(100) NOT NULL,

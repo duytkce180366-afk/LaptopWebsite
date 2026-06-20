@@ -17,11 +17,11 @@
 
                         <% Address addr = (Address) request.getAttribute("address");%>
                         <form method="post" action="<%= ctx%>/profile?action=<%= request.getParameter("action")%>">
-                            <input type="hidden" name="address_id" value="<%= addr == null ? -1 : addr.getAddress_id()%>" />
+                            <input type="hidden" name="address_id" value="<%= addr == null ? -1 : addr.getAddressId() %>" />
 
                             <div class="mb-3">
-                                <label class="form-label">Receiver Name</label>
-                                <input type="text" name="receiver_name" class="form-control" value="<%= addr == null ? "" : addr.getReceiver_name()%>" required />
+                                <label class="form-label">Home Address</label>
+                                <input type="text" name="home_address" class="form-control" value="<%= addr == null ? "" : addr.getHomeAddress() %>" required />
                             </div>
 
                             <div class="mb-3">
@@ -30,8 +30,13 @@
                             </div>
 
                             <div class="mb-3">
+                                <label class="form-label">Province</label>
+                                <input type="text" name="province" class="form-control" value="<%= addr == null ? "" : addr.getProvince()%>" required />
+                            </div>
+
+                            <div class="mb-3">
                                 <label class="form-label">Postal Code</label>
-                                <input type="text" name="postal_code" class="form-control" value="<%= addr == null ? "" : addr.getPostal_code()%>" required />
+                                <input type="text" name="postal_code" class="form-control" value="<%= addr == null ? "" : addr.getPostalCode() %>" required />
                             </div>
 
                             <div class="mb-3">
@@ -40,7 +45,7 @@
                             </div>
 
                             <div class="form-check mb-3">
-                                <input class="form-check-input" type="checkbox" name="is_default" id="is_default" <%= (addr != null && addr.isIs_default()) ? "checked" : ""%> />
+                                <input class="form-check-input" type="checkbox" name="is_default" id="is_default" <%= (addr != null && addr.isIsDefault()) ? "checked" : ""%> />
                                 <label class="form-check-label" for="is_default">Set as default</label>
                             </div>
 

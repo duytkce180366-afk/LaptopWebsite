@@ -16,7 +16,7 @@ public class AddressRepository extends DbClass {
         ArrayList<Address> list = new ArrayList<>();
 
         String sql = """
-            SELECT [address_id], [user_id], [receiver_name], [phone], [province], [postal_code], [ward], [is_default], [created_at]
+            SELECT [address_id], [user_id], [home_address], [phone], [province], [postal_code], [ward], [is_default], [created_at]
                 FROM dbo.bs_Addresses
                 WHERE user_id = ?
                 ORDER BY is_default DESC, address_id;
@@ -29,7 +29,7 @@ public class AddressRepository extends DbClass {
                     Address address = new Address(
                             rs.getInt("address_id"),
                             rs.getInt("user_id"),
-                            rs.getString("receiver_name"),
+                            rs.getString("home_address"),
                             rs.getString("phone"),
                             rs.getString("province"),
                             rs.getString("postal_code"),
@@ -46,17 +46,17 @@ public class AddressRepository extends DbClass {
         return list;
     }
 
-    public boolean CreateAddress(int userId, String receiverName, String phone, String province, String postalCode, String ward, boolean isDefault) {
+    public boolean CreateAddress(int userId, String homeAddress, String phone, String province, String postalCode, String ward, boolean isDefault) {
         boolean status = false;
 
         String sql = """
-            INSERT INTO dbo.bs_Addresses ([user_id], [receiver_name], [phone], [province], [postal_code], [ward], [is_default], [created_at])
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, SYSUTCDATETIME());
+            INSERT INTO dbo.bs_Addresses ([user_id], [home_address], [phone], [province], [postal_code], [ward], [is_default], [created_at])
+                VALUES (?, ?, ?, ?, ?, ?, ?, SYSUTCDATETIME());
             """;
 
         try (PreparedStatement ps = super.getConnection().prepareStatement(sql)) {
             ps.setInt(1, userId);
-            ps.setString(2, receiverName);
+            ps.setString(2, homeAddress);
             ps.setString(3, phone);
             ps.setString(4, province);
             ps.setString(5, postalCode);
@@ -64,23 +64,24 @@ public class AddressRepository extends DbClass {
             ps.setBoolean(7, isDefault);
             status = (ps.executeUpdate() > 0);
         } catch (SQLException ex) {
+            System.out.println("Error: " + ex.toString());
             Logger.getLogger(AddressRepository.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         return status;
     }
 
-    public boolean UpdateAddress(int userId, int addressId, String receiverName, String phone, String province, String postalCode, String ward, boolean isDefault) {
+    public boolean UpdateAddress(int userId, int addressId, String homeAddress, String phone, String province, String postalCode, String ward, boolean isDefault) {
         boolean status = false;
 
         String sql = """
             UPDATE dbo.bs_Addresses
-                SET receiver_name = ?, phone = ?, province = ?, postal_code = ?, ward = ?, is_default = ?
+                SET home_address = ?, phone = ?, province = ?, postal_code = ?, ward = ?, is_default = ?
                 WHERE address_id = ? AND user_id = ?;
             """;
 
         try (PreparedStatement ps = super.getConnection().prepareStatement(sql)) {
-            ps.setString(1, receiverName);
+            ps.setString(1, homeAddress);
             ps.setString(2, phone);
             ps.setString(3, province);
             ps.setString(4, postalCode);

@@ -34,16 +34,16 @@
                                 %>
                                 <div class="list-group-item d-flex justify-content-between align-items-start">
                                     <div>
-                                        <strong><%= a.getLine1()%></strong>
-                                        <div class="small text-muted"><%= a.getLine2() == null ? "" : a.getLine2()%></div>
-                                        <div class="small text-muted"><%= a.getCity()%> <%= a.getState() == null ? "" : a.getState()%> <%= a.getPostal_code() == null ? "" : a.getPostal_code()%></div>
-                                        <div class="small text-muted"><%= a.getCountry() == null ? "" : a.getCountry()%></div>
+                                        <strong><%= a.getHomeAddress()%></strong>
+                                        <div class="small text-muted"><%= a.getWard() == null ? "" : a.getWard()%></div>
+                                        <div class="small text-muted"><%= a.getProvince()%></div>
+                                        <div class="small text-muted"><%= a.getPostalCode() == null ? "" : a.getPostalCode()%></div>
                                     </div>
                                     <div class="btn-group">
-                                        <a class="btn btn-sm btn-outline-secondary" href="<%= ctx%>/profile?action=edit_address&id=<%= a.getAddress_id()%>">Edit</a>
+                                        <a class="btn btn-sm btn-outline-secondary" href="<%= ctx%>/profile?action=edit_address&id=<%= a.getAddressId()%>">Edit</a>
                                         <form method="post" action="<%= ctx%>/profile" style="display:inline">
                                             <input type="hidden" name="action" value="remove_address" />
-                                            <input type="hidden" name="id" value="<%= a.getAddress_id()%>" />
+                                            <input type="hidden" name="id" value="<%= a.getAddressId()%>" />
                                             <button class="btn btn-sm btn-outline-danger" type="submit" onclick="return confirm('Delete this address?')">Delete</button>
                                         </form>
                                     </div>
