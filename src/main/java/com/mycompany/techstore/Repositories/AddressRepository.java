@@ -75,12 +75,7 @@ public class AddressRepository extends DbClass {
 
         String sql = """
             UPDATE dbo.bs_Addresses
-                SET receiver_name = ?,
-                    phone = ?,
-                    province = ?,
-                    postal_code = ?,
-                    ward = ?,
-                    is_default = ?
+                SET receiver_name = ?, phone = ?, province = ?, postal_code = ?, ward = ?, is_default = ?
                 WHERE address_id = ? AND user_id = ?;
             """;
 

@@ -44,13 +44,11 @@ public class ProfileController extends HttpServlet {
 
     // Address Update
     private void UpdateAddress(HttpServletRequest request, HttpServletResponse response, HttpSession session) throws AuthException, IOException {
-        String line1 = request.getParameter("line1");
-        String line2 = request.getParameter("line2");
-        String city = request.getParameter("city");
-        String state = request.getParameter("state");
-        String postal = request.getParameter("postal_code");
-        String country = request.getParameter("country");
-        String addStr = request.getParameter("address_id");
+        String addressIdStr = request.getParameter("address_id");
+        String receiverName = request.getParameter("receiver_name");
+        String phone = request.getParameter("phone");
+        String postalCode = request.getParameter("postal_code");
+        String ward = request.getParameter("ward");
         boolean isDefault = request.getParameter("is_default") != null;
 
         User logged = (User) session.getAttribute("loggedUser");
@@ -59,14 +57,15 @@ public class ProfileController extends HttpServlet {
         }
 
         try {
-            int addressId = Integer.parseInt(addStr.strip());
-            boolean status = this.profileService.UpdateAddress(addressId, logged.getUser_id(), line1, line2, city, state, postal, country, isDefault);
+            int userId = logged.getUser_id();
+            int addressId = Integer.parseInt(addressIdStr);
+            boolean status = this.profileService.UpdateAddress(userId, addressId, receiverName, phone, phone, postalCode, ward, isDefault);
 
             if (!status) {
                 throw new AuthException(-1, "Failed to save address");
             }
         } catch (NumberFormatException ex) {
-            throw new AuthException(-1, "Invalid number ID");
+            throw new AuthException(-1, "Invalid ID");
         }
 
         response.sendRedirect(request.getContextPath() + "/profile");
@@ -103,12 +102,10 @@ public class ProfileController extends HttpServlet {
 
     // Add address
     private void AddAddress(HttpServletRequest request, HttpServletResponse response, HttpSession session) throws AuthException, IOException {
-        String line1 = request.getParameter("line1");
-        String line2 = request.getParameter("line2");
-        String city = request.getParameter("city");
-        String state = request.getParameter("state");
-        String postal = request.getParameter("postal_code");
-        String country = request.getParameter("country");
+        String receiverName = request.getParameter("receiver_name");
+        String phone = request.getParameter("phone");
+        String postalCode = request.getParameter("postal_code");
+        String ward = request.getParameter("ward");
         boolean isDefault = request.getParameter("is_default") != null;
 
         User logged = (User) session.getAttribute("loggedUser");
@@ -116,7 +113,9 @@ public class ProfileController extends HttpServlet {
             throw new AuthException(-1, "User not logged in");
         }
 
-        boolean status = this.profileService.CreateAddress(logged.getUser_id(), line1, line2, city, state, postal, country, isDefault);
+        int userId = logged.getUser_id();
+
+        boolean status = this.profileService.CreateAddress(userId, receiverName, phone, phone, postalCode, ward, isDefault);
         if (!status) {
             throw new AuthException(-1, "Failed to save address");
         }
@@ -186,7 +185,7 @@ public class ProfileController extends HttpServlet {
                     response.sendError(400, ex.getLocalizedMessage());
                 }
             }
-            
+
             // Default actions
             case null -> {
                 response.sendRedirect(request.getContextPath() + "/profile?action=view");

@@ -15,8 +15,8 @@ public class ProfileRepository extends DbClass {
 
         String sqlUpdate = """
                             UPDATE [bs_user]
-                                         SET [full_name] = ?, [phone] = ?, [updated_at] = SYSUTCDATETIME()
-                                         WHERE [email] = ?;
+                                SET [full_name] = ?, [phone] = ?, [updated_at] = SYSUTCDATETIME()
+                                WHERE [email] = ?;
                             """;
 
         try (PreparedStatement ps = super.getConnection().prepareStatement(sqlUpdate)) {

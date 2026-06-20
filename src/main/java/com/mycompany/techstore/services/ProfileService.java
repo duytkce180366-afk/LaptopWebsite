@@ -22,8 +22,8 @@ public class ProfileService {
 
     // Update profile fields and return refreshed user or null on failure
     public User UpdateProfile(String email, String fullName, String phone) throws AuthException {
-        boolean ok = this.profileRepo.UpdateProfileByEmail(email, fullName, phone);
-        if (!ok) {
+        boolean status = this.profileRepo.UpdateProfileByEmail(email, fullName, phone);
+        if (!status) {
             return null;
         }
 
@@ -36,12 +36,12 @@ public class ProfileService {
         return this.addressRepo.GetAddressesByUserId(userId);
     }
 
-    public boolean CreateAddress(int userId, String line1, String line2, String city, String state, String postal, String country, boolean isDefault) {
-        return this.addressRepo.CreateAddress(userId, line1, line2, city, state, postal, country, isDefault);
+    public boolean CreateAddress(int userId, String receiverName, String phone, String province, String postalCode, String ward, boolean isDefault) {
+        return this.addressRepo.CreateAddress(userId, receiverName, phone, province, postalCode, ward, isDefault);
     }
 
-    public boolean UpdateAddress(int addressId, int userId, String line1, String line2, String city, String state, String postal, String country, boolean isDefault) {
-        return this.addressRepo.UpdateAddress(addressId, userId, line1, line2, city, state, postal, country, isDefault);
+    public boolean UpdateAddress(int userId, int addressId, String receiverName, String phone, String province, String postalCode, String ward, boolean isDefault) {
+        return this.addressRepo.UpdateAddress(userId, addressId, receiverName, phone, province, postalCode, ward, isDefault);
     }
 
     public boolean DeleteAddress(int addressId, int userId) {
