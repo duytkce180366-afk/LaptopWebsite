@@ -97,12 +97,11 @@ BEGIN
     CREATE TABLE dbo.bs_Addresses (
         address_id       INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_bs_Addresses PRIMARY KEY,
         user_id          INT NOT NULL,
-        receiver_name    NVARCHAR(150) NOT NULL,
+        home_address    NVARCHAR(150) NOT NULL,
         phone            NVARCHAR(20) NOT NULL,
         province         NVARCHAR(100) NOT NULL,
-        district         NVARCHAR(100) NOT NULL,
+        postal_code      NVARCHAR(100) NOT NULL,
         ward             NVARCHAR(100) NOT NULL,
-        detail_address   NVARCHAR(255) NOT NULL,
         is_default       BIT NOT NULL CONSTRAINT DF_bs_Addresses_is_default DEFAULT (0),
         created_at       DATETIME2(0) NOT NULL CONSTRAINT DF_bs_Addresses_created_at DEFAULT SYSUTCDATETIME()
     );
