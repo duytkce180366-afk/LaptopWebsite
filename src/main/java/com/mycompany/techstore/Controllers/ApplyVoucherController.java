@@ -4,7 +4,10 @@
  */
 package com.mycompany.techstore.Controllers;
 
-import com.mycompany.techstore.Repositories.CartRepository;
+import com.mycompany.techstore.Models.Objects.User;
+import com.mycompany.techstore.Models.Objects.Voucher;
+import com.mycompany.techstore.services.CartService;
+import com.mycompany.techstore.services.VoucherService;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -12,16 +15,14 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 /**
  *
  * @author DuyTran
  */
-@WebServlet("/cart/update")
-public class UpdateCartController extends HttpServlet {
-
-    private CartRepository repo
-            = new CartRepository();
+@WebServlet("/apply-voucher")
+public class ApplyVoucherController extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -40,10 +41,10 @@ public class UpdateCartController extends HttpServlet {
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Servlet UpdateCartController</title>");
+            out.println("<title>Servlet ApplyVoucherController</title>");
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>Servlet UpdateCartController at " + request.getContextPath() + "</h1>");
+            out.println("<h1>Servlet ApplyVoucherController at " + request.getContextPath() + "</h1>");
             out.println("</body>");
             out.println("</html>");
         }
@@ -72,32 +73,83 @@ public class UpdateCartController extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
+    private VoucherService voucherService
+            = new VoucherService();
+
+    private CartService cartService
+            = new CartService();
+
     @Override
     protected void doPost(
             HttpServletRequest request,
             HttpServletResponse response)
             throws IOException {
 
-        String cartItemIdStr = request.getParameter("cartItemId");
-        String quantityStr = request.getParameter("quantity");
+        HttpSession session = request.getSession();
 
-        System.out.println("cartItemId=[" + cartItemIdStr + "]");
-        System.out.println("quantity=[" + quantityStr + "]");
+        User user
+                = (User) session.getAttribute(
+                        "loggedUser");
 
-        if (cartItemIdStr != null
-                && !cartItemIdStr.isEmpty()
-                && quantityStr != null
-                && !quantityStr.isEmpty()) {
+        String code
+                = request.getParameter(
+                        "voucherCode");
 
-            int cartItemId = Integer.parseInt(cartItemIdStr);
-            int quantity = Integer.parseInt(quantityStr);
+        Voucher voucher
+                = voucherService.validateVoucher(
+                        code);
 
-            repo.updateQuantity(cartItemId, quantity);
+        response.setContentType(
+                "application/json");
+
+        response.setCharacterEncoding(
+                "UTF-8");
+
+        if (voucher == null) {
+
+            response.getWriter().write(
+                    """
+                {
+                  "success": false,
+                  "message": "Invalid voucher"
+                }
+                """
+            );
+
+            return;
         }
 
-        response.sendRedirect(
-                request.getContextPath()
-                + "/cart");
+        double total
+                = cartService.getCartTotal(
+                        user.getUser_id());
+
+        double discount
+                = total
+                * voucher.getDiscountPercent()
+                / 100.0;
+
+        double finalTotal
+                = total - discount;
+
+        session.setAttribute(
+                "voucher",
+                voucher);
+
+        session.setAttribute(
+                "discountAmount",
+                discount);
+
+        session.setAttribute(
+                "finalTotal",
+                finalTotal);
+
+        response.getWriter().write(
+                "{"
+                + "\"success\":true,"
+                + "\"discount\":" + discount + ","
+                + "\"finalTotal\":" + finalTotal
+                + "}"
+        );
     }
 
     /**

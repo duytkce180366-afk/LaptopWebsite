@@ -9,7 +9,7 @@
     
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jakartaee>10.0.0</jakartaee>
+        <jakartaee>11.0.0</jakartaee>
     </properties>
     
     <dependencies>
@@ -43,7 +43,7 @@
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>nimbus-jose-jwt</artifactId>
-            <version>10.9</version>
+            <version>10.9.1</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish</groupId>
@@ -53,13 +53,13 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>5.10.0</version>
+            <version>6.1.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.10.0</version>
+            <version>6.1.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

@@ -24,6 +24,9 @@ public class CartService {
             int quantity,
             double price) {
 
+        int stock
+                = repo.getProductStock(productId);
+
         int cartId
                 = repo.getCartIdByUserId(userId);
 
@@ -37,7 +40,12 @@ public class CartService {
                         cartId,
                         productId);
 
+        // Chưa có sản phẩm trong cart
         if (item == null) {
+
+            if (quantity > stock) {
+                return false;
+            }
 
             return repo.addCartItem(
                     cartId,
@@ -46,12 +54,17 @@ public class CartService {
                     price);
         }
 
+        // Đã có sản phẩm trong cart
         int newQuantity
                 = item.getQuantity()
                 + quantity;
 
+        if (newQuantity > stock) {
+            return false;
+        }
+
         return repo.updateQuantity(
-                cartId,
+                item.getCartItemId(),
                 newQuantity);
     }
 
@@ -65,5 +78,26 @@ public class CartService {
         }
 
         return repo.getCartItems(cartId);
+    }
+
+    public boolean deleteCartItem(int cartItemId) {
+        return repo.deleteCartItem(cartItemId);
+    }
+
+    public int getProductStock(int productId) {
+        return repo.getProductStock(productId);
+    }
+
+    public double getCartTotal(int userId) {
+
+        List<CartItem> items = getCartItems(userId);
+
+        double total = 0;
+
+        for (CartItem item : items) {
+            total += item.getSubtotal();
+        }
+
+        return total;
     }
 }

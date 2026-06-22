@@ -6,6 +6,8 @@
 <%@page import="java.util.List"%>
 <%@page import="java.util.Locale"%>
 <%@page import="java.util.Map"%>
+<%@ taglib prefix="c"
+           uri="http://java.sun.com/jsp/jstl/core" %>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%!
     private String html(Object value) {
@@ -51,40 +53,7 @@
     </head>
     <body id="top">
         <main class="app-shell" id="app">
-            <nav class="topbar" aria-label="Main navigation">
-                <a class="brand-button" href="<%= contextPath%>/home">
-                    <span class="brand-mark">Tech Store</span>
-                    <span class="brand-subtitle">Computer store</span>
-                </a>
-
-                <div class="category-menu">
-                    <button class="category-menu-button" type="button" data-action="toggle-category-menu" aria-expanded="false">
-                        Categories
-                        <span aria-hidden="true">v</span>
-                    </button>
-                    <div class="mega-menu">
-                        <div class="mega-list">
-                            <% for (Category category : categories) {%>
-                            <a class="mega-category<%= product != null && category.getId().equals(product.getCategoryId()) ? " active" : ""%>"
-                               href="<%= contextPath%>/home?category=<%= html(category.getId())%>#products">
-                                <%= html(category.getName())%>
-                                <span aria-hidden="true">&gt;</span>
-                            </a>
-                            <% }%>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="nav-links">
-                    <a href="<%= contextPath%>/home#home">Home</a>
-                    <a href="<%= contextPath%>/home#products">Products</a>
-                </div>
-                <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch to dark mode" aria-pressed="false">
-                    <span class="theme-icon theme-icon-moon" aria-hidden="true">☾</span>
-                    <span class="theme-icon theme-icon-sun" aria-hidden="true">☀</span>
-                </button>
-            </nav>
-
+            <%@include file="/WEB-INF/JSPViews/global/nav.jsp" %>
             <% if (product == null) {%>
             <section class="empty-state">
                 <h3>Product not found</h3>
@@ -111,7 +80,6 @@
                             </div>
                             <p><%= html(product.getDescription())%></p>
                             <h3><%= formatPrice(product.getPrice())%></h3>
-                            <h3><%= formatPrice(product.getPrice())%></h3>
 
                             <form action="<%= request.getContextPath()%>/cart/add"
                                   method="post">
@@ -132,7 +100,14 @@
                                 <button type="submit">
                                     Add To Cart
                                 </button>
+                                <c:if test="${not empty sessionScope.cartError}">
+                                    <div class="alert-stock">
+                                        ${sessionScope.cartError}
+                                    </div>
 
+                                    <c:remove var="cartError"
+                                              scope="session"/>
+                                </c:if>
                             </form>
                             <dl class="spec-table">
                                 <% for (Map.Entry<String, String> spec : product.getSpecs().entrySet()) {%>

@@ -1,6 +1,8 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c"
            uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt"
+           uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <!DOCTYPE html>
 <html>
@@ -58,7 +60,14 @@
                     </h2>
 
                 </div>
+                <c:if test="${not empty sessionScope.cartError}">
+                    <div class="alert-stock">
+                        ${sessionScope.cartError}
+                    </div>
 
+                    <c:remove var="cartError"
+                              scope="session"/>
+                </c:if>
                 <!-- TABLE HERE -->
                 <table class="cart-table">
 
@@ -83,7 +92,8 @@
                                 </td>
 
                                 <td class="cart-price">
-                                    ${item.unitPrice}
+                                    <fmt:formatNumber value="${item.unitPrice}"
+                                                      pattern="#,###"/> ₫
                                 </td>
 
                                 <td>
@@ -91,32 +101,51 @@
                                 </td>
 
                                 <td class="cart-subtotal">
-                                    ${item.subtotal}
+                                    <fmt:formatNumber value="${item.subtotal}"
+                                                      pattern="#,###"/> ₫
                                 </td>
+
 
                                 <td>
 
                                     <div class="cart-actions">
 
-                                        <form action="${pageContext.request.contextPath}/cart/update"
-                                              method="post">
+                                        <div class="qty-box">
 
-                                            <input type="hidden"
-                                                   name="cartItemId"
-                                                   value="${item.cartItemId}"/>
+                                            <form action="${pageContext.request.contextPath}/cart/update"
+                                                  method="post">
 
-                                            <input class="qty-input"
-                                                   type="number"
-                                                   name="quantity"
-                                                   value="${item.quantity}"
-                                                   min="1"/>
+                                                <input type="hidden"
+                                                       name="cartItemId"
+                                                       value="${item.cartItemId}"/>
 
-                                            <button class="btn-update"
-                                                    type="submit">
-                                                Update
-                                            </button>
+                                                <button type="submit"
+                                                        name="quantity"
+                                                        value="${item.quantity - 1}">
+                                                    -
+                                                </button>
 
-                                        </form>
+                                            </form>
+
+                                            <span>${item.quantity}</span>
+
+                                            <form action="${pageContext.request.contextPath}/cart/update"
+                                                  method="post">
+
+                                                <input type="hidden"
+                                                       name="cartItemId"
+                                                       value="${item.cartItemId}"/>
+
+                                                <button type="submit"
+                                                        name="quantity"
+                                                        value="${item.quantity + 1}">
+                                                    +
+                                                </button>
+
+                                            </form>
+
+                                        </div>
+
 
                                         <form action="${pageContext.request.contextPath}/cart/delete"
                                               method="post">
@@ -143,6 +172,37 @@
                     </tbody>
 
                 </table>
+                <div class="cart-summary">
+
+                    <div class="summary-box">
+
+                        <h3>Total:
+                            <span>
+                                <fmt:formatNumber
+                                    value="${cartTotal}"
+                                    type="number"
+                                    groupingUsed="true"/>
+                                ₫
+                            </span>
+                        </h3>
+
+                        <div class="summary-actions">
+
+                            <a href="${pageContext.request.contextPath}/home"
+                               class="btn-continue">
+                                Continue Shopping
+                            </a>
+
+                            <a href="${pageContext.request.contextPath}/checkout"
+                               class="btn-checkout">
+                                Checkout
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
             </section>
 
         </main>

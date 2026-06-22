@@ -4,6 +4,8 @@
  */
 package com.mycompany.techstore.Controllers;
 
+import com.mycompany.techstore.Models.Objects.CartItem;
+import com.mycompany.techstore.Models.Objects.User;
 import com.mycompany.techstore.services.CartService;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -12,16 +14,17 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import java.util.List;
 
 /**
  *
  * @author DuyTran
  */
-@WebServlet("/cart/add")
-public class AddToCartController extends HttpServlet {
+@WebServlet("/cart")
+public class CartController_1 extends HttpServlet {
 
-    private CartService service
-            = new CartService();
+    private CartService cartService = new CartService();
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -40,10 +43,10 @@ public class AddToCartController extends HttpServlet {
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Servlet AddToCartController</title>");
+            out.println("<title>Servlet CartController</title>");
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>Servlet AddToCartController at " + request.getContextPath() + "</h1>");
+            out.println("<h1>Servlet CartController at " + request.getContextPath() + "</h1>");
             out.println("</body>");
             out.println("</html>");
         }
@@ -59,9 +62,41 @@ public class AddToCartController extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+    protected void doGet(
+            HttpServletRequest request,
+            HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+
+        HttpSession session = request.getSession(false);
+
+        User user
+                = (User) session.getAttribute("loggedUser");
+
+        if (user == null) {
+            response.sendRedirect(
+                    request.getContextPath()
+                    + "/auth?action=signin");
+            return;
+        }
+
+        int userId = user.getUser_id();
+
+        List<CartItem> items
+                = cartService.getCartItems(userId);
+
+        request.setAttribute("cartItems", items);
+        double total
+                = cartService.getCartTotal(userId);
+
+        request.setAttribute(
+                "cartTotal",
+                total);
+        request.getRequestDispatcher(
+                "/WEB-INF/JSPViews/GuestView/Cart.jsp")
+                .forward(request, response);
+        for (CartItem item : items) {
+            System.out.println("cartItemId = " + item.getCartItemId());
+        }
     }
 
     /**
@@ -73,43 +108,15 @@ public class AddToCartController extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     @Override
-    protected void doPost(
-            HttpServletRequest request,
-            HttpServletResponse response)
-            throws IOException {
-
-        int userId = 1;
-
-        int productId
-                = Integer.parseInt(
-                        request.getParameter(
-                                "productId"));
-
-        int quantity
-                = Integer.parseInt(
-                        request.getParameter(
-                                "quantity"));
-
-        double price
-                = Double.parseDouble(
-                        request.getParameter(
-                                "price"));
-
-        service.addProduct(
-                userId,
-                productId,
-                quantity,
-                price);
-
-        response.sendRedirect(
-                request.getContextPath()
-                + "/cart");
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processRequest(request, response);
     }
 
     /**
      * Returns a short description of the servlet.
      *
-     * @return a String containing servlet descriiiption
+     * @return a String containing servlet description
      */
     @Override
     public String getServletInfo() {

@@ -171,12 +171,17 @@ public class CartRepository {
         List<CartItem> list = new ArrayList<>();
 
         String sql
-                = "SELECT * FROM bs_CartItems WHERE cart_id = ?";
+                = "SELECT c.*, "
+                + "p.product_name, "
+                + "p.stock, "
+                + "p.thumbnail "
+                + "FROM bs_CartItems c "
+                + "JOIN bs_Products p "
+                + "ON c.product_id = p.product_id "
+                + "WHERE c.cart_id = ?";
 
         try (
-                Connection con
-                = new DbClass().getConnection(); PreparedStatement ps
-                = con.prepareStatement(sql)) {
+                Connection con = new DbClass().getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, cartId);
 
@@ -186,20 +191,20 @@ public class CartRepository {
 
                 CartItem item = new CartItem();
 
-                item.setCartItemId(
-                        rs.getInt("cart_item_id"));
+                item.setCartItemId(rs.getInt("cart_item_id"));
+                item.setCartId(rs.getInt("cart_id"));
+                item.setProductId(rs.getInt("product_id"));
+                item.setQuantity(rs.getInt("quantity"));
+                item.setUnitPrice(rs.getDouble("unit_price"));
 
-                item.setCartId(
-                        rs.getInt("cart_id"));
+                item.setProductName(
+                        rs.getString("product_name"));
 
-                item.setProductId(
-                        rs.getInt("product_id"));
+                item.setStock(
+                        rs.getInt("stock"));
 
-                item.setQuantity(
-                        rs.getInt("quantity"));
-
-                item.setUnitPrice(
-                        rs.getDouble("unit_price"));
+                item.setImage(
+                        rs.getString("thumbnail"));
 
                 list.add(item);
             }
@@ -209,5 +214,75 @@ public class CartRepository {
         }
 
         return list;
+    }
+
+    public boolean deleteCartItem(int cartItemId) {
+
+        String sql
+                = "DELETE FROM bs_CartItems "
+                + "WHERE cart_item_id = ?";
+
+        try (
+                Connection con = new DbClass().getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, cartItemId);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    public int getProductStock(int productId) {
+
+        String sql
+                = "SELECT stock "
+                + "FROM bs_Products "
+                + "WHERE product_id = ?";
+
+        try (
+                Connection con = new DbClass().getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, productId);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt("stock");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
+
+    public int getProductIdByCartItemId(int cartItemId) {
+
+        String sql
+                = "SELECT product_id "
+                + "FROM bs_CartItems "
+                + "WHERE cart_item_id = ?";
+
+        try (
+                Connection con = new DbClass().getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, cartItemId);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt("product_id");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return -1;
     }
 }

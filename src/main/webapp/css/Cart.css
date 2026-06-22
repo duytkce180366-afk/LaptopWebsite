@@ -143,3 +143,99 @@
     background:#1f2937;
     transform:translateY(-2px);
 }
+/* Biến form thành inline hoặc flex để không bị nhảy hàng */
+.cart-actions form,
+.qty-box form {
+    display: inline-block;
+    margin: 0;
+    padding: 0;
+}
+
+/* Định dạng lại giao diện cho các nút cộng trừ (+ / -) */
+.qty-box button {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    background: #e5e7eb; /* Thêm màu nền cho nút */
+    font-weight: bold;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+}
+
+.qty-box button:hover {
+    background: #d1d5db;
+}
+.alert-stock{
+    background:#fee2e2;
+    color:#b91c1c;
+    padding:12px;
+    margin-bottom:20px;
+    border-radius:10px;
+    text-align:center;
+    font-weight:600;
+}
+.cart-summary{
+    display:flex;
+    justify-content:flex-end;
+    margin-top:30px;
+}
+
+.summary-box{
+    min-width:320px;
+    background:#fff;
+    padding:25px;
+    border-radius:15px;
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+}
+
+.summary-box h3{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:20px;
+    font-size:22px;
+}
+
+.summary-box h3 span{
+    color:#2563eb;
+    font-weight:700;
+}
+
+.summary-actions{
+    display:flex;
+    gap:12px;
+}
+
+.btn-continue,
+.btn-checkout{
+    flex:1;
+    text-align:center;
+    padding:12px 20px;
+    border-radius:10px;
+    text-decoration:none;
+    font-weight:600;
+    transition:.25s;
+}
+
+.btn-continue{
+    background:#e5e7eb;
+    color:#111827;
+}
+
+.btn-continue:hover{
+    background:#d1d5db;
+}
+
+.btn-checkout{
+    background:#16a34a;
+    color:white;
+}
+
+.btn-checkout:hover{
+    background:#15803d;
+    transform:translateY(-2px);
+}
