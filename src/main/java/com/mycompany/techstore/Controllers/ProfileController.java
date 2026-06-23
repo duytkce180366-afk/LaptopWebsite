@@ -48,7 +48,7 @@ public class ProfileController extends HttpServlet {
         String homeAddress = request.getParameter("home_address");
         String phone = request.getParameter("phone");
         String province = request.getParameter("province");
-        String postalCode = request.getParameter("postal_code");
+        
         String ward = request.getParameter("ward");
         boolean isDefault = request.getParameter("is_default") != null;
 
@@ -60,7 +60,7 @@ public class ProfileController extends HttpServlet {
         try {
             int userId = logged.getUser_id();
             int addressId = Integer.parseInt(addressIdStr);
-            boolean status = this.profileService.UpdateAddress(userId, addressId, homeAddress, phone, province, postalCode, ward, isDefault);
+            boolean status = this.profileService.UpdateAddress(userId, addressId, homeAddress, phone, province, "", ward, isDefault);
 
             if (!status) {
                 throw new AuthException(-1, "Failed to save address");
@@ -106,7 +106,7 @@ public class ProfileController extends HttpServlet {
         String homeAddress = request.getParameter("home_address");
         String phone = request.getParameter("phone");
         String province = request.getParameter("province");
-        String postalCode = request.getParameter("postal_code");
+        
         String ward = request.getParameter("ward");
         boolean isDefault = (request.getParameter("is_default") != null);
 
@@ -117,7 +117,7 @@ public class ProfileController extends HttpServlet {
 
         int userId = logged.getUser_id();
 
-        boolean status = this.profileService.CreateAddress(userId, homeAddress, phone, province, postalCode, ward, isDefault);
+        boolean status = this.profileService.CreateAddress(userId, homeAddress, phone, province, "", ward, isDefault);
         if (!status) {
             throw new AuthException(-1, "Failed to save address");
         }

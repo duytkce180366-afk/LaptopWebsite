@@ -44,11 +44,6 @@
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label">Postal Code</label>
-                                <input type="text" name="postal_code" class="form-control" value="<%= addr == null ? "" : addr.getPostalCode()%>" required />
-                            </div>
-
-                            <div class="mb-3">
                                 <label class="form-label">Ward</label>
                                 <select id="ward-select" name="ward" class="form-select" required disabled>
                                     <option value="">Select a province first</option>

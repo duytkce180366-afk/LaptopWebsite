@@ -34,7 +34,10 @@
                                 %>
                                 <div class="list-group-item d-flex justify-content-between align-items-start">
                                     <div>
-                                        <strong><%= a.getHomeAddress()%></strong>
+                                        <strong>
+                                            <%= a.getHomeAddress()%> 
+                                            (<%= (a.isIsDefault()) ? "(Default address)" : ""%>)
+                                        </strong>
                                         <div class="small text-muted"><%= a.getWard() == null ? "" : a.getWard()%></div>
                                         <div class="small text-muted"><%= a.getProvince()%></div>
                                         <div class="small text-muted"><%= a.getPostalCode() == null ? "" : a.getPostalCode()%></div>
