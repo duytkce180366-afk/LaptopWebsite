@@ -124,8 +124,50 @@ public class AddToCartController_1 extends HttpServlet {
                     + service.getProductStock(productId)
                     + " items left in stock!");
 
-            response.sendRedirect(
-                    request.getHeader("Referer"));
+            String fallbackUrl
+                    = request.getContextPath() + "/cart";
+            String referer
+                    = request.getHeader("Referer");
+            String redirectUrl = fallbackUrl;
+
+            if (referer != null && !referer.isBlank()) {
+                String contextPath = request.getContextPath();
+
+                if (referer.startsWith(contextPath + "/")) {
+                    redirectUrl = referer;
+                } else {
+                    try {
+                        java.net.URI refererUri = java.net.URI.create(referer);
+                        boolean sameScheme
+                                = request.getScheme().equalsIgnoreCase(
+                                        refererUri.getScheme());
+                        boolean sameHost
+                                = request.getServerName().equalsIgnoreCase(
+                                        refererUri.getHost());
+                        int refererPort
+                                = refererUri.getPort() == -1
+                                ? ("https".equalsIgnoreCase(refererUri.getScheme()) ? 443 : 80)
+                                : refererUri.getPort();
+                        int requestPort
+                                = request.getServerPort() == -1
+                                ? ("https".equalsIgnoreCase(request.getScheme()) ? 443 : 80)
+                                : request.getServerPort();
+
+                        if (sameScheme && sameHost && refererPort == requestPort
+                                && refererUri.getPath() != null
+                                && refererUri.getPath().startsWith(contextPath + "/")) {
+                            redirectUrl = refererUri.getPath()
+                                    + (refererUri.getQuery() == null
+                                    ? ""
+                                    : "?" + refererUri.getQuery());
+                        }
+                    } catch (IllegalArgumentException ex) {
+                        redirectUrl = fallbackUrl;
+                    }
+                }
+            }
+
+            response.sendRedirect(redirectUrl);
 
             return;
         }
