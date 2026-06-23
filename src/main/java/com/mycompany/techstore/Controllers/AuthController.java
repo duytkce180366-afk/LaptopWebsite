@@ -7,6 +7,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.time.Instant;
 import java.util.Date;
@@ -14,6 +15,10 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.mycompany.techstore.Exceptions.AuthException;
+import com.mycompany.techstore.Models.Objects.User;
+import com.mycompany.techstore.services.AuthService;
+import com.mycompany.techstore.services.EmailService;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.jwk.source.JWKSource;
@@ -27,19 +32,18 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 
-import com.mycompany.techstore.Models.Objects.User;
-import com.mycompany.techstore.Exceptions.AuthException;
-import com.mycompany.techstore.services.AuthService;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
+import jakarta.mail.MessagingException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import java.security.NoSuchAlgorithmException;
+import java.security.MessageDigest;
+import java.time.LocalDateTime;
 
 @WebServlet(name = "AuthController", urlPatterns = {"/auth"})
 public class AuthController extends HttpServlet {
@@ -61,10 +65,15 @@ public class AuthController extends HttpServlet {
     private String OidcAuthEndpoint;
     private String OidcJwksUri;
 
+    // Verify if OIDC is enabled
+    private boolean isOidcEnabled;
+
     // Auth Service handler
     private transient final AuthService authService;
+    private transient final EmailService emailService;
 
-    private boolean isOidcEnabled;
+    // OTP Relax time between request (in second)
+    private final int otpRelax = 30;
 
     public AuthController() {
         this.RootUrl = (System.getenv("ROOT_ENV") != null) ? System.getenv("ROOT_ENV") : "http://localhost:8080";
@@ -76,6 +85,9 @@ public class AuthController extends HttpServlet {
 
         String OidcIssuerProvided = System.getenv("OIDC_ISSUER");
 
+        // Default values for external configuration
+        this.isOidcEnabled = false;
+
         if (this.OidcClientId != null && this.OidcClientSecret != null && this.OidcWellknown != null && this.OidcScope != null && this.LoadOidcConfiguration()) {
             if (OidcIssuerProvided != null && this.OidcIssuer.equals(OidcIssuerProvided)) {
                 this.isOidcEnabled = true;
@@ -83,6 +95,13 @@ public class AuthController extends HttpServlet {
         }
 
         this.authService = new AuthService();
+
+        if (System.getenv("SMTP_HOST") == null) {
+            Logger.getLogger(EmailService.class.getName()).log(Level.WARNING, "SMTP_HOST is not configured; skipping OTP email.");
+            this.emailService = null;
+        } else {
+            this.emailService = new EmailService();
+        }
     }
 
     /*
@@ -249,8 +268,8 @@ public class AuthController extends HttpServlet {
                 session.setAttribute("loggedUser", user);
                 response.sendRedirect(request.getContextPath() + "/");
             } catch (JOSEException | BadJOSEException | IOException | ParseException | AuthException ex) {
-                Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, null, ex);
-                response.sendError(500, "Internal server error during token processing.");
+                Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, ex.getLocalizedMessage(), ex);
+                response.sendError(500, ex.getLocalizedMessage());
             }
         }
     }
@@ -268,6 +287,12 @@ public class AuthController extends HttpServlet {
             if (user != null) {
                 HttpSession session = request.getSession();
                 session.setAttribute("loggedUser", user);
+
+                if (!user.isIsVerified()) {
+                    response.sendRedirect(request.getContextPath() + "/auth?action=verify");
+                    return;
+                }
+
                 response.sendRedirect(request.getContextPath() + "/");
             } else {
                 response.sendRedirect(request.getContextPath() + "/auth?action=denied");
@@ -275,7 +300,7 @@ public class AuthController extends HttpServlet {
         } catch (AuthException | NoSuchAlgorithmException ex) {
             Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, null, ex);
             System.out.println(ex.toString());
-            response.sendError(500, "Internal server error during sign-in.");
+            response.sendError(500, ex.getLocalizedMessage());
         }
     }
 
@@ -289,14 +314,16 @@ public class AuthController extends HttpServlet {
 
             HttpSession session = request.getSession();
             session.setAttribute("loggedUser", user);
-            response.sendRedirect(request.getContextPath() + "/");
+
+            response.sendRedirect(request.getContextPath() + "/auth?action=verify");
         } catch (AuthException | NoSuchAlgorithmException ex) {
             Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, null, ex);
-            response.sendError(500, "Internal server error during sign-up.");
+            response.sendError(500, ex.getLocalizedMessage());
         }
     }
 
     private void HandleResetPassword(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String otp = request.getParameter("otp");
         String newPwd = request.getParameter("newpwd");
         String repeatPwd = request.getParameter("repeatPwd");
 
@@ -317,6 +344,11 @@ public class AuthController extends HttpServlet {
             return;
         }
 
+        if (otp == null || !session.getAttribute("otp").equals(otp)) {
+            response.sendError(400, "Invalid OTP");
+            return;
+        }
+
         try {
             boolean refreshAction = this.authService.UpdateUserPassword(logged.getEmail(), newPwd);
             if (refreshAction) {
@@ -329,11 +361,93 @@ public class AuthController extends HttpServlet {
                 response.sendError(500, "Failed to update password");
             }
         } catch (AuthException | NoSuchAlgorithmException ex) {
-            Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, null, ex);
-            response.sendError(500, "Internal server error during password change.");
+            Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, ex.getLocalizedMessage(), ex);
+            response.sendError(500, ex.getLocalizedMessage());
         }
     }
 
+    /*
+     * OTP methods
+     * It stores in session attribute, with contain 3 attributes
+     * - otp: the OTP code itself
+     * - otpReq: the OTP last request time
+     * - otpExpire: the OTP expiration time
+     */
+    /////////////////////////////////////
+    private void SetOTP(HttpServletRequest request) throws MessagingException, AuthException {
+        HttpSession session = request.getSession(false);
+
+        if (session == null) {
+            throw new AuthException(-1, "No active session");
+        }
+
+        User logged = (User) session.getAttribute("loggedUser");
+        if (logged == null) {
+            throw new AuthException(-1, "Not logged in");
+        }
+
+        if (this.emailService == null) {
+            throw new AuthException(-1, "Email service is not configured");
+        }
+
+        String otp = (String) session.getAttribute("otp");
+        LocalDateTime curr = LocalDateTime.now();
+        LocalDateTime lastReq = (LocalDateTime) session.getAttribute("otpReq");
+        LocalDateTime expireReq = (LocalDateTime) session.getAttribute("otpExpire");
+
+        // If no previous OTP, or previous OTP expired, create a fresh one
+        if (otp == null || expireReq == null || curr.isAfter(expireReq)) {
+            String newOtp = this.emailService.sendOtpEmail(logged);
+            session.setAttribute("otp", newOtp);
+            session.setAttribute("otpReq", curr);
+            session.setAttribute("otpExpire", curr.plusHours(1));
+            return;
+        }
+
+        // In case otp already exists - check if still within otp relax window
+        if (lastReq != null && curr.isBefore(lastReq.plusSeconds(this.otpRelax))) {
+            throw new AuthException(-1, "Requesting OTP too frequently. Please wait %s seconds.".formatted(this.otpRelax));
+        }
+
+        String newOtp = this.emailService.sendOtpEmail(logged);
+        session.setAttribute("otp", newOtp);
+        session.setAttribute("otpReq", curr);
+        session.setAttribute("otpExpire", curr.plusHours(1));
+    }
+
+    private boolean VerifyOTP(HttpServletRequest request, String expectedOtp) throws AuthException {
+        HttpSession session = request.getSession(false);
+
+        if (session == null) {
+            throw new AuthException(-1, "No active session");
+        }
+
+        User logged = (User) session.getAttribute("loggedUser");
+        if (logged == null) {
+            throw new AuthException(-1, "Not logged in");
+        }
+
+        String otp = (String) session.getAttribute("otp");
+        if (otp == null || expectedOtp == null) {
+            return false;
+        }
+
+        LocalDateTime curr = LocalDateTime.now();
+        LocalDateTime expireReq = (LocalDateTime) session.getAttribute("otpExpire");
+
+        if (expireReq == null || curr.isAfter(expireReq)) {
+            return false;
+        }
+
+        // Use constant-time comparison to mitigate timing attacks
+        return MessageDigest.isEqual(otp.getBytes(StandardCharsets.UTF_8), expectedOtp.getBytes(StandardCharsets.UTF_8));
+    }
+
+    /*
+     * GET/POST methods
+     */
+    ////////////////////////////////////
+    
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         switch (request.getParameter("action")) {
@@ -359,6 +473,60 @@ public class AuthController extends HttpServlet {
                 } else {
                     request.getRequestDispatcher("/WEB-INF/JSPViews/AuthView/CreateAccount.jsp").forward(request, response);
                 }
+            }
+            case "verify" -> {
+                HttpSession session = request.getSession(false);
+                if (session == null) {
+                    response.sendRedirect(request.getContextPath() + "/auth?action=signin");
+                    return;
+                }
+
+                User logged = (User) session.getAttribute("loggedUser");
+                if (logged == null) {
+                    response.sendRedirect(request.getContextPath() + "/auth?action=signin");
+                    return;
+                }
+
+                // OIDC users (no password) or already verified should be redirected home
+                if (logged.getPassword() == null || logged.isIsVerified()) {
+                    response.sendRedirect(request.getContextPath() + "/");
+                    return;
+                }
+
+                // If SMTP is not configured, auto-verify the user and redirect home
+                if (System.getenv("SMTP_HOST") == null) {
+                    try {
+                        boolean verifyStatus = this.authService.VerifyEmail(logged.getEmail());
+                        if (verifyStatus) {
+                            User userRefresh = this.authService.GetUserByEmail(logged.getEmail());
+                            session.setAttribute("loggedUser", userRefresh);
+                            response.sendRedirect(request.getContextPath() + "/");
+                            return;
+                        } else {
+                            Logger.getLogger(AuthController.class.getName()).log(Level.WARNING, "SMTP_HOST not set and auto-verification failed for {0}", logged.getEmail());
+                        }
+                    } catch (AuthException ex) {
+                        Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, null, ex);
+                        response.sendError(500, "Internal server error during auto-verification.");
+                        return;
+                    }
+                }
+                // Attempt to send OTP email only if EmailService is available; log failures but continue to verification page
+                if (this.emailService != null) {
+                    try {
+                        this.SetOTP(request);
+                    } catch (MessagingException mex) {
+                        Logger.getLogger(AuthController.class.getName()).log(Level.WARNING, "Failed to send OTP email: " + mex.getMessage(), mex);
+                    } catch (AuthException ex) {
+                        Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, ex.getLocalizedMessage(), ex);
+                        response.sendError(400, ex.getLocalizedMessage());
+                        return;
+                    }
+                } else {
+                    Logger.getLogger(AuthController.class.getName()).log(Level.INFO, "EmailService disabled; not sending OTP email.");
+                }
+
+                request.getRequestDispatcher("/WEB-INF/JSPViews/AuthView/VerifyOTP.jsp").forward(request, response);
             }
             // OIDC
             case "oidc_signin" -> {
@@ -386,6 +554,15 @@ public class AuthController extends HttpServlet {
             // Reset password
             case "resetpwd" -> {
                 if (this.IsSignedIn(request)) {
+                    try {
+                        this.SetOTP(request);
+                    } catch (MessagingException mex) {
+                        Logger.getLogger(AuthController.class.getName()).log(Level.WARNING, "Failed to send OTP email: " + mex.getMessage(), mex);
+                    } catch (AuthException ex) {
+                        Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, ex.getLocalizedMessage(), ex);
+                        response.sendError(400, ex.getLocalizedMessage());
+                        return;
+                    }
                     request.getRequestDispatcher("/WEB-INF/JSPViews/AuthView/ResetPwd.jsp").forward(request, response);
                 } else {
                     response.sendError(400, "Not signed in");
@@ -434,10 +611,56 @@ public class AuthController extends HttpServlet {
                     response.sendError(400, "Not signed in");
                 }
             }
+            case "verify" -> {
+                HttpSession session = request.getSession(false);
+                if (session == null) {
+                    response.sendError(400, "Not signed in");
+                    return;
+                }
+
+                User logged = (User) session.getAttribute("loggedUser");
+                if (logged == null) {
+                    response.sendError(400, "Not signed in");
+                    return;
+                }
+
+                if (logged.getPassword() == null || logged.isIsVerified()) {
+                    response.sendRedirect(request.getContextPath() + "/");
+                    return;
+                }
+
+                try {
+                    String expected = (String) session.getAttribute("otp");
+                    if (expected == null || !this.VerifyOTP(request, expected)) {
+                        request.setAttribute("error", "Invalid verification code. Please try again.");
+                        response.sendRedirect(request.getContextPath() + "/auth?action=verify");
+                        return;
+                    }
+
+                    boolean verifyStatus = this.authService.VerifyEmail(logged.getEmail());
+                    if (verifyStatus) {
+                        // Refresh user and update session
+                        User user = this.authService.GetUserByEmail(logged.getEmail());
+                        session.setAttribute("loggedUser", user);
+                        session.removeAttribute("otp");
+                        response.sendRedirect(request.getContextPath() + "/");
+                    } else {
+                        response.sendError(500, "Failed to verify email");
+                    }
+                } catch (AuthException ex) {
+                    Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, null, ex);
+                    response.sendError(500, ex.getLocalizedMessage());
+                }
+            }
             default -> {
                 response.setStatus(404);
                 request.getRequestDispatcher("/WEB-INF/JSPViews/AuthView/Denied.jsp").forward(request, response);
             }
         }
+    }
+    
+    @Override
+    public void destroy() {
+        this.emailService.shutdown();
     }
 }
