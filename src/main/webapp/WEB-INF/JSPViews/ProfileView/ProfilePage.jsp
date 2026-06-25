@@ -1,8 +1,9 @@
+<%@page import="com.mycompany.techstore.Models.Objects.Address"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>Profile - TechStore</title>
+        <title>Profile - Tech Store</title>
         <%@include file="/WEB-INF/JSPViews/global/header.jsp" %>
     </head>
     <body id="top">
@@ -13,7 +14,7 @@
                 <div class="card auth-panel shadow-sm w-100" style="max-width:680px;">
                     <div class="card-body p-4">
                         <h2 class="card-title mb-3">My Profile</h2>
-                        <% com.mycompany.techstore.Models.Objects.User user = (com.mycompany.techstore.Models.Objects.User) request.getAttribute("user");%>
+                        <% User user = (User) request.getAttribute("user");%>
                         <dl class="row">
                             <dt class="col-sm-3">Full name</dt>
                             <dd class="col-sm-9"><%= user.getFull_name()%></dd>
@@ -28,9 +29,9 @@
                         <div class="mb-4">
                             <h4>Delivery addresses</h4>
                             <div class="list-group">
-                                <% java.util.List<com.mycompany.techstore.Models.Objects.Address> addrs = (java.util.List<com.mycompany.techstore.Models.Objects.Address>) request.getAttribute("addresses");
+                                <% List<Address> addrs = (List<Address>) request.getAttribute("addresses");
                                     if (addrs != null && !addrs.isEmpty()) {
-                                        for (com.mycompany.techstore.Models.Objects.Address a : addrs) {
+                                        for (Address a : addrs) {
                                 %>
                                 <div class="list-group-item d-flex justify-content-between align-items-start">
                                     <div>
@@ -40,7 +41,6 @@
                                         </strong>
                                         <div class="small text-muted"><%= a.getWard() == null ? "" : a.getWard()%></div>
                                         <div class="small text-muted"><%= a.getProvince()%></div>
-                                        <div class="small text-muted"><%= a.getPostalCode() == null ? "" : a.getPostalCode()%></div>
                                     </div>
                                     <div class="btn-group">
                                         <a class="btn btn-sm btn-outline-secondary" href="<%= ctx%>/profile?action=edit_address&id=<%= a.getAddressId()%>">Edit</a>

@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>Address - TechStore</title>
+        <title>Address - Tech Store</title>
         <%@include file="/WEB-INF/JSPViews/global/header.jsp" %>
     </head>
     <body id="top">

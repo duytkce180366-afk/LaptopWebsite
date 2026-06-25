@@ -36,12 +36,12 @@ public class ProfileService {
         return this.addressRepo.GetAddressesByUserId(userId);
     }
 
-    public boolean CreateAddress(int userId, String homeAddress, String phone, String province, String postalCode, String ward, boolean isDefault) {
-        return this.addressRepo.CreateAddress(userId, homeAddress, phone, province, postalCode, ward, isDefault);
+    public boolean CreateAddress(int userId, String homeAddress, String phone, String province, String ward, boolean isDefault) {
+        return this.addressRepo.CreateAddress(userId, homeAddress, phone, province, ward, isDefault);
     }
 
-    public boolean UpdateAddress(int userId, int addressId, String homeAddress, String phone, String province, String postalCode, String ward, boolean isDefault) {
-        return this.addressRepo.UpdateAddress(userId, addressId, homeAddress, phone, province, postalCode, ward, isDefault);
+    public boolean UpdateAddress(int userId, int addressId, String homeAddress, String phone, String province, String ward, boolean isDefault) {
+        return this.addressRepo.UpdateAddress(userId, addressId, homeAddress, phone, province, ward, isDefault);
     }
 
     public boolean DeleteAddress(int addressId, int userId) {

@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>Reset password - TechStore</title>
+        <title>Reset password - Tech Store</title>
         <%@include file="/WEB-INF/JSPViews/global/header.jsp" %>
     </head>
     <body id="top">

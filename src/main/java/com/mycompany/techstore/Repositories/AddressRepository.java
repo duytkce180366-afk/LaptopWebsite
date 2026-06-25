@@ -32,7 +32,6 @@ public class AddressRepository extends DbClass {
                             rs.getString("home_address"),
                             rs.getString("phone"),
                             rs.getString("province"),
-                            rs.getString("postal_code"),
                             rs.getString("ward"),
                             rs.getBoolean("is_default"),
                             rs.getTimestamp("created_at"));
@@ -46,11 +45,11 @@ public class AddressRepository extends DbClass {
         return list;
     }
 
-    public boolean CreateAddress(int userId, String homeAddress, String phone, String province, String postalCode, String ward, boolean isDefault) {
+    public boolean CreateAddress(int userId, String homeAddress, String phone, String province, String ward, boolean isDefault) {
         boolean status = false;
 
         String sql = """
-            INSERT INTO dbo.bs_Addresses ([user_id], [home_address], [phone], [province], [postal_code], [ward], [is_default], [created_at])
+            INSERT INTO dbo.bs_Addresses ([user_id], [home_address], [phone], [province], [ward], [is_default], [created_at])
                 VALUES (?, ?, ?, ?, ?, ?, ?, SYSUTCDATETIME());
             """;
 
@@ -59,7 +58,6 @@ public class AddressRepository extends DbClass {
             ps.setString(2, homeAddress);
             ps.setString(3, phone);
             ps.setString(4, province);
-            ps.setString(5, postalCode);
             ps.setString(6, ward);
             ps.setBoolean(7, isDefault);
             status = (ps.executeUpdate() > 0);
@@ -71,12 +69,12 @@ public class AddressRepository extends DbClass {
         return status;
     }
 
-    public boolean UpdateAddress(int userId, int addressId, String homeAddress, String phone, String province, String postalCode, String ward, boolean isDefault) {
+    public boolean UpdateAddress(int userId, int addressId, String homeAddress, String phone, String province, String ward, boolean isDefault) {
         boolean status = false;
 
         String sql = """
             UPDATE dbo.bs_Addresses
-                SET home_address = ?, phone = ?, province = ?, postal_code = ?, ward = ?, is_default = ?
+                SET home_address = ?, phone = ?, province = ?, ward = ?, is_default = ?
                 WHERE address_id = ? AND user_id = ?;
             """;
 
@@ -84,7 +82,6 @@ public class AddressRepository extends DbClass {
             ps.setString(1, homeAddress);
             ps.setString(2, phone);
             ps.setString(3, province);
-            ps.setString(4, postalCode);
             ps.setString(5, ward);
             ps.setBoolean(6, isDefault);
 
