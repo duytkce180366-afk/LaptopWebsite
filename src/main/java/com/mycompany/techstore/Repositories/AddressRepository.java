@@ -16,7 +16,7 @@ public class AddressRepository extends DbClass {
         ArrayList<Address> list = new ArrayList<>();
 
         String sql = """
-            SELECT [address_id], [user_id], [home_address], [phone], [province], [postal_code], [ward], [is_default], [created_at]
+            SELECT [address_id], [user_id], [home_address], [phone], [province], [ward], [is_default], [created_at]
                 FROM dbo.bs_Addresses
                 WHERE user_id = ?
                 ORDER BY is_default DESC, address_id;
