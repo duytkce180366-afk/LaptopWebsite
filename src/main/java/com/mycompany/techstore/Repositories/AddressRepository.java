@@ -62,7 +62,6 @@ public class AddressRepository extends DbClass {
             ps.setBoolean(6, isDefault);
             status = (ps.executeUpdate() > 0);
         } catch (SQLException ex) {
-            System.out.println("Error: " + ex.toString());
             Logger.getLogger(AddressRepository.class.getName()).log(Level.SEVERE, null, ex);
         }
 
