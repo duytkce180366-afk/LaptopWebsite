@@ -5,6 +5,7 @@ import com.mycompany.techstore.Repositories.SortOptionRepository;
 import com.mycompany.techstore.services.CategoryService;
 import com.mycompany.techstore.services.ProductService;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +24,7 @@ public class ProductController extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private static final String NUMBER_REGEX = "^[0-9]+$";
     private static final String ALL_CATEGORIES = "all";
+    private static final int PRODUCTS_PER_PAGE = 12;
 
     private transient final CategoryService categoryService;
     private transient final ProductService productService;
@@ -60,10 +62,22 @@ public class ProductController extends HttpServlet {
                 secondaryFilters,
                 sortOrder
         );
+        int totalFilteredProducts = filteredProducts.size();
+        int totalPages = Math.max(1, (int) Math.ceil((double) totalFilteredProducts / PRODUCTS_PER_PAGE));
+        int currentPage = getPageParameter(request, totalPages);
+        int pageStart = Math.min((currentPage - 1) * PRODUCTS_PER_PAGE, totalFilteredProducts);
+        int pageEnd = Math.min(pageStart + PRODUCTS_PER_PAGE, totalFilteredProducts);
+        List<Product> paginatedProducts = new ArrayList<>(filteredProducts.subList(pageStart, pageEnd));
 
         request.setAttribute("categories", categories);
         request.setAttribute("products", products);
         request.setAttribute("filteredProducts", filteredProducts);
+        request.setAttribute("paginatedProducts", paginatedProducts);
+        request.setAttribute("currentPage", currentPage);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("productsPerPage", PRODUCTS_PER_PAGE);
+        request.setAttribute("pageStart", totalFilteredProducts == 0 ? 0 : pageStart + 1);
+        request.setAttribute("pageEnd", pageEnd);
         request.setAttribute("activeCategory", activeCategory);
         request.setAttribute("priceRanges", priceRanges);
         request.setAttribute("sortOptions", SortOptionRepository.getAll());
@@ -107,6 +121,20 @@ public class ProductController extends HttpServlet {
 
     private long clampPrice(long price, long min, long max) {
         return Math.max(min, Math.min(price, max));
+    }
+
+    private int getPageParameter(HttpServletRequest request, int totalPages) {
+        String value = request.getParameter("page");
+        if (value == null || value.isBlank()) {
+            return 1;
+        }
+
+        try {
+            int page = Integer.parseInt(value.trim());
+            return Math.max(1, Math.min(page, totalPages));
+        } catch (NumberFormatException ex) {
+            return 1;
+        }
     }
 
     private long getSliderMaxPrice(List<Product> products) {
