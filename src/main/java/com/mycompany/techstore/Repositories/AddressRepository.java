@@ -50,7 +50,7 @@ public class AddressRepository extends DbClass {
 
         String sql = """
             INSERT INTO dbo.bs_Addresses ([user_id], [home_address], [phone], [province], [ward], [is_default], [created_at])
-                VALUES (?, ?, ?, ?, ?, ?, ?, SYSUTCDATETIME());
+                VALUES (?, ?, ?, ?, ?, ?, SYSUTCDATETIME());
             """;
 
         try (PreparedStatement ps = super.getConnection().prepareStatement(sql)) {
@@ -58,8 +58,8 @@ public class AddressRepository extends DbClass {
             ps.setString(2, homeAddress);
             ps.setString(3, phone);
             ps.setString(4, province);
-            ps.setString(6, ward);
-            ps.setBoolean(7, isDefault);
+            ps.setString(5, ward);
+            ps.setBoolean(6, isDefault);
             status = (ps.executeUpdate() > 0);
         } catch (SQLException ex) {
             System.out.println("Error: " + ex.toString());
@@ -82,11 +82,11 @@ public class AddressRepository extends DbClass {
             ps.setString(1, homeAddress);
             ps.setString(2, phone);
             ps.setString(3, province);
-            ps.setString(5, ward);
-            ps.setBoolean(6, isDefault);
+            ps.setString(4, ward);
+            ps.setBoolean(5, isDefault);
 
-            ps.setInt(7, addressId);
-            ps.setInt(8, userId);
+            ps.setInt(6, addressId);
+            ps.setInt(7, userId);
             status = (ps.executeUpdate() > 0);
         } catch (SQLException ex) {
             Logger.getLogger(AddressRepository.class.getName()).log(Level.SEVERE, null, ex);
