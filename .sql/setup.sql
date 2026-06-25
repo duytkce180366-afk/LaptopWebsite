@@ -107,6 +107,41 @@ BEGIN
 END
 GO
 
+CREATE TRIGGER trg_bs_Addresses_EnforceSingleDefault
+ON dbo.bs_Addresses
+AFTER INSERT, UPDATE
+AS
+BEGIN
+    -- Prevents extra result sets from interfering with SELECT statements
+    SET NOCOUNT ON;
+
+    -- Only run the logic if the 'is_default' column is affected and set to 1
+    IF UPDATE(is_default) AND EXISTS (SELECT 1 FROM inserted WHERE is_default = 1)
+    BEGIN
+        WITH RankedAddresses AS (
+            SELECT 
+                address_id,
+                is_default,
+                ROW_NUMBER() OVER (
+                    PARTITION BY user_id 
+                    ORDER BY
+                        CASE WHEN address_id IN (SELECT address_id FROM inserted WHERE is_default = 1) THEN 1 ELSE 0 END DESC,
+                        created_at DESC, 
+                        address_id DESC
+                ) AS rn
+            FROM dbo.bs_Addresses
+            WHERE user_id IN (SELECT DISTINCT user_id FROM inserted WHERE is_default = 1)
+        )
+        -- Update all other default addresses for this user to 0
+        UPDATE a
+        SET a.is_default = 0
+        FROM dbo.bs_Addresses a
+        JOIN RankedAddresses ra ON a.address_id = ra.address_id
+        WHERE ra.rn > 1  AND a.is_default = 1;
+    END
+END;
+GO
+
 /* =========================
    3) Product Catalog Tables
    ========================= */
