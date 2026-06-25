@@ -37,7 +37,7 @@
                                     <div>
                                         <strong>
                                             <%= a.getHomeAddress()%> 
-                                            (<%= (a.isIsDefault()) ? "(Default address)" : ""%>)
+                                            <%= (a.isIsDefault()) ? "(Default address)" : ""%>
                                         </strong>
                                         <div class="small text-muted"><%= a.getWard() == null ? "" : a.getWard()%></div>
                                         <div class="small text-muted"><%= a.getProvince()%></div>
