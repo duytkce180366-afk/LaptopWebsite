@@ -8,16 +8,9 @@ public class OrderService {
     private OrderRepository repo =
             new OrderRepository();
 
-    public boolean placeOrder(
-            int userId,
-            String paymentMethod,
-            String address,
-            String phone) {
-
-        return repo.placeOrder(
-                userId,
-                paymentMethod,
-                address,
-                phone);
-    }
+    public boolean placeOrder(int userId, String paymentMethod, 
+                          String address, String district, 
+                          String province, String phone) {
+    return repo.placeOrder(userId, paymentMethod, address, district, province, phone);
+}
 }

@@ -27,52 +27,29 @@
 
     private String nav_filterKeyFromMenuGroup(String groupTitle) {
         switch (groupTitle) {
-            case "Brands":
-                return "brand";
-            case "Purpose":
-                return "purpose";
-            case "CPU":
-                return "cpu";
-            case "GPU":
-                return "gpu";
-            case "Screen":
-                return "display";
-            case "Sensor":
-                return "sensor";
-            case "Connection":
-                return "connection";
-            case "Switch":
-                return "switchType";
-            case "Layout":
-                return "layout";
-            case "Resolution":
-                return "resolution";
-            case "Refresh rate":
-                return "refreshRate";
-            case "Capacity":
-                return "capacity";
-            case "Interface":
-                return "interfaceType";
-            case "Type":
-                return "memoryType";
-            case "Bus RAM":
-                return "bus";
-            case "Socket":
-                return "socket";
-            case "Cores":
-                return "cores";
-            case "Chipset":
-                return "chipset";
-            case "VRAM":
-                return "vram";
-            case "Motherboard":
-                return "motherboardSupport";
-            case "Color":
-                return "color";
-            case "Size":
-                return "size";
-            default:
-                return null;
+            case "Brands":      return "brand";
+            case "Purpose":     return "purpose";
+            case "CPU":         return "cpu";
+            case "GPU":         return "gpu";
+            case "Screen":      return "display";
+            case "Sensor":      return "sensor";
+            case "Connection":  return "connection";
+            case "Switch":      return "switchType";
+            case "Layout":      return "layout";
+            case "Resolution":  return "resolution";
+            case "Refresh rate": return "refreshRate";
+            case "Capacity":    return "capacity";
+            case "Interface":   return "interfaceType";
+            case "Type":        return "memoryType";
+            case "Bus RAM":     return "bus";
+            case "Socket":      return "socket";
+            case "Cores":       return "cores";
+            case "Chipset":     return "chipset";
+            case "VRAM":        return "vram";
+            case "Motherboard": return "motherboardSupport";
+            case "Color":       return "color";
+            case "Size":        return "size";
+            default:            return null;
         }
     }
 %>
@@ -101,8 +78,6 @@
     }
 %>
 
-
-
 <nav class="topbar" aria-label="Main navigation">
     <a class="brand-button" href="<%= request.getContextPath()%>/home">
         <span class="brand-mark">Tech Store</span>
@@ -127,24 +102,25 @@
             </div>
 
             <% for (Category category : navCategories) {%>
-            <div class="mega-panel <%= category.getId().equals(visibleCategoryId) ? "visible" : ""%>" data-mega-panel="<%= nav_html(category.getId())%>">
+            <div class="mega-panel <%= category.getId().equals(visibleCategoryId) ? "visible" : ""%>"
+                 data-mega-panel="<%= nav_html(category.getId())%>">
                 <% for (Map<String, Object> group : category.getMenuGroups()) {
-                        String title = String.valueOf(group.get("title"));
-                        List<String> options = (List<String>) group.get("options");
+                    String title = String.valueOf(group.get("title"));
+                    List<String> options = (List<String>) group.get("options");
                 %>
                 <section>
                     <h3><%= nav_html(title)%></h3>
                     <div class="mega-tags">
                         <% for (String option : options) {
-                                String filterKey = nav_filterKeyFromMenuGroup(title);
-                                String href = request.getContextPath() + "/home?category=" + nav_encode(category.getId());
-                                if ("Prices".equals(title)) {
-                                    href += "&price=" + nav_encode(option);
-                                } else if (filterKey != null) {
-                                    href += "&" + nav_encode(filterKey) + "=" + nav_encode(option);
-                                } else {
-                                    href += "&search=" + nav_encode(option);
-                                }
+                            String filterKey = nav_filterKeyFromMenuGroup(title);
+                            String href = request.getContextPath() + "/home?category=" + nav_encode(category.getId());
+                            if ("Prices".equals(title)) {
+                                href += "&price=" + nav_encode(option);
+                            } else if (filterKey != null) {
+                                href += "&" + nav_encode(filterKey) + "=" + nav_encode(option);
+                            } else {
+                                href += "&search=" + nav_encode(option);
+                            }
                         %>
                         <a href="<%= href%>#products"><%= nav_html(option)%></a>
                         <% } %>
@@ -159,13 +135,19 @@
     <div class="nav-links">
         <a href="<%= request.getContextPath()%>/home#home">Home</a>
         <a href="<%= request.getContextPath()%>/home#products">Products</a>
-
+        <a href="${pageContext.request.contextPath}/cart" class="cart-btn">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span>Cart</span>
+        </a>
         <%
-            User loggedUser = (User) session.getAttribute("loggedUser");
-            if (loggedUser == null) {
+            User navLoggedUser = (User) session.getAttribute("loggedUser");
+            if (navLoggedUser == null) {
         %>
+        <%-- Guest --%>
+        <a href="<%= request.getContextPath()%>/order-history">My Orders</a>
         <div class="dropdown">
-            <a class="btn btn-sm btn-outline-secondary dropdown-toggle" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            <a class="btn btn-sm btn-outline-secondary dropdown-toggle" href="#" role="button"
+               id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                 <span class="user-icon" aria-hidden="true">&#128100;</span>
                 <span class="visually-hidden">Account</span>
             </a>
@@ -177,17 +159,18 @@
         <%
         } else {
         %>
+        <%-- Logged in --%>
+        <a href="<%= request.getContextPath()%>/order-history">My Orders</a>
         <div class="dropdown">
-            <a class="btn btn-sm btn-outline-secondary dropdown-toggle" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            <a class="btn btn-sm btn-outline-secondary dropdown-toggle" href="#" role="button"
+               id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                 <span>Account</span>
-                <span class="user-email"><%= nav_html(loggedUser.getEmail())%></span>
+                <span class="user-email"><%= nav_html(navLoggedUser.getEmail())%></span>
             </a>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                <% if (!loggedUser.isIsVerified()) { %>
-                <li><a class="dropdown-item" href="<%= request.getContextPath()%>/auth?action=verify">Verify email</a></li>
-                <% } %>
                 <li><a class="dropdown-item" href="<%= request.getContextPath()%>/profile">Edit profile</a></li>
                 <li><a class="dropdown-item" href="<%= request.getContextPath()%>/auth?action=resetpwd">Reset Password</a></li>
+                <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" href="<%= request.getContextPath()%>/auth?action=logout">Logout</a></li>
             </ul>
         </div>
@@ -195,7 +178,8 @@
             }
         %>
     </div>
-    <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch to dark mode" aria-pressed="false">
+    <button class="theme-toggle" type="button" data-theme-toggle
+            aria-label="Switch to dark mode" aria-pressed="false">
         <span class="theme-icon theme-icon-moon" aria-hidden="true">&#9790;</span>
         <span class="theme-icon theme-icon-sun" aria-hidden="true">&#9728;</span>
     </button>

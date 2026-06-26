@@ -5,6 +5,7 @@
 package com.mycompany.techstore.Controllers;
 
 import com.mycompany.techstore.Models.Objects.Order;
+import com.mycompany.techstore.Models.Objects.User;
 import com.mycompany.techstore.Repositories.OrderRepository;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -32,8 +33,12 @@ public class OrderHistoryController
             HttpServletResponse response)
             throws ServletException, IOException {
 
-        int userId = 1;
-
+User loggedUser = (User) request.getSession().getAttribute("loggedUser");
+if (loggedUser == null) {
+    response.sendRedirect(request.getContextPath() + "/auth?action=signin");
+    return;
+}
+int userId = loggedUser.getUser_id();
         List<Order> orders =
                 repo.getOrdersByUser(userId);
 

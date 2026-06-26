@@ -16,18 +16,15 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
-import java.text.NumberFormat;
-import java.util.Locale;
 
 /**
  *
  * @author DuyTran
  */
-@WebServlet("/checkout")
-public class CheckoutController extends HttpServlet {
+@WebServlet("/cart")
+public class CartController extends HttpServlet {
 
-    private CartService cartService
-            = new CartService();
+    private CartService cartService = new CartService();
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -46,10 +43,10 @@ public class CheckoutController extends HttpServlet {
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Servlet CheckoutController</title>");
+            out.println("<title>Servlet CartController</title>");
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>Servlet CheckoutController at " + request.getContextPath() + "</h1>");
+            out.println("<h1>Servlet CartController at " + request.getContextPath() + "</h1>");
             out.println("</body>");
             out.println("</html>");
         }
@@ -70,86 +67,36 @@ public class CheckoutController extends HttpServlet {
             HttpServletResponse response)
             throws ServletException, IOException {
 
-        HttpSession session
-                = request.getSession(false);
+        HttpSession session = request.getSession(false);
 
         User user
                 = (User) session.getAttribute("loggedUser");
 
         if (user == null) {
-
             response.sendRedirect(
                     request.getContextPath()
                     + "/auth?action=signin");
-
-            return;
-        }
-        List<CartItem> cartItems
-                = cartService.getCartItems(
-                        user.getUser_id());
-
-        if (cartItems == null || cartItems.isEmpty()) {
-
-            session.setAttribute(
-                    "errorMessage",
-                    "Your cart is empty");
-
-            response.sendRedirect(
-                    request.getContextPath()
-                    + "/cart");
-
             return;
         }
 
-        double total = 0;
+        int userId = user.getUser_id();
 
-        for (CartItem item : cartItems) {
-            total += item.getSubtotal();
-        }
+        List<CartItem> items
+                = cartService.getCartItems(userId);
 
-        NumberFormat vn
-                = NumberFormat.getCurrencyInstance(
-                        new Locale("vi", "VN"));
-        Double discount
-                = (Double) session.getAttribute(
-                        "discountAmount");
-
-        Double finalTotal
-                = (Double) session.getAttribute(
-                        "finalTotal");
-        if (discount == null) {
-            discount = 0.0;
-        }
-
-        if (finalTotal == null) {
-            finalTotal = total;
-        }
-        request.setAttribute(
-                "cartTotalFormatted",
-                vn.format(total));
-
-        request.setAttribute(
-                "cartItems",
-                cartItems);
+        request.setAttribute("cartItems", items);
+        double total
+                = cartService.getCartTotal(userId);
 
         request.setAttribute(
                 "cartTotal",
                 total);
-
-        request.setAttribute(
-                "user",
-                user);
-        request.setAttribute(
-                "discountFormatted",
-                vn.format(discount));
-
-        request.setAttribute(
-                "finalTotalFormatted",
-                vn.format(finalTotal));
-
         request.getRequestDispatcher(
-                "/WEB-INF/JSPViews/GuestView/Checkout.jsp")
+                "/WEB-INF/JSPViews/GuestView/Cart.jsp")
                 .forward(request, response);
+        for (CartItem item : items) {
+            System.out.println("cartItemId = " + item.getCartItemId());
+        }
     }
 
     /**

@@ -10,19 +10,19 @@ public class User {
     private final String email;
     private final String phone;
     private final String password;
-    private final boolean isVerified;
+    private final String avatar;
     private final String status;
     private final Timestamp created_at;
     private final Timestamp updated_at;
 
-    public User(int user_id, int role_id, String full_name, String email, String phone, String password, boolean isVerified, String status, Timestamp created_at, Timestamp updated_at) {
+    public User(int user_id, int role_id, String full_name, String email, String phone, String password, String avatar, String status, Timestamp created_at, Timestamp updated_at) {
         this.user_id = user_id;
         this.role_id = role_id;
         this.full_name = full_name;
         this.email = email;
         this.phone = phone;
         this.password = password;
-        this.isVerified = isVerified;
+        this.avatar = avatar;
         this.status = status;
         this.created_at = created_at;
         this.updated_at = updated_at;
@@ -52,8 +52,8 @@ public class User {
         return password;
     }
 
-    public boolean isIsVerified() {
-        return isVerified;
+    public String getAvatar() {
+        return avatar;
     }
 
     public String getStatus() {

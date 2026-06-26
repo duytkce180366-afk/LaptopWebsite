@@ -24,9 +24,12 @@ public class OrderRepository {
     public boolean placeOrder(
             int userId,
             String paymentMethod,
-            String addressInfo,
+            String address,
+            String district,
+            String province,
             String phone) {
 
+       
         Connection conn = null;
 
         try {
@@ -38,38 +41,22 @@ public class OrderRepository {
             //----------------------------------
             // Ghép địa chỉ + phone
             //----------------------------------
-            String fullAddress
-                    = "Address: " + addressInfo
-                    + " | Phone: " + phone;
-
             //----------------------------------
             // Tạo Order
             //----------------------------------
             String createOrder = "INSERT INTO bs_Orders("
-                    + "user_id,total_amount,"
-                    + "payment_method,"
-                    + "order_status,"
-                    + "address_info)"
-                    + " VALUES(?,?,?,'Pending',?)";
+                    + "user_id, total_amount, payment_method, order_status, address_info, phone)"
+                    + " VALUES(?, ?, ?, 'Pending', ?, ?)";
 
             PreparedStatement psOrder
                     = conn.prepareStatement(
                             createOrder,
                             Statement.RETURN_GENERATED_KEYS);
-
             psOrder.setInt(1, userId);
-
-            psOrder.setDouble(
-                    2,
-                    calculateTotal(userId, conn));
-
-            psOrder.setString(
-                    3,
-                    paymentMethod);
-
-            psOrder.setString(
-                    4,
-                    fullAddress);
+            psOrder.setDouble(2, calculateTotal(userId, conn));
+            psOrder.setString(3, paymentMethod);
+            psOrder.setString(4, address + ", " + district + ", " + province);
+            psOrder.setString(5, phone);
 
             psOrder.executeUpdate();
 
@@ -237,11 +224,11 @@ public class OrderRepository {
             Connection conn) throws Exception {
 
         String sql
-    = "SELECT SUM(quantity * unit_price) total "
-    + "FROM bs_CartItems ci "
-    + "JOIN bs_Cart c "
-    + "ON ci.cart_id=c.cart_id "
-    + "WHERE c.user_id=?";
+                = "SELECT SUM(quantity * unit_price) total "
+                + "FROM bs_CartItems ci "
+                + "JOIN bs_Cart c "
+                + "ON ci.cart_id=c.cart_id "
+                + "WHERE c.user_id=?";
 
         PreparedStatement ps
                 = conn.prepareStatement(sql);
@@ -257,90 +244,69 @@ public class OrderRepository {
         return 0;
     }
 
-    public List<Order> getOrdersByUser(int userId) {
+public List<Order> getOrdersByUser(int userId) {
 
-        List<Order> list = new ArrayList<>();
-        String sql
-                = "SELECT order_id, "
-                + "total_amount, "
-                + "order_status, "
-                + "created_at, "
-                + "address_info, "
-                + "note "
-                + "FROM bs_Orders "
-                + "WHERE user_id=?";
+    List<Order> list = new ArrayList<>();
+    String sql = "SELECT order_id, total_amount, order_status, "
+            + "created_at, address_info, phone, note "
+            + "FROM bs_Orders "
+            + "WHERE user_id = ?";  // Fix: bỏ order_id
 
-        try {
+    try {
+        Connection conn = new DbClass().getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ps.setInt(1, userId);  // Fix: chỉ 1 param
+        ResultSet rs = ps.executeQuery();
 
-            Connection conn = new DbClass().getConnection();
-
-            PreparedStatement ps = conn.prepareStatement(sql);
-
-            ps.setInt(1, userId);
-
-            ResultSet rs = ps.executeQuery();
-
-            while (rs.next()) {
-
-                Order order = new Order();
-
-                order.setOrderId(rs.getInt("order_id"));
-                order.setTotalAmount(rs.getDouble("total_amount"));
-                order.setOrderStatus(rs.getString("order_status"));
-                order.setCreatedAt(rs.getTimestamp("created_at"));
-                String info = rs.getString("address_info");
-                order.setNote(
-                        rs.getString("note")
-                );
-
-                if (info != null) {
-    if (info.contains("|")) {
-        String[] parts = info.split("\\|");
-        order.setAddressInfo(parts[0].replace("Address:", "").trim());
-        order.setPhone(parts[1].replace("Phone:", "").trim());
-    } else {
-        order.setAddressInfo(info.trim());
-    }
-}
-                list.add(order);
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
+        while (rs.next()) {
+            Order order = new Order();
+            order.setOrderId(rs.getInt("order_id"));
+            order.setTotalAmount(rs.getDouble("total_amount"));
+            order.setOrderStatus(rs.getString("order_status"));
+            order.setCreatedAt(rs.getTimestamp("created_at"));
+            order.setNote(rs.getString("note"));
+            order.setPhone(rs.getString("phone")); // Fix: lấy từ cột phone riêng
+            order.setAddressInfo(rs.getString("address_info")); // Fix: không parse nữa
+            list.add(order);
         }
 
-        return list;
+    } catch (Exception e) {
+        e.printStackTrace();
     }
-        public List<Map<String, Object>> getOrderDetails(int orderId) {
- 
+
+    return list;
+}
+
+    public List<Map<String, Object>> getOrderDetails(int orderId) {
+
         List<Map<String, Object>> list = new ArrayList<>();
- 
+
         String sql = "SELECT p.product_name, p.thumbnail, "
                 + "od.quantity, od.unit_price, od.subtotal "
                 + "FROM bs_OrderDetails od "
                 + "JOIN bs_Products p ON od.product_id = p.product_id "
                 + "WHERE od.order_id = ?";
- 
+
         try {
             Connection conn = new DbClass().getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setInt(1, orderId);
             ResultSet rs = ps.executeQuery();
- 
+
             while (rs.next()) {
                 Map<String, Object> item = new HashMap<>();
                 item.put("product_name", rs.getString("product_name"));
-                item.put("thumbnail",    rs.getString("thumbnail"));
-                item.put("quantity",     rs.getInt("quantity"));
-                item.put("unit_price",   rs.getDouble("unit_price"));
-                item.put("subtotal",     rs.getDouble("subtotal"));
+                item.put("thumbnail", rs.getString("thumbnail"));
+                item.put("quantity", rs.getInt("quantity"));
+                item.put("unit_price", rs.getDouble("unit_price"));
+                item.put("subtotal", rs.getDouble("subtotal"));
                 list.add(item);
             }
- 
+
         } catch (Exception e) {
             e.printStackTrace();
         }
- 
+
         return list;
     }
 

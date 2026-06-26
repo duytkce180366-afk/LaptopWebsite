@@ -18,7 +18,6 @@ public class AuthService extends DbClass {
 
     // Allow case-insensitive email local-part/domain validation
     private final String emailFormat = "(?i)^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$";
-    
     private final AuthRepository authRepo;
     
     private static final String PBKDF2_ALGORITHM = "PBKDF2WithHmacSHA256";
@@ -52,8 +51,7 @@ public class AuthService extends DbClass {
             throw new NoSuchAlgorithmException("Failed to generate password hash", ex);
         }
     }
-    
-    // Verify Passowrd
+
     private boolean VerifyPassword(String password, String stored) throws NoSuchAlgorithmException {
         if (stored == null) {
             return false;
@@ -87,7 +85,7 @@ public class AuthService extends DbClass {
     }
 
     /*
-     * User Sign-in/Sign-up methods
+     * User Sign-in methods
      */
     // Sign in with email and password
     public User GetUserSignIn(String email, String password) throws AuthException, NoSuchAlgorithmException {
@@ -162,9 +160,7 @@ public class AuthService extends DbClass {
         return created;
     }
 
-    /*
-     * User Sign-in/Sign-up with OIDC methods
-     */
+    // Sign-in & Sign-up OIDC
     public User GetOrCreateUserOIDCSignIn(String email, String name) throws AuthException {
         if (!email.matches(this.emailFormat)) {
             throw new AuthException(-1, "Email is not in correct format");
@@ -183,22 +179,13 @@ public class AuthService extends DbClass {
 
         return created;
     }
-    
-    public boolean VerifyEmail(String email) throws AuthException {
-        return this.authRepo.VerifiedUser(email);
-    }
 
-    // Get user by email (refresh user state)
-    public User GetUserByEmail(String email) {
-        return this.authRepo.GetUserOIDCSignIn(email);
-    }
-    
     // Reset password
     public boolean UpdateUserPassword(String email, String newPassword) throws NoSuchAlgorithmException, AuthException {
         if (!email.matches(this.emailFormat)) {
             throw new AuthException(-1, "Email is not in correct format");
         }
-        
+
         String pwdHash = this.HashPassword(newPassword);
         return this.authRepo.UpdatePassword(email, pwdHash);
     }
