@@ -108,8 +108,8 @@ END
 GO
 
 CREATE OR ALTER TRIGGER trg_bs_Addresses_SetNewDefault
-ON dbo.bs_Addresses
-AFTER INSERT, UPDATE
+	ON dbo.bs_Addresses
+	AFTER INSERT, UPDATE
 AS
 BEGIN
     -- Prevents extra result sets from interfering with SELECT statements
@@ -120,17 +120,15 @@ BEGIN
     BEGIN
         -- Clear the 'is_default' flag for all OTHER addresses belonging to this user
         UPDATE a
-        SET a.is_default = 0
-        FROM dbo.bs_Addresses a
-        WHERE a.user_id IN (SELECT user_id FROM inserted WHERE is_default = 1) AND a.is_default = 1 
-            AND a.address_id NOT IN (
-                SELECT MAX(address_id) 
-                FROM inserted 
-                WHERE is_default = 1 
-                GROUP BY user_id
-            );
+			SET a.is_default = 0
+			FROM dbo.bs_Addresses a
+			WHERE a.user_id IN 
+				(SELECT user_id FROM inserted WHERE is_default = 1) 
+					AND (a.is_default = 1)
+					AND a.address_id NOT IN (SELECT MAX(address_id) FROM inserted WHERE is_default = 1  GROUP BY user_id);
     END
-END;
+END
+GO
 
 /* =========================
    3) Product Catalog Tables
