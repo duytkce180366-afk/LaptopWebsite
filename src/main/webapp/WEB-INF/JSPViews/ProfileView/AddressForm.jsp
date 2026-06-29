@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>Address - TechStore</title>
+        <title>Address - Tech Store</title>
         <%@include file="/WEB-INF/JSPViews/global/header.jsp" %>
     </head>
     <body id="top">
@@ -41,11 +41,6 @@
                                 <select id="province-select" name="province" class="form-select" required>
                                     <option value="">Loading provinces...</option>
                                 </select>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Postal Code</label>
-                                <input type="text" name="postal_code" class="form-control" value="<%= addr == null ? "" : addr.getPostalCode()%>" required />
                             </div>
 
                             <div class="mb-3">
