@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.techstore.Repositories;
 
 import com.mycompany.techstore.Models.Objects.Voucher;
@@ -10,10 +6,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-/**
- *
- * @author DuyTran
- */
 public class VoucherRepository {
 
     public Voucher getByCode(String code) {

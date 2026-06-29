@@ -1,15 +1,7 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.techstore.Models.Objects;
 
 import java.util.Date;
 
-/**
- *
- * @author DuyTran
- */
 public class Voucher {
 
     private int voucherId;
@@ -66,5 +58,5 @@ public class Voucher {
     public void setStatus(String status) {
         this.status = status;
     }
-    
+
 }

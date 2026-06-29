@@ -1,8 +1,3 @@
-<%-- 
-    Document   : Checkout
-    Created on : Jun 15, 2026, 7:58:23 PM
-    Author     : DuyTran
---%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c"
