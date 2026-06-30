@@ -81,6 +81,12 @@
     CategoryService navCategoryService = new CategoryService();
     List<Category> navCategories = navCategoryService.getAll();
     String navSelectedCategoryId = request.getParameter("category");
+    String navSearchTerm = request.getParameter("search");
+
+    if (navSearchTerm == null) {
+        Object searchAttribute = request.getAttribute("searchTerm");
+        navSearchTerm = searchAttribute == null ? "" : String.valueOf(searchAttribute);
+    }
 
     if (navSelectedCategoryId == null || navSelectedCategoryId.isBlank()) {
         Object selectedCategoryAttribute = request.getAttribute("selectedCategoryId");
@@ -156,6 +162,14 @@
         </div>
     </div>
 
+    <form class="nav-search" method="get" action="<%= request.getContextPath()%>/home#products" role="search">
+        <% if (navSelectedCategoryId != null && !navSelectedCategoryId.isBlank() && !"all".equals(navSelectedCategoryId)) {%>
+        <input type="hidden" name="category" value="<%= nav_html(navSelectedCategoryId)%>" />
+        <% }%>
+        <input type="search" name="search" placeholder="Search products..." value="<%= nav_html(navSearchTerm)%>" aria-label="Search products" />
+        <button type="submit" aria-label="Search">&#128269;</button>
+    </form>
+
     <div class="nav-links">
         <a href="<%= request.getContextPath()%>/home#home">Home</a>
         <a href="<%= request.getContextPath()%>/home#products">Products</a>
@@ -187,6 +201,9 @@
                 <span class="user-email"><%= nav_html(loggedUser.getEmail())%></span>
             </a>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                <% if (!loggedUser.isIsVerified()) { %>
+                <li><a class="dropdown-item" href="<%= request.getContextPath()%>/auth?action=verify">Verify email</a></li>
+                <% } %>
                 <li><a class="dropdown-item" href="<%= request.getContextPath()%>/profile">Edit profile</a></li>
                 <li><a class="dropdown-item" href="<%= request.getContextPath()%>/auth?action=resetpwd">Reset Password</a></li>
                 <li><a class="dropdown-item" href="<%= request.getContextPath()%>/auth?action=logout">Logout</a></li>

@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>Create account - TechStore</title>
+        <title>Create account - Tech Store</title>
         <%@include file="/WEB-INF/JSPViews/global/header.jsp" %>
     </head>
     <body id="top">
@@ -35,7 +35,7 @@
                         <hr class="my-3" />
                         <div class="oidc-signin">
                             <p class="mb-2">Or sign up using an external provider</p>
-                            <a class="btn btn-outline-primary w-100" href="<%= ctx %>/auth?action=oidc_signin">Sign up with OIDC</a>
+                            <a class="btn btn-outline-primary w-100" href="<%= ctx %>/auth?action=oidc_signin">Sign up with SSO</a>
                         </div>
                     </div>
                 </div>

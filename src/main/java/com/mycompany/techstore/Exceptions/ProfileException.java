@@ -1,12 +1,10 @@
 package com.mycompany.techstore.Exceptions;
 
-public class AuthException extends Exception {
-
-    private static final long serialVersionUID = 1L;
+public class ProfileException extends Exception {
 
     private final int code;
 
-    public AuthException(int code, String reason) {
+    public ProfileException(int code, String reason) {
         super(reason);
         this.code = code;
     }

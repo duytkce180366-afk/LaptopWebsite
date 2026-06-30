@@ -21,6 +21,9 @@
         var minInput = slider.querySelector('[data-price-min-input]');
         var maxInput = slider.querySelector('[data-price-max-input]');
         var output = slider.querySelector('[data-price-output]');
+        var track = slider.querySelector('.price-slider-track');
+        var minThumb = slider.querySelector('[data-price-min-thumb]');
+        var maxThumb = slider.querySelector('[data-price-max-thumb]');
         var max = Number(maxRange.max);
         var step = Number(maxRange.step) || 1;
 
@@ -47,8 +50,20 @@
             output.value = label;
             buttonLabel.textContent = 'Price: ' + label;
 
-            slider.style.setProperty('--price-min', (minValue / max) * 100 + '%');
-            slider.style.setProperty('--price-max', (maxValue / max) * 100 + '%');
+            var minPercent = (minValue / max) * 100 + '%';
+            var maxPercent = (maxValue / max) * 100 + '%';
+            slider.style.setProperty('--price-min', minPercent);
+            slider.style.setProperty('--price-max', maxPercent);
+            if (track) {
+                track.style.setProperty('--price-min', minPercent);
+                track.style.setProperty('--price-max', maxPercent);
+            }
+            if (minThumb) {
+                minThumb.style.left = minPercent;
+            }
+            if (maxThumb) {
+                maxThumb.style.left = maxPercent;
+            }
         }
 
         function openPanel() {
