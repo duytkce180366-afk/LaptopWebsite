@@ -173,7 +173,11 @@
     <div class="nav-links">
         <a href="<%= request.getContextPath()%>/home#home">Home</a>
         <a href="<%= request.getContextPath()%>/home#products">Products</a>
-
+        <a href="${pageContext.request.contextPath}/cart"
+           class="cart-btn">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span>Cart</span>
+        </a>
         <%
             User loggedUser = (User) session.getAttribute("loggedUser");
             if (loggedUser == null) {
