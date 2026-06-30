@@ -125,7 +125,9 @@ public class AddToCartController extends HttpServlet {
                     + " items left in stock!");
 
             response.sendRedirect(
-                    request.getHeader("Referer"));
+                    request.getContextPath()
+                    + "/product?id="
+                    + productId);
 
             return;
         }
