@@ -14,13 +14,18 @@
     <head>
         <title>Check Out - Tech Store</title>
         <%@include file="/WEB-INF/JSPViews/global/header.jsp" %>
-        
+
         <link rel="stylesheet"
               href="${pageContext.request.contextPath}/css/Checkout.css">
     </head>
 
     <body>
-
+        <c:if test="${empty cartItems}">
+            <script>
+                window.location =
+                        "${pageContext.request.contextPath}/cart";
+            </script>
+        </c:if>
         <%@include file="/WEB-INF/JSPViews/global/nav.jsp" %>
 
         <form action="${pageContext.request.contextPath}/place-order"
@@ -147,11 +152,10 @@
                         <div class="voucher-row">
 
                             <input type="text"
-                                   name="voucherCode"
+                                   id="voucherCode"
                                    placeholder="Enter voucher code">
-
-                            <button type="submit"
-                                    formaction="${pageContext.request.contextPath}/apply-voucher"
+                            <button type="button"
+                                    id="applyVoucherBtn"
                                     class="btn-apply">
                                 Apply
                             </button>
@@ -159,36 +163,35 @@
                         </div>
 
                     </div>
-                    <div class="total-box">
+                    <div class="summary-footer">
 
-                        <span>Total</span>
+                        <div class="total-row">
+                            <span>Total</span>
+                            <strong>${cartTotalFormatted}</strong>
+                        </div>
 
-                        <strong>
-                            ${cartTotalFormatted}
-                        </strong>
+                        <div class="total-row">
+                            <span>Discount</span>
+                            <strong id="discountAmount">
+                                - 0 đ
+                            </strong>
+                        </div>
 
-                    </div>
-                    <div class="total-box">
-                        <span>Discount</span>
-                        <strong>
-                            - ${discountFormatted}
-                        </strong>
-                    </div>
+                        <div class="total-row final-row">
+                            <span>Final Total</span>
+                            <strong id="finalTotal">
+                                ${cartTotalFormatted}
+                            </strong>
+                        </div>
 
-                    <div class="total-box">
-                        <span>Final Total</span>
-                        <strong>
-                            ${finalTotalFormatted}
-                        </strong>
-                    </div>
-                    <button type="submit"
-                            class="btn-place-order">
-                        Place Order
-                    </button>
+                        <button type="submit"
+                                class="btn-place-order">
+                            Place Order
+                        </button>
+
+                    </div> 
 
                 </div>
-
-            </div>
 
         </form>
 
@@ -239,6 +242,62 @@
             });
 
         </script>
+        <script>
 
+            document.getElementById("applyVoucherBtn")
+                    .addEventListener("click", function () {
+
+                        const code =
+                                document.getElementById("voucherCode").value;
+
+                        fetch(
+                                "${pageContext.request.contextPath}/apply-voucher",
+                                {
+                                    method: "POST",
+
+                                    headers: {
+                                        "Content-Type":
+                                                "application/x-www-form-urlencoded"
+                                    },
+
+                                    body:
+                                            "voucherCode="
+                                            + encodeURIComponent(code)
+                                }
+                        )
+
+                                .then(response => response.json())
+
+                                .then(data => {
+
+                                    if (!data.success) {
+
+                                        alert(data.message);
+
+                                        return;
+                                    }
+
+                                    document.getElementById("discountAmount")
+                                            .innerText =
+                                            "- "
+                                            + data.discount.toLocaleString("vi-VN")
+                                            + " đ";
+
+                                    document.getElementById("finalTotal")
+                                            .innerText =
+                                            data.finalTotal.toLocaleString("vi-VN")
+                                            + " đ";
+                                })
+
+                                .catch(error => {
+
+                                    console.log(error);
+
+                                    alert("Voucher error");
+                                });
+
+                    });
+
+        </script>
     </body>
 </html>

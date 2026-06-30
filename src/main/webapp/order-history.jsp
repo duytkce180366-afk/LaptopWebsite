@@ -4,8 +4,8 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
 <%
-    User loggedUser = (User) session.getAttribute("loggedUser");
-    if (loggedUser == null) {
+    User currentUser = (User) session.getAttribute("loggedUser");
+    if (currentUser == null) {
         response.sendRedirect(request.getContextPath() + "/auth?action=signin");
         return;
     }
@@ -430,11 +430,11 @@
                         <% } %>
                     </td>
                     <td style="text-align:right;">
-                        <% if (o.getTotalAmount() == 0) { %>
+                        <% if (o.getFinalTotal() == 0) { %>
                         <span style="color:#9ca3af; font-size:13px;">-</span>
                         <% } else { %>
                         <span class="order-amount">
-                            <%=String.format("%,.0f", o.getTotalAmount())%> &#8363;
+                            <%=String.format("%,.0f", o.getFinalTotal())%> &#8363;
                         </span>
                         <% } %>
                     </td>
@@ -453,7 +453,7 @@
                         double grandTotal = 0;
                         if (orders != null) {
                             for (Order o2 : orders) {
-                                grandTotal += o2.getTotalAmount();
+                                grandTotal += o2.getFinalTotal();
                             }
                         }
                     %>

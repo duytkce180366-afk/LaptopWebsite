@@ -5,8 +5,8 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
 <%
-    User loggedUser = (User) session.getAttribute("loggedUser");
-    if (loggedUser == null) {
+    User currentUser = (User) session.getAttribute("loggedUser");
+    if (currentUser == null) {
         response.sendRedirect(request.getContextPath() + "/auth?action=signin");
         return;
     }
@@ -334,11 +334,17 @@
                 </div>
                 <div class="summary-row">
                     <span>Shipping fee</span>
-                    <span>30,000 d</span>
+                    <span><%=String.format("%,.0f", order.getShippingFee())%> d</span>
                 </div>
+                <% if (order.getDiscountAmount() > 0) { %>
+                <div class="summary-row">
+                    <span>Discount</span>
+                    <span>-<%=String.format("%,.0f", order.getDiscountAmount())%> d</span>
+                </div>
+                <% } %>
                 <div class="summary-total">
                     <span>Total</span>
-                    <span><%=String.format("%,.0f", order.getTotalAmount())%> d</span>
+                    <span><%=String.format("%,.0f", order.getFinalTotal())%> d</span>
                 </div>
             </div>
 

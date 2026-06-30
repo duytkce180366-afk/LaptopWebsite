@@ -70,18 +70,22 @@ public class CheckoutController extends HttpServlet {
             HttpServletResponse response)
             throws ServletException, IOException {
 
-        HttpSession session
-                = request.getSession(false);
+        HttpSession session = request.getSession(false);
+
+        if (session == null) {
+            response.sendRedirect(
+                    request.getContextPath()
+                    + "/auth?action=signin");
+            return;
+        }
 
         User user
                 = (User) session.getAttribute("loggedUser");
 
         if (user == null) {
-
             response.sendRedirect(
                     request.getContextPath()
                     + "/auth?action=signin");
-
             return;
         }
         List<CartItem> cartItems
