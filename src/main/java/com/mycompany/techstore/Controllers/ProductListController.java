@@ -13,10 +13,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
-import model.Product;
+import com.mycompany.techstore.Models.Objects.Product;
 import repository.CategoryRepository;
 import service.ProductService;
-import repository.BrandRepository;
+import com.mycompany.techstore.Repositories.BrandRepository;
 
 @WebServlet("/admin/products")
 

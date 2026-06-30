@@ -1,4 +1,4 @@
-package controller.staff;
+package com.mycompany.techstore.Controllers.staff;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -6,66 +6,36 @@ import jakarta.servlet.http.*;
 
 import java.io.IOException;
 import service.ProductService;
-import model.Product;
+import com.mycompany.techstore.Models.Objects.Product;
 
 @WebServlet("/staff/product/import")
-public class ProductImportController
-        extends HttpServlet {
+public class ProductImportController extends HttpServlet {
 
     private ProductService productService;
 
     @Override
     public void init() {
-
-        productService
-                = new ProductService();
-
+        productService = new ProductService();
     }
 
     @Override
-    protected void doGet(
-            HttpServletRequest request,
-            HttpServletResponse response)
-            throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        int id = Integer.parseInt(request.getParameter("id"));
+        Product p = productService.getProductById(id);
 
-        int id
-                = Integer.parseInt(
-                        request.getParameter("id"));
+        request.setAttribute("product", p);
 
-        Product p
-                = productService.getProductById(id);
-
-        request.setAttribute(
-                "product",
-                p);
-
-        request.getRequestDispatcher(
-                "/staff/product/import.jsp")
-                .forward(request, response);
+        request.getRequestDispatcher("/staff/product/import.jsp").forward(request, response);
     }
 
     @Override
-    protected void doPost(
-            HttpServletRequest request,
-            HttpServletResponse response)
-            throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        int productId = Integer.parseInt(request.getParameter("productId"));
 
-        int productId
-                = Integer.parseInt(
-                        request.getParameter(
-                                "productId"));
+        int quantity = Integer.parseInt(request.getParameter("quantity"));
 
-        int quantity
-                = Integer.parseInt(
-                        request.getParameter(
-                                "quantity"));
+        productService.importStock(productId, quantity);
 
-        productService.importStock(
-                productId,
-                quantity);
-
-        response.sendRedirect(
-                request.getContextPath()
-                + "/admin/products");
+        response.sendRedirect(request.getContextPath() + "/admin/products");
     }
 }

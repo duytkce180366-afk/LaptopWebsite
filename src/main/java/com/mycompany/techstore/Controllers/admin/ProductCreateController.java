@@ -15,8 +15,8 @@ import java.io.File;
 
 import java.io.IOException;
 
-import model.Product;
-import repository.BrandRepository;
+import com.mycompany.techstore.Models.Objects.Product;
+import com.mycompany.techstore.Repositories.BrandRepository;
 import repository.CategoryRepository;
 import service.ProductService;
 

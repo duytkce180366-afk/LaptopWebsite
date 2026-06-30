@@ -2,26 +2,27 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package repository;
+package com.mycompany.techstore.Repositories;
 
 import dbcontext.DBContext;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import model.Category;
+import model.Brand;
 
-public class CategoryRepository extends DBContext {
+public class BrandRepository extends DBContext {
 
-    public List<Category> getAllCategories() {
+    public List<Brand> getAllBrands() {
 
-        List<Category> list =
+        List<Brand> list =
                 new ArrayList<>();
 
+        
         String sql =
         "SELECT * "
-        + "FROM bs_Categories "
-        + "ORDER BY category_name";
+        + "FROM bs_Brands "
+        + "ORDER BY brand_name";
 
         try {
 
@@ -33,16 +34,16 @@ public class CategoryRepository extends DBContext {
 
             while(rs.next()) {
 
-                Category c =
-                        new Category();
+                Brand b =
+                        new Brand();
 
-                c.setCategoryId(
-                        rs.getInt("category_id"));
+                b.setBrandId(
+                        rs.getInt("brand_id"));
 
-                c.setCategoryName(
-                        rs.getString("category_name"));
+                b.setBrandName(
+                        rs.getString("brand_name"));
 
-                list.add(c);
+                list.add(b);
             }
 
         } catch(Exception e) {
@@ -53,4 +54,5 @@ public class CategoryRepository extends DBContext {
 
         return list;
     }
+    
 }
