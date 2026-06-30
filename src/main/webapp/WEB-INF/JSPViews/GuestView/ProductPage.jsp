@@ -1,4 +1,4 @@
-﻿<%@page import="com.mycompany.techstore.Models.Objects.Category"%>
+<%@page import="com.mycompany.techstore.Models.Objects.Category"%>
 <%@page import="com.mycompany.techstore.Models.Objects.Product"%>
 <%@page import="com.mycompany.techstore.Models.Objects.Review"%>
 <%@page import="java.text.NumberFormat"%>
@@ -6,6 +6,8 @@
 <%@page import="java.util.List"%>
 <%@page import="java.util.Locale"%>
 <%@page import="java.util.Map"%>
+<%@ taglib prefix="c"
+           uri="http://java.sun.com/jsp/jstl/core" %>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%!
     private String html(Object value) {
@@ -78,6 +80,35 @@
                             </div>
                             <p><%= html(product.getDescription())%></p>
                             <h3><%= formatPrice(product.getPrice())%></h3>
+
+                            <form action="<%= request.getContextPath()%>/cart/add"
+                                  method="post">
+
+                                <input type="hidden"
+                                       name="productId"
+                                       value="<%= product.getId()%>"/>
+
+                                <input type="hidden"
+                                       name="price"
+                                       value="<%= product.getPrice()%>"/>
+
+                                <input type="number"
+                                       name="quantity"
+                                       value="1"
+                                       min="1"/>
+
+                                <button type="submit">
+                                    Add To Cart
+                                </button>
+                                <c:if test="${not empty sessionScope.cartError}">
+                                    <div class="alert-stock">
+                                        ${sessionScope.cartError}
+                                    </div>
+
+                                    <c:remove var="cartError"
+                                              scope="session"/>
+                                </c:if>
+                            </form>
                             <dl class="spec-table">
                                 <% for (Map.Entry<String, String> spec : product.getSpecs().entrySet()) {%>
                                 <div>
