@@ -14,7 +14,6 @@ import java.util.Date;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import com.mycompany.techstore.Exceptions.AuthException;
 import com.mycompany.techstore.Models.Objects.User;
 import com.mycompany.techstore.services.AuthService;
@@ -36,6 +35,12 @@ import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
 import jakarta.mail.MessagingException;
+import com.mycompany.techstore.Models.Objects.User;
+import com.mycompany.techstore.Exceptions.AuthException;
+import com.mycompany.techstore.services.AuthService;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -44,6 +49,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.security.MessageDigest;
 import java.time.LocalDateTime;
+import java.security.NoSuchAlgorithmException;
 
 @WebServlet(name = "AuthController", urlPatterns = {"/auth"})
 public class AuthController extends HttpServlet {
