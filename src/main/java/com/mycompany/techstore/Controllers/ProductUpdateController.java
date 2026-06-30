@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package controller.admin;
+package com.mycompany.techstore.Controllers;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
@@ -12,7 +12,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
 import java.io.File;
-
 import java.io.IOException;
 
 import model.Product;
@@ -20,9 +19,9 @@ import repository.BrandRepository;
 import repository.CategoryRepository;
 import service.ProductService;
 
-@WebServlet("/admin/product/create")
+@WebServlet("/admin/product/update")
 @MultipartConfig
-public class ProductCreateController extends HttpServlet {
+public class ProductUpdateController extends HttpServlet {
 
     private ProductService productService;
     private CategoryRepository categoryRepo;
@@ -30,35 +29,55 @@ public class ProductCreateController extends HttpServlet {
 
     @Override
     public void init() {
-
-        productService
-                = new ProductService();
-
-        categoryRepo
-                = new CategoryRepository();
-
-        brandRepo
-                = new BrandRepository();
+        productService = new ProductService();
+        categoryRepo = new CategoryRepository();
+        brandRepo = new BrandRepository();
     }
 
-    
     @Override
     protected void doGet(
             HttpServletRequest request,
             HttpServletResponse response)
             throws ServletException, IOException {
 
-        request.setAttribute(
-                "categories",
-                categoryRepo.getAllCategories());
+        try {
 
-        request.setAttribute(
-                "brands",
-                brandRepo.getAllBrands());
+            int id = Integer.parseInt(
+                    request.getParameter("id"));
 
-        request.getRequestDispatcher(
-                "/admin/product/create.jsp")
-                .forward(request, response);
+            Product product
+                    = productService.getProductById(id);
+
+            if (product == null) {
+
+                response.sendRedirect(
+                        request.getContextPath()
+                        + "/admin/products");
+
+                return;
+            }
+
+            request.setAttribute(
+                    "product",
+                    product);
+            request.setAttribute(
+                    "categories",
+                    categoryRepo.getAllCategories());
+
+            request.setAttribute(
+                    "brands",
+                    brandRepo.getAllBrands());
+
+            request.getRequestDispatcher(
+                    "/admin/product/update.jsp")
+                    .forward(request, response);
+
+        } catch (Exception e) {
+
+            response.sendRedirect(
+                    request.getContextPath()
+                    + "/admin/products");
+        }
     }
 
     @Override
@@ -68,41 +87,13 @@ public class ProductCreateController extends HttpServlet {
             throws ServletException, IOException {
 
         try {
-            String categoryRaw
-                    = request.getParameter("categoryId");
 
-            String brandRaw
-                    = request.getParameter("brandId");
-
-            if (categoryRaw == null
-                    || categoryRaw.isEmpty()
-                    || brandRaw == null
-                    || brandRaw.isEmpty()) {
-
-                request.setAttribute(
-                        "error",
-                        "Please select category and brand");
-
-                request.setAttribute(
-                        "categories",
-                        categoryRepo.getAllCategories());
-
-                request.setAttribute(
-                        "brands",
-                        brandRepo.getAllBrands());
-
-                request.getRequestDispatcher(
-                        "/admin/product/create.jsp")
-                        .forward(request, response);
-
-                return;
-            }
             Product p = new Product();
-            p.setCategoryId(
-                    Integer.parseInt(categoryRaw));
 
-            p.setBrandId(
-                    Integer.parseInt(brandRaw));
+            p.setProductId(
+                    Integer.parseInt(
+                            request.getParameter("productId")));
+
             p.setCategoryId(
                     Integer.parseInt(
                             request.getParameter("categoryId")));
@@ -158,13 +149,21 @@ public class ProductCreateController extends HttpServlet {
                 p.setThumbnail(
                         "images/" + fileName);
 
+            } else {
+
+                Product oldProduct
+                        = productService.getProductById(
+                                p.getProductId());
+
+                p.setThumbnail(
+                        oldProduct.getThumbnail());
             }
 
             p.setStatus(
                     request.getParameter("status"));
 
             String error
-                    = productService.createProduct(p);
+                    = productService.updateProduct(p);
 
             if (error != null) {
 
@@ -177,7 +176,7 @@ public class ProductCreateController extends HttpServlet {
                         p);
 
                 request.getRequestDispatcher(
-                        "/admin/product/create.jsp")
+                        "/admin/product/update.jsp")
                         .forward(request, response);
 
                 return;
@@ -193,12 +192,11 @@ public class ProductCreateController extends HttpServlet {
 
             request.setAttribute(
                     "error",
-                    "Invalid data");
+                    "Update failed");
 
             request.getRequestDispatcher(
-                    "/admin/product/create.jsp")
+                    "/admin/product/update.jsp")
                     .forward(request, response);
         }
     }
-
 }
