@@ -30,7 +30,6 @@ import com.nimbusds.jose.util.ResourceRetriever;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
-
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
@@ -38,9 +37,6 @@ import jakarta.mail.MessagingException;
 import com.mycompany.techstore.Models.Objects.User;
 import com.mycompany.techstore.Exceptions.AuthException;
 import com.mycompany.techstore.services.AuthService;
-import jakarta.json.Json;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonReader;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
