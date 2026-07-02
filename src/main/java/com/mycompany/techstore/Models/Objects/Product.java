@@ -1,104 +1,104 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.techstore.Models.Objects;
 
-import java.sql.Timestamp;
+import java.util.List;
+import java.util.Map;
 
 public class Product {
-    private int productId;
-    private int categoryId;
-    private int brandId;
-    private String sku;
-    private String productName;
-    private String description;
-    private double price;
+    private int id;
+    private String categoryId;
+    private String category;
+    private String name;
+    private String brand;
+    private long price;
+    private String badge;
+    private Map<String, String> specs;
     private int stock;
-    private String thumbnail;
-    private String status;
-    private Timestamp createdAt;
-    private Timestamp updatedAt;
-    private String categoryName;
-    private String brandName;
+    private String image;
+    private String warranty;
+    private String description;
+    private List<Review> reviews;
 
-    public Product() {
-    }
-
-    public Product(int productId, int categoryId, int brandId,
-            String sku, String productName, String description,
-            double price, int stock, String thumbnail,
-            String status, Timestamp createdAt,
-            Timestamp updatedAt) {
-
-        this.productId = productId;
+    public Product(int id, String categoryId, String category, String name, String brand, long price,
+                   String badge, Map<String, String> specs, int stock, String image,
+                   String warranty, String description, List<Review> reviews) {
+        this.id = id;
         this.categoryId = categoryId;
-        this.brandId = brandId;
-        this.sku = sku;
-        this.productName = productName;
-        this.description = description;
+        this.category = category;
+        this.name = name;
+        this.brand = brand;
         this.price = price;
+        this.badge = badge;
+        this.specs = specs;
         this.stock = stock;
-        this.thumbnail = thumbnail;
-        this.status = status;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
+        this.image = image;
+        this.warranty = warranty;
+        this.description = description;
+        this.reviews = reviews;
     }
 
-    public int getProductId() {
-        return productId;
+    // Getters and Setters
+    public int getId() {
+        return id;
     }
 
-    public void setProductId(int productId) {
-        this.productId = productId;
+    public void setId(int id) {
+        this.id = id;
     }
 
-    public int getCategoryId() {
+    public String getCategoryId() {
         return categoryId;
     }
 
-    public void setCategoryId(int categoryId) {
+    public void setCategoryId(String categoryId) {
         this.categoryId = categoryId;
     }
 
-    public int getBrandId() {
-        return brandId;
+    public String getCategory() {
+        return category;
     }
 
-    public void setBrandId(int brandId) {
-        this.brandId = brandId;
+    public void setCategory(String category) {
+        this.category = category;
     }
 
-    public String getSku() {
-        return sku;
+    public String getName() {
+        return name;
     }
 
-    public void setSku(String sku) {
-        this.sku = sku;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public String getProductName() {
-        return productName;
+    public String getBrand() {
+        return brand;
     }
 
-    public void setProductName(String productName) {
-        this.productName = productName;
+    public void setBrand(String brand) {
+        this.brand = brand;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public double getPrice() {
+    public long getPrice() {
         return price;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(long price) {
         this.price = price;
+    }
+
+    public String getBadge() {
+        return badge;
+    }
+
+    public void setBadge(String badge) {
+        this.badge = badge;
+    }
+
+    public Map<String, String> getSpecs() {
+        return specs;
+    }
+
+    public void setSpecs(Map<String, String> specs) {
+        this.specs = specs;
     }
 
     public int getStock() {
@@ -109,51 +109,43 @@ public class Product {
         this.stock = stock;
     }
 
-    public String getThumbnail() {
-        return thumbnail;
+    public String getImage() {
+        return image;
     }
 
-    public void setThumbnail(String thumbnail) {
-        this.thumbnail = thumbnail;
+    public void setImage(String image) {
+        this.image = image;
     }
 
-    public String getStatus() {
-        return status;
+    public String getWarranty() {
+        return warranty;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setWarranty(String warranty) {
+        this.warranty = warranty;
     }
 
-    public Timestamp getCreatedAt() {
-        return createdAt;
+    public String getDescription() {
+        return description;
     }
 
-    public void setCreatedAt(Timestamp createdAt) {
-        this.createdAt = createdAt;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
-    public Timestamp getUpdatedAt() {
-        return updatedAt;
+    public List<Review> getReviews() {
+        return reviews;
     }
 
-    public void setUpdatedAt(Timestamp updatedAt) {
-        this.updatedAt = updatedAt;
+    public void setReviews(List<Review> reviews) {
+        this.reviews = reviews;
     }
 
-    public String getCategoryName() {
-        return categoryName;
-    }
-
-    public void setCategoryName(String categoryName) {
-        this.categoryName = categoryName;
-    }
-
-    public String getBrandName() {
-        return brandName;
-    }
-
-    public void setBrandName(String brandName) {
-        this.brandName = brandName;
+    public double getAverageRating() {
+        if (reviews == null || reviews.isEmpty()) {
+            return 0;
+        }
+        double total = reviews.stream().mapToInt(Review::getRating).sum();
+        return Math.round((total / reviews.size()) * 10.0) / 10.0;
     }
 }
