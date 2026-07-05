@@ -74,7 +74,7 @@ protected void doGet(HttpServletRequest request,
         response.sendRedirect(request.getContextPath() + "/auth?action=signin");
         return;
     }
-    int userId = loggedUser.getUser_id(); // thay vì hardcode = 1
+    int userId = loggedUser.getUser_id(); 
 
     String idParam = request.getParameter("id");
     if (idParam == null) {

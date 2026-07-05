@@ -16,10 +16,22 @@ public class OrderDetailRepository {
  
     public Order getOrderById(int orderId, int userId) {
  
-        String sql = "SELECT order_id, total_amount, shipping_fee, discount_amount, "
-                   + "order_status, created_at, address_info, phone, note "
-                   + "FROM bs_Orders "
-                   + "WHERE order_id = ? AND user_id = ?";
+        String sql = "SELECT  o.order_id,\n" +
+"        o.total_amount,\n" +
+"        o.shipping_fee,\n" +
+"        o.discount_amount,\n" +
+"        o.order_status,\n" +
+"        o.payment_method,\n" +
+"        o.created_at,\n" +
+"        o.address_info,\n" +
+"        o.phone,\n" +
+"        o.note,\n" +
+"        v.code\n" +
+"FROM bs_Orders o\n" +
+"LEFT JOIN bs_Vouchers v\n" +
+"       ON o.voucher_id = v.voucher_id\n" +
+"WHERE o.order_id = ?\n" +
+"AND o.user_id = ?";
  
         try {
             Connection conn = new DbClass().getConnection();
@@ -35,10 +47,13 @@ public class OrderDetailRepository {
                 o.setShippingFee(rs.getDouble("shipping_fee"));
                 o.setDiscountAmount(rs.getDouble("discount_amount"));
                 o.setOrderStatus(rs.getString("order_status"));
+                o.setPaymentMethod(rs.getString("payment_method"));
+                System.out.println("DB Payment = " + rs.getString("payment_method"));
                 o.setCreatedAt(rs.getTimestamp("created_at"));
                 o.setNote(rs.getString("note"));
                 o.setAddressInfo(rs.getString("address_info"));
                 o.setPhone(rs.getString("phone"));
+                o.setVoucherCode(rs.getString("code"));
                 return o;
             }
  
@@ -84,3 +99,4 @@ public class OrderDetailRepository {
         return list;
     }
 }
+ 

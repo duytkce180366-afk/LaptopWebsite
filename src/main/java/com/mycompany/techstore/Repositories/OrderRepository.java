@@ -16,28 +16,19 @@ import java.util.Map;
  */
 public class OrderRepository {
  
-    private static final double SHIPPING_FEE = 30000;
+    private static final double SHIPPING_FEE = 0;
  
-    public boolean placeOrder(
-            int userId,
-            String paymentMethod,
-            String address,
-            String district,
-            String province,
-            String phone) {
- 
+    // Returns orderId if success, -1 if failed
+    public int placeOrder(int userId, String paymentMethod,
+            String address, String district,
+            String province, String phone) {
         return placeOrder(userId, paymentMethod, address, district, province, phone, 0, 0);
     }
  
-    public boolean placeOrder(
-            int userId,
-            String paymentMethod,
-            String address,
-            String district,
-            String province,
-            String phone,
-            int voucherId,
-            double discountAmount) {
+    public int placeOrder(int userId, String paymentMethod,
+            String address, String district,
+            String province, String phone,
+            int voucherId, double discountAmount) {
  
         Connection conn = null;
  
@@ -72,7 +63,7 @@ public class OrderRepository {
  
             // Get generated order ID
             ResultSet rs = psOrder.getGeneratedKeys();
-            int orderId = 0;
+            int orderId = -1;
             if (rs.next()) {
                 orderId = rs.getInt(1);
             }
@@ -98,7 +89,6 @@ public class OrderRepository {
                 int quantity  = rsItem.getInt("quantity");
                 double price  = rsItem.getDouble("unit_price");
  
-                // Insert order detail
                 String detailSql = "INSERT INTO bs_OrderDetails("
                         + "order_id, product_id, quantity, unit_price)"
                         + " VALUES(?, ?, ?, ?)";
@@ -109,7 +99,6 @@ public class OrderRepository {
                 psDetail.setDouble(4, price);
                 psDetail.executeUpdate();
  
-                // Update product stock
                 String stockSql = "UPDATE bs_Products SET stock = stock - ? WHERE product_id=?";
                 PreparedStatement psStock = conn.prepareStatement(stockSql);
                 psStock.setInt(1, quantity);
@@ -117,14 +106,14 @@ public class OrderRepository {
                 psStock.executeUpdate();
             }
  
-            // Clear cart after order placed
+            // Clear cart
             String clearSql = "DELETE FROM bs_CartItems WHERE cart_id=?";
             PreparedStatement psClear = conn.prepareStatement(clearSql);
             psClear.setInt(1, cartId);
             psClear.executeUpdate();
  
             conn.commit();
-            return true;
+            return orderId;
  
         } catch (Exception e) {
             try {
@@ -133,7 +122,7 @@ public class OrderRepository {
             e.printStackTrace();
         }
  
-        return false;
+        return -1;
     }
  
     public boolean cancelOrder(int orderId, String note) {
@@ -155,6 +144,52 @@ public class OrderRepository {
         }
  
         return false;
+    }
+ 
+   public boolean updateOrderStatus(int orderId, String status) {
+
+    System.out.println("=== UPDATE ORDER STATUS ===");
+    System.out.println("OrderId = " + orderId);
+    System.out.println("Status = " + status);
+
+    String sql = "UPDATE bs_Orders SET order_status=? WHERE order_id=?";
+
+    try {
+        Connection conn = new DbClass().getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ps.setString(1, status);
+        ps.setInt(2, orderId);
+
+        int row = ps.executeUpdate();
+
+        System.out.println("Updated rows = " + row);
+
+        return row > 0;
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return false;
+}
+    public double getOrderTotal(int orderId) {
+ 
+        String sql = "SELECT total_amount + shipping_fee - discount_amount AS final_total "
+                + "FROM bs_Orders WHERE order_id=?";
+ 
+        try {
+            Connection conn = new DbClass().getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, orderId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getDouble("final_total");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+ 
+        return 0;
     }
  
     private double calculateTotal(int userId, Connection conn) throws Exception {
@@ -243,5 +278,4 @@ public class OrderRepository {
  
         return list;
     }
-
 }

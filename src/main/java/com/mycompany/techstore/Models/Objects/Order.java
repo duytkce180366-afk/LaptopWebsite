@@ -18,6 +18,15 @@ public class Order {
     private String addressInfo;
     private String phone;
     private String note;
+    private String voucherCode;
+
+public String getVoucherCode() {
+    return voucherCode;
+}
+
+public void setVoucherCode(String voucherCode) {
+    this.voucherCode = voucherCode;
+}
  
     public Order() {}
  

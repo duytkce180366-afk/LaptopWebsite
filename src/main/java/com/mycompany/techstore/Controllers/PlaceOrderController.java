@@ -1,6 +1,7 @@
 package com.mycompany.techstore.Controllers;
  
 import com.mycompany.techstore.Models.Objects.User;
+import com.mycompany.techstore.Models.Objects.Voucher;
 import com.mycompany.techstore.services.OrderService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -21,7 +22,9 @@ public class PlaceOrderController extends HttpServlet {
             HttpServletResponse response)
             throws ServletException, IOException {
  
-        User loggedUser = (User) request.getSession().getAttribute("loggedUser");
+        HttpSession session = request.getSession();
+ 
+        User loggedUser = (User) session.getAttribute("loggedUser");
         if (loggedUser == null) {
             response.sendRedirect(request.getContextPath() + "/auth?action=signin");
             return;
@@ -34,30 +37,39 @@ public class PlaceOrderController extends HttpServlet {
         String phone         = request.getParameter("phone");
         String paymentMethod = request.getParameter("paymentMethod");
  
-        // Get voucher info from session (set by ApplyVoucherController)
-        HttpSession session = request.getSession();
-        com.mycompany.techstore.Models.Objects.Voucher voucher =
-                (com.mycompany.techstore.Models.Objects.Voucher) session.getAttribute("voucher");
+        // Get voucher info from session
+        Voucher voucher = (Voucher) session.getAttribute("voucher");
         Object discountObj = session.getAttribute("discountAmount");
  
         int voucherId = (voucher != null) ? voucher.getVoucherId() : 0;
         double discountAmount = (discountObj != null) ? (Double) discountObj : 0;
  
         OrderService orderService = new OrderService();
-        boolean success = orderService.placeOrder(
+ 
+        // placeOrder now returns orderId (> 0 = success, -1 = failed)
+        int orderId = orderService.placeOrder(
                 userId, paymentMethod, address, district, province, phone,
                 voucherId, discountAmount
         );
  
-        if (success) {
-            // Clear voucher session after order placed
+        if (orderId > 0) {
+            // Clear voucher session
             session.removeAttribute("voucher");
             session.removeAttribute("discountAmount");
             session.removeAttribute("finalTotal");
-            response.sendRedirect("order-history");
+ 
+            if ("VNPay".equals(paymentMethod)) {
+                // Store order info for VNPay
+                double totalAmount = orderService.getOrderTotal(orderId);
+                session.setAttribute("pendingOrderId",     orderId);
+                session.setAttribute("pendingOrderAmount", totalAmount);
+                response.sendRedirect(request.getContextPath() + "/vnpay-pay");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/order-history");
+            }
         } else {
             response.getWriter().println("Place Order Failed");
         }
     }
 }
-
+ 
