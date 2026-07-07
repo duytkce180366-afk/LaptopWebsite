@@ -29,4 +29,58 @@ public class ProductService {
             Map<String, String> filters, String sortOrder) {
         return this.productRepository.search(query, categoryId, minPrice, maxPrice, filters, sortOrder);
     }
+
+    // Viết thêm create, update, delete
+    // Create Product
+    public boolean createProduct(int categoryId,
+            int brandId,
+            String sku,
+            String productName,
+            String description,
+            long price,
+            int stock,
+            String thumbnail,
+            String status) {
+
+        return this.productRepository.CreateProduct(
+                categoryId,
+                brandId,
+                sku,
+                productName,
+                description,
+                price,
+                stock,
+                thumbnail,
+                status);
+    }
+
+// Update Product
+    public boolean updateProduct(int productId,
+            int categoryId,
+            int brandId,
+            String sku,
+            String productName,
+            String description,
+            long price,
+            int stock,
+            String thumbnail,
+            String status) {
+
+        return this.productRepository.UpdateProduct(
+                productId,
+                categoryId,
+                brandId,
+                sku,
+                productName,
+                description,
+                price,
+                stock,
+                thumbnail,
+                status);
+    }
+
+// Delete Product
+    public boolean deleteProduct(int id) {
+        return this.productRepository.DeleteProduct(id);
+    }
 }
