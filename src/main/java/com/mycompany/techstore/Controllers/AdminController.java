@@ -110,92 +110,90 @@ public class AdminController extends HttpServlet {
      * Phương thức gửi dữ liệu từ
      */
     @Override
-protected void doPost(HttpServletRequest request,
-        HttpServletResponse response)
-        throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request,
+            HttpServletResponse response)
+            throws ServletException, IOException {
 
-    String target = request.getParameter("target");
+        String target = request.getParameter("target");
 
-    String action = request.getParameter("action");
+        String action = request.getParameter("action");
 
-    if ("product".equals(target)) {
+        if ("product".equals(target)) {
 
-        if ("create".equals(action)) {
+            if ("create".equals(action)) {
 
-            int categoryId = Integer.parseInt(request.getParameter("categoryId"));
+                int categoryId = Integer.parseInt(request.getParameter("categoryId"));
 
-            int brandId = Integer.parseInt(request.getParameter("brandId"));
+                int brandId = Integer.parseInt(request.getParameter("brandId"));
 
-            String sku = request.getParameter("sku");
+                String sku = request.getParameter("sku");
 
-            String productName = request.getParameter("productName");
+                String productName = request.getParameter("productName");
 
-            String description = request.getParameter("description");
+                String description = request.getParameter("description");
 
-            long price = Long.parseLong(request.getParameter("price"));
+                long price = Long.parseLong(request.getParameter("price"));
 
-            int stock = Integer.parseInt(request.getParameter("stock"));
+                int stock = Integer.parseInt(request.getParameter("stock"));
 
-            String thumbnail = request.getParameter("thumbnail");
+                String thumbnail = request.getParameter("thumbnail");
 
-            String status = request.getParameter("status");
+                String status = request.getParameter("status");
 
-            productService.createProduct(
-                    categoryId,
-                    brandId,
-                    sku,
-                    productName,
-                    description,
-                    price,
-                    stock,
-                    thumbnail,
-                    status);
+                productService.createProduct(
+                        categoryId,
+                        brandId,
+                        sku,
+                        productName,
+                        description,
+                        price,
+                        stock,
+                        thumbnail,
+                        status);
 
-            response.sendRedirect(request.getContextPath()
-                    + "/admin?target=product");
+                response.sendRedirect(request.getContextPath()
+                        + "/admin?target=product");
 
-        }
+            } else if ("update".equals(action)) {
 
-        else if ("update".equals(action)) {
+                int productId = Integer.parseInt(request.getParameter("productId"));
 
-            int productId = Integer.parseInt(request.getParameter("productId"));
+                int categoryId = Integer.parseInt(request.getParameter("categoryId"));
 
-            int categoryId = Integer.parseInt(request.getParameter("categoryId"));
+                int brandId = Integer.parseInt(request.getParameter("brandId"));
 
-            int brandId = Integer.parseInt(request.getParameter("brandId"));
+                String sku = request.getParameter("sku");
 
-            String sku = request.getParameter("sku");
+                String productName = request.getParameter("productName");
 
-            String productName = request.getParameter("productName");
+                String description = request.getParameter("description");
 
-            String description = request.getParameter("description");
+                long price = Long.parseLong(request.getParameter("price"));
 
-            long price = Long.parseLong(request.getParameter("price"));
+                int stock = Integer.parseInt(request.getParameter("stock"));
 
-            int stock = Integer.parseInt(request.getParameter("stock"));
+                String thumbnail = request.getParameter("thumbnail");
 
-            String thumbnail = request.getParameter("thumbnail");
+                String status = request.getParameter("status");
 
-            String status = request.getParameter("status");
+                productService.updateProduct(
+                        productId,
+                        categoryId,
+                        brandId,
+                        sku,
+                        productName,
+                        description,
+                        price,
+                        stock,
+                        thumbnail,
+                        status);
 
-            productService.updateProduct(
-                    productId,
-                    categoryId,
-                    brandId,
-                    sku,
-                    productName,
-                    description,
-                    price,
-                    stock,
-                    thumbnail,
-                    status);
+                response.sendRedirect(request.getContextPath()
+                        + "/admin?target=product");
 
-            response.sendRedirect(request.getContextPath()
-                    + "/admin?target=product");
+            }
 
         }
 
     }
-
-}
 }

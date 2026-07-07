@@ -1,7 +1,7 @@
 package com.mycompany.techstore.resources;
 
 import com.mycompany.techstore.Models.Objects.Product;
-import com.mycompany.techstore.Models.Objects.ProductDTO;
+import com.mycompany.techstore.Models.Objects.Product;
 import com.mycompany.techstore.services.ProductService;
 
 import jakarta.ws.rs.*;
@@ -85,7 +85,7 @@ public class ProductResource {
     // Create Product
     // ==========================
     @POST
-    public Response createProduct(ProductDTO product) {
+    public Response createProduct(Product product) {
 
         boolean check = productService.createProduct(
                 product.getCategoryId(),
@@ -117,7 +117,7 @@ public class ProductResource {
     @Path("/{id}")
     public Response updateProduct(
             @PathParam("id") int id,
-            ProductDTO product) {
+            Product product) {
 
         Product oldProduct = productService.getById(id);
 

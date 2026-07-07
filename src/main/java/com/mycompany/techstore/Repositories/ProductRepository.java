@@ -28,9 +28,9 @@ public class ProductRepository extends DbClass {
         return products.isEmpty() ? null : products.get(0);
     }
 
-    public List<Product> getByCategory(String categoryId) {
+    public List<Product> getByCategory(int categoryId) {
         return getAll().stream()
-                .filter(product -> product.getCategoryId().equals(categoryId))
+                .filter(product -> product.getCategoryId() == categoryId)
                 .collect(Collectors.toList());
     }
 
@@ -40,7 +40,7 @@ public class ProductRepository extends DbClass {
         List<Product> results = getAll().stream()
                 .filter(product -> normalizedQuery.isEmpty() || getSearchableText(product).contains(normalizedQuery))
                 .filter(product -> categoryId == null || categoryId.isEmpty() || categoryId.equals("all")
-                        || product.getCategoryId().equals(categoryId))
+                || product.getCategoryId().equals(categoryId))
                 .filter(product -> product.getPrice() >= minPrice && product.getPrice() < maxPrice)
                 .filter(product -> matchesFilters(product, filters))
                 .collect(Collectors.toList());
@@ -48,7 +48,6 @@ public class ProductRepository extends DbClass {
         sortResults(results, sortOrder);
         return results;
     }
-    
 
     private List<ProductRow> queryProducts(Integer productId) {
         List<ProductRow> products = new ArrayList<>();
@@ -138,8 +137,7 @@ public class ProductRepository extends DbClass {
                 ORDER BY product_id, sort_order;
                 """;
 
-        try (PreparedStatement ps = super.getConnection().prepareStatement(sqlCommand);
-                ResultSet rs = ps.executeQuery()) {
+        try (PreparedStatement ps = super.getConnection().prepareStatement(sqlCommand); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 int productId = rs.getInt("product_id");
                 if (!productIds.contains(productId)) {
@@ -165,8 +163,7 @@ public class ProductRepository extends DbClass {
                 ORDER BY r.product_id, r.created_at DESC, r.review_id DESC;
                 """;
 
-        try (PreparedStatement ps = super.getConnection().prepareStatement(sqlCommand);
-                ResultSet rs = ps.executeQuery()) {
+        try (PreparedStatement ps = super.getConnection().prepareStatement(sqlCommand); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 int productId = rs.getInt("product_id");
                 if (!productIds.contains(productId)) {
@@ -271,18 +268,18 @@ public class ProductRepository extends DbClass {
     // Viết thêm create, update, delete
     //CreateProduct()
     public boolean CreateProduct(int categoryId,
-        int brandId,
-        String sku,
-        String productName,
-        String description,
-        long price,
-        int stock,
-        String thumbnail,
-        String status) {
+            int brandId,
+            String sku,
+            String productName,
+            String description,
+            long price,
+            int stock,
+            String thumbnail,
+            String status) {
 
-    boolean check = false;
+        boolean check = false;
 
-    String sql = """
+        String sql = """
         INSERT INTO bs_Products
         (category_id,
          brand_id,
@@ -301,41 +298,42 @@ public class ProductRepository extends DbClass {
         SYSUTCDATETIME())
         """;
 
-    try (PreparedStatement ps = super.getConnection().prepareStatement(sql)) {
+        try (PreparedStatement ps = super.getConnection().prepareStatement(sql)) {
 
-        ps.setInt(1, categoryId);
-        ps.setInt(2, brandId);
-        ps.setString(3, sku);
-        ps.setString(4, productName);
-        ps.setString(5, description);
-        ps.setLong(6, price);
-        ps.setInt(7, stock);
-        ps.setString(8, thumbnail);
-        ps.setString(9, status);
+            ps.setInt(1, categoryId);
+            ps.setInt(2, brandId);
+            ps.setString(3, sku);
+            ps.setString(4, productName);
+            ps.setString(5, description);
+            ps.setLong(6, price);
+            ps.setInt(7, stock);
+            ps.setString(8, thumbnail);
+            ps.setString(9, status);
 
-        check = ps.executeUpdate() > 0;
+            check = ps.executeUpdate() > 0;
 
-    } catch (SQLException ex) {
-        Logger.getLogger(ProductRepository.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(ProductRepository.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return check;
     }
+    //UpdateProduct()
 
-    return check;
-}
-   //UpdateProduct()
-   public boolean UpdateProduct(int productId,
-        int categoryId,
-        int brandId,
-        String sku,
-        String productName,
-        String description,
-        long price,
-        int stock,
-        String thumbnail,
-        String status) {
+    public boolean UpdateProduct(int productId,
+            int categoryId,
+            int brandId,
+            String sku,
+            String productName,
+            String description,
+            long price,
+            int stock,
+            String thumbnail,
+            String status) {
 
-    boolean check = false;
+        boolean check = false;
 
-    String sql = """
+        String sql = """
         UPDATE bs_Products
         SET
             category_id=?,
@@ -352,49 +350,50 @@ public class ProductRepository extends DbClass {
         WHERE product_id=?
         """;
 
-    try (PreparedStatement ps = super.getConnection().prepareStatement(sql)) {
+        try (PreparedStatement ps = super.getConnection().prepareStatement(sql)) {
 
-        ps.setInt(1, categoryId);
-        ps.setInt(2, brandId);
-        ps.setString(3, sku);
-        ps.setString(4, productName);
-        ps.setString(5, description);
-        ps.setLong(6, price);
-        ps.setInt(7, stock);
-        ps.setString(8, thumbnail);
-        ps.setString(9, status);
+            ps.setInt(1, categoryId);
+            ps.setInt(2, brandId);
+            ps.setString(3, sku);
+            ps.setString(4, productName);
+            ps.setString(5, description);
+            ps.setLong(6, price);
+            ps.setInt(7, stock);
+            ps.setString(8, thumbnail);
+            ps.setString(9, status);
 
-        ps.setInt(10, productId);
+            ps.setInt(10, productId);
 
-        check = ps.executeUpdate() > 0;
+            check = ps.executeUpdate() > 0;
 
-    } catch (SQLException ex) {
-        Logger.getLogger(ProductRepository.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(ProductRepository.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return check;
     }
+    //DeleteProduct()
 
-    return check;
-}
-   //DeleteProduct()
-   public boolean DeleteProduct(int id) {
+    public boolean DeleteProduct(int id) {
 
-    boolean check = false;
+        boolean check = false;
 
-    String sql = """
+        String sql = """
         DELETE FROM bs_Products
         WHERE product_id=?
         """;
 
-    try (PreparedStatement ps = super.getConnection().prepareStatement(sql)) {
+        try (PreparedStatement ps = super.getConnection().prepareStatement(sql)) {
 
-        ps.setInt(1, id);
+            ps.setInt(1, id);
 
-        check = ps.executeUpdate() > 0;
+            check = ps.executeUpdate() > 0;
 
-    } catch (SQLException ex) {
-        Logger.getLogger(ProductRepository.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(ProductRepository.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return check;
     }
 
-    return check;
-}
-   
 }
