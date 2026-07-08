@@ -1,80 +1,155 @@
 package com.mycompany.techstore.Models.Objects;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
 public class Product {
-    private int id;
-    private String categoryId;
-    private String category;
-    private String name;
-    private String brand;
+    private int product_id;
+    private String category_id;
+    private String category_name;
+    private String product_name;
+    private String brand_name;
     private long price;
     private String badge;
     private Map<String, String> specs;
     private int stock;
-    private String image;
+    private String thumbnail;
     private String warranty;
     private String description;
+    private String status;
+    private Timestamp created_at;
+    private Timestamp updated_at;
     private List<Review> reviews;
 
-    public Product(int id, String categoryId, String category, String name, String brand, long price,
-                   String badge, Map<String, String> specs, int stock, String image,
+    public Product(int product_id, String category_id, String category_name, String product_name, String brand_name, long price,
+                   String badge, Map<String, String> specs, int stock, String thumbnail,
                    String warranty, String description, List<Review> reviews) {
-        this.id = id;
-        this.categoryId = categoryId;
-        this.category = category;
-        this.name = name;
-        this.brand = brand;
+        this.product_id = product_id;
+        this.category_id = category_id;
+        this.category_name = category_name;
+        this.product_name = product_name;
+        this.brand_name = brand_name;
         this.price = price;
         this.badge = badge;
         this.specs = specs;
         this.stock = stock;
-        this.image = image;
+        this.thumbnail = thumbnail;
         this.warranty = warranty;
         this.description = description;
         this.reviews = reviews;
     }
 
-    // Getters and Setters
+    public int getProduct_id() {
+        return product_id;
+    }
+
+    public void setProduct_id(int product_id) {
+        this.product_id = product_id;
+    }
+
+    public String getCategory_id() {
+        return category_id;
+    }
+
+    public void setCategory_id(String category_id) {
+        this.category_id = category_id;
+    }
+
+    public String getCategory_name() {
+        return category_name;
+    }
+
+    public void setCategory_name(String category_name) {
+        this.category_name = category_name;
+    }
+
+    public String getProduct_name() {
+        return product_name;
+    }
+
+    public void setProduct_name(String product_name) {
+        this.product_name = product_name;
+    }
+
+    public String getBrand_name() {
+        return brand_name;
+    }
+
+    public void setBrand_name(String brand_name) {
+        this.brand_name = brand_name;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public Timestamp getCreated_at() {
+        return created_at;
+    }
+
+    public void setCreated_at(Timestamp created_at) {
+        this.created_at = created_at;
+    }
+
+    public Timestamp getUpdated_at() {
+        return updated_at;
+    }
+
+    public void setUpdated_at(Timestamp updated_at) {
+        this.updated_at = updated_at;
+    }
+
+    public int getProductId() {
+        return product_id;
+    }
+
+    public void setProductId(int product_id) {
+        this.product_id = product_id;
+    }
+
     public int getId() {
-        return id;
+        return product_id;
     }
 
     public void setId(int id) {
-        this.id = id;
+        this.product_id = id;
     }
 
     public String getCategoryId() {
-        return categoryId;
+        return category_id;
     }
 
-    public void setCategoryId(String categoryId) {
-        this.categoryId = categoryId;
+    public void setCategoryId(String category_id) {
+        this.category_id = category_id;
     }
 
     public String getCategory() {
-        return category;
+        return category_name;
     }
 
-    public void setCategory(String category) {
-        this.category = category;
+    public void setCategory(String category_name) {
+        this.category_name = category_name;
     }
 
     public String getName() {
-        return name;
+        return product_name;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setName(String product_name) {
+        this.product_name = product_name;
     }
 
     public String getBrand() {
-        return brand;
+        return brand_name;
     }
 
-    public void setBrand(String brand) {
-        this.brand = brand;
+    public void setBrand(String brand_name) {
+        this.brand_name = brand_name;
     }
 
     public long getPrice() {
@@ -109,12 +184,12 @@ public class Product {
         this.stock = stock;
     }
 
-    public String getImage() {
-        return image;
+    public String getThumbnail() {
+        return thumbnail;
     }
 
-    public void setImage(String image) {
-        this.image = image;
+    public void setThumbnail(String thumbnail) {
+        this.thumbnail = thumbnail;
     }
 
     public String getWarranty() {

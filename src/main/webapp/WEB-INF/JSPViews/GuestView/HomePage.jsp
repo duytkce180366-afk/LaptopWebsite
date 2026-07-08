@@ -198,7 +198,7 @@
                         %>
                         <div class="carousel-item <%= i == 0 ? "active" : ""%>">
                             <a class="hero-slide" href="<%= contextPath%>/product?id=<%= product.getId()%>">
-                                <img src="<%= html(product.getImage())%>" alt="<%= html(product.getName())%>" />
+                                <img src="<%= html(product.getThumbnail())%>" alt="<%= html(product.getName())%>" />
                                 <div>
                                     <p>Tech Store</p>
                                     <h1><%= i == 0 ? "Back to School" : html(product.getBrand())%></h1>
@@ -223,7 +223,7 @@
                     %>
                     <a class="mini-promo" href="<%= promoProduct == null ? contextPath + "/home#products" : contextPath + "/product?id=" + promoProduct.getId()%>">
                         <% if (promoProduct != null) {%>
-                        <img src="<%= html(promoProduct.getImage())%>" alt="<%= html(promoProduct.getName())%>" />
+                        <img src="<%= html(promoProduct.getThumbnail())%>" alt="<%= html(promoProduct.getName())%>" />
                         <% }%>
                         <strong><%= i == 0 ? "Shop gaming laptops" : "Flexible payments"%></strong>
                         <span><%= i == 0 ? "Save on selected products" : "Upgrade today"%></span>
@@ -254,7 +254,6 @@
                                 %>
                                 <a class="category-card<%= active(selectedCategoryId, category.getId())%>"
                                    href="<%= contextPath%>/home?category=<%= encode(category.getId())%>#products">
-                                    <span class="category-icon" aria-hidden="true">&#128187;</span>
                                     <strong><%= html(category.getName())%></strong>
                                     <small><%= countProducts(products, category.getId())%> products</small>
                                 </a>
@@ -292,7 +291,7 @@
                                 %>
                                 <article class="product-card best-seller-card">
                                     <a href="<%= contextPath%>/product?id=<%= product.getId()%>">
-                                        <img src="<%= html(product.getImage())%>" alt="<%= html(product.getName())%>" />
+                                        <img src="<%= html(product.getThumbnail())%>" alt="<%= html(product.getName())%>" />
                                     </a>
                                     <div class="product-content">
                                         <h3><%= html(product.getName())%></h3>
@@ -414,7 +413,7 @@
                             %>
                             <article class="product-card">
                                 <a href="<%= contextPath%>/product?id=<%= product.getId()%>">
-                                    <img src="<%= html(product.getImage())%>" alt="<%= html(product.getName())%>" />
+                                    <img src="<%= html(product.getThumbnail())%>" alt="<%= html(product.getName())%>" />
                                 </a>
                                 <div class="product-content">
                                     <div class="card-topline">

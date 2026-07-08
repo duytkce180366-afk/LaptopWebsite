@@ -30,7 +30,7 @@ public class ProductRepository extends DbClass {
 
     public List<Product> getByCategory(String categoryId) {
         return getAll().stream()
-                .filter(product -> product.getCategoryId().equals(categoryId))
+                .filter(product -> product.getCategory_id().equals(categoryId))
                 .collect(Collectors.toList());
     }
 
@@ -39,7 +39,7 @@ public class ProductRepository extends DbClass {
         String normalizedQuery = query == null ? "" : query.toLowerCase();
         List<Product> results = getAll().stream()
                 .filter(product -> normalizedQuery.isEmpty() || getSearchableText(product).contains(normalizedQuery))
-                .filter(product -> categoryId == null || categoryId.isEmpty() || categoryId.equals("all") || product.getCategoryId().equals(categoryId))
+                .filter(product -> categoryId == null || categoryId.isEmpty() || categoryId.equals("all") || product.getCategory_id().equals(categoryId))
                 .filter(product -> product.getPrice() >= minPrice && product.getPrice() < maxPrice)
                 .filter(product -> matchesFilters(product, filters))
                 .collect(Collectors.toList());
@@ -158,9 +158,10 @@ public class ProductRepository extends DbClass {
     private Map<Integer, List<Review>> getReviewsByProduct(List<Integer> productIds) {
         Map<Integer, List<Review>> reviewsByProduct = new HashMap<>();
         String sqlCommand = """
-                            SELECT r.product_id, u.full_name, r.rating, r.comment, r.created_at
+                            SELECT r.review_id, r.user_id, r.product_id, r.rating, r.comment, r.created_at,
+                                   u.full_name AS user_name
                             FROM dbo.bs_Reviews r
-                            INNER JOIN dbo.bs_user u ON u.user_id = r.user_id
+                            LEFT JOIN dbo.bs_user u ON u.user_id = r.user_id
                             ORDER BY r.product_id, r.created_at DESC, r.review_id DESC;
                             """;
 
@@ -179,10 +180,13 @@ public class ProductRepository extends DbClass {
                 reviewsByProduct
                         .computeIfAbsent(productId, key -> new ArrayList<>())
                         .add(new Review(
-                                rs.getString("full_name"),
+                                rs.getInt("review_id"),
+                                rs.getInt("user_id"),
+                                rs.getInt("product_id"),
                                 rs.getInt("rating"),
+                                rs.getString("comment"),
                                 reviewDate,
-                                rs.getString("comment")
+                                rs.getString("user_name")
                         ));
             }
         } catch (SQLException sqlEx) {

@@ -69,7 +69,7 @@
                     </div>
 
                     <div class="details-layout">
-                        <img src="<%= html(product.getImage())%>" alt="<%= html(product.getName())%> product view" />
+                        <img src="<%= html(product.getThumbnail())%>" alt="<%= html(product.getName())%> product view" />
                         <div class="details-content">
                             <div class="detail-summary">
                                 <span><%= html(product.getBrand())%></span>
