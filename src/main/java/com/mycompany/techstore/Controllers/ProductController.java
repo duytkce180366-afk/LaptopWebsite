@@ -53,7 +53,12 @@ public class ProductController extends HttpServlet {
         }
         long effectiveMaxPrice = selectedMaxPrice >= sliderMaxPrice ? Long.MAX_VALUE : selectedMaxPrice + 1;
         Category activeCategory = ALL_CATEGORIES.equals(selectedCategoryId) ? null : this.categoryService.getById(selectedCategoryId);
-        Map<String, String> secondaryFilters = getSecondaryFilters(request, activeCategory);
+        Map<String, List<Map<String, Object>>> categoryMenuGroups = this.categoryService.getMenuGroupsByCategory();
+        Map<String, List<Map<String, String>>> categoryFilters = this.categoryService.getFiltersByCategory();
+        List<Map<String, String>> activeCategoryFilters = activeCategory == null
+                ? List.of()
+                : categoryFilters.getOrDefault(activeCategory.getId(), List.of());
+        Map<String, String> secondaryFilters = getSecondaryFilters(request, activeCategoryFilters);
         List<Product> filteredProducts = this.productService.search(
                 searchTerm,
                 selectedCategoryId,
@@ -72,6 +77,9 @@ public class ProductController extends HttpServlet {
         request.setAttribute("categories", categories);
         request.setAttribute("products", products);
         request.setAttribute("filteredProducts", filteredProducts);
+        request.setAttribute("categoryMenuGroups", categoryMenuGroups);
+        request.setAttribute("categoryFilters", categoryFilters);
+        request.setAttribute("activeCategoryFilters", activeCategoryFilters);
         request.setAttribute("paginatedProducts", paginatedProducts);
         request.setAttribute("currentPage", currentPage);
         request.setAttribute("totalPages", totalPages);
@@ -147,13 +155,13 @@ public class ProductController extends HttpServlet {
         return Math.max(200000000L, roundedMax);
     }
 
-    private Map<String, String> getSecondaryFilters(HttpServletRequest request, Category activeCategory) {
+    private Map<String, String> getSecondaryFilters(HttpServletRequest request, List<Map<String, String>> activeCategoryFilters) {
         Map<String, String> filters = new HashMap<>();
-        if (activeCategory == null) {
+        if (activeCategoryFilters == null) {
             return filters;
         }
 
-        for (Map<String, String> filter : activeCategory.getFilters()) {
+        for (Map<String, String> filter : activeCategoryFilters) {
             String key = filter.get("key");
             String value = request.getParameter(key);
             if (value != null && !value.isBlank() && !"all".equals(value)) {

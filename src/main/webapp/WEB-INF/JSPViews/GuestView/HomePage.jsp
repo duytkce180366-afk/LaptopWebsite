@@ -180,8 +180,7 @@
             <section class="storefront-hero" id="home" aria-label="Promotions">
                 <div id="bannerCarousel" class="carousel slide hero-carousel" data-bs-ride="carousel">
                     <div class="carousel-inner">
-                        <%
-                            int heroSlides = Math.min(3, products.size());
+                        <%                            int heroSlides = Math.min(3, products.size());
                             if (heroSlides == 0) {
                         %>
                         <div class="carousel-item active">
@@ -235,7 +234,7 @@
             <section class="featured-categories" id="categories" aria-labelledby="featured-title">
                 <div id="categoryCarousel" class="carousel slide" data-bs-ride="carousel">
                     <div class="carousel-inner">
-                        <% if (categories.isEmpty()) { %>
+                        <% if (categories.isEmpty()) {%>
                         <div class="carousel-item active">
                             <div class="category-strip category-strip-empty">
                                 <a class="category-card" href="<%= contextPath%>/home#products">
@@ -246,7 +245,7 @@
                             </div>
                         </div>
                         <% } %>
-                        <% for (int start = 0; start < categories.size(); start += 6) { %>
+                        <% for (int start = 0; start < categories.size(); start += 6) {%>
                         <div class="carousel-item <%= start == 0 ? "active" : ""%>">
                             <div class="category-strip">
                                 <% for (int i = start; i < categories.size() && i < start + 6; i++) {
@@ -283,7 +282,7 @@
                             </div>
                         </div>
                         <% } %>
-                        <% for (int start = 0; start < products.size() && start < 10; start += 5) { %>
+                        <% for (int start = 0; start < products.size() && start < 10; start += 5) {%>
                         <div class="carousel-item <%= start == 0 ? "active" : ""%>">
                             <div class="best-seller-grid">
                                 <% for (int i = start; i < products.size() && i < start + 5; i++) {
@@ -305,7 +304,7 @@
                                 <% } %>
                             </div>
                         </div>
-                        <% } %>
+                        <% }%>
                     </div>
                     <button class="carousel-control-prev best-seller-control" type="button" data-bs-target="#bestSellerCarousel" data-bs-slide="prev" aria-label="Previous best sellers">
                         <span class="carousel-control-prev-icon" aria-hidden="true"></span>
@@ -385,8 +384,10 @@
                                 </select>
                             </label>
 
-                            <% if (activeCategory != null) {
-                                    for (Map<String, String> filter : activeCategory.getFilters()) {
+                            <%
+                                List<Map<String, String>> activeCategoryFilters = (List<Map<String, String>>) request.getAttribute("activeCategoryFilters");
+                                if (activeCategory != null && activeCategoryFilters != null) {
+                                    for (Map<String, String> filter : activeCategoryFilters) {
                                         String key = filter.get("key");
                             %>
                             <label class="filter-group">
