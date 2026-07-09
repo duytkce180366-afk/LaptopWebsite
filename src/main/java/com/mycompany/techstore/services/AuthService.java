@@ -52,7 +52,7 @@ public class AuthService {
         }
     }
     
-    // Verify Passowrd
+    // Verify Password
     private boolean VerifyPassword(String password, String stored) throws NoSuchAlgorithmException {
         if (stored == null) {
             return false;

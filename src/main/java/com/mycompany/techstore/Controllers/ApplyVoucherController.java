@@ -4,6 +4,7 @@ import com.mycompany.techstore.Models.Objects.User;
 import com.mycompany.techstore.Models.Objects.Voucher;
 import com.mycompany.techstore.services.CartService;
 import com.mycompany.techstore.services.VoucherService;
+import com.mycompany.techstore.Repositories.OrderRepository;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -18,9 +19,10 @@ public class ApplyVoucherController extends HttpServlet {
 
     private VoucherService voucherService
             = new VoucherService();
-
     private CartService cartService
             = new CartService();
+    private OrderRepository orderRepository
+            = new OrderRepository();
 
     @Override
     protected void doPost(
@@ -58,34 +60,38 @@ public class ApplyVoucherController extends HttpServlet {
                 }
                 """
             );
-
             return;
         }
-
+        // Block if this user has already used this voucher before
+        if (orderRepository.isVoucherUsedByUser(user.getUser_id(), voucher.getVoucherId())) {
+            response.getWriter().write(
+                    """
+                {
+                  "success": false,
+                  "message": "You have already used this voucher"
+                }
+                """
+            );
+            return;
+        }
         double total
                 = cartService.getCartTotal(
                         user.getUser_id());
-
         double discount
                 = total
                 * voucher.getDiscountPercent()
                 / 100.0;
-
         double finalTotal
                 = total - discount;
-
         session.setAttribute(
                 "voucher",
                 voucher);
-
         session.setAttribute(
                 "discountAmount",
                 discount);
-
         session.setAttribute(
                 "finalTotal",
                 finalTotal);
-
         response.getWriter().write(
                 "{"
                 + "\"success\":true,"
@@ -100,5 +106,4 @@ public class ApplyVoucherController extends HttpServlet {
     public String getServletInfo() {
         return "Short description";
     }// </editor-fold>
-
 }

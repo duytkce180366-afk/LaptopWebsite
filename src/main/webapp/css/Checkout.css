@@ -229,7 +229,13 @@ body{
     gap:14px;
 }
 
-.total-row{
+.total-box{
+    margin-top:25px;
+
+    padding-top:20px;
+
+    border-top:2px solid #e5e7eb;
+
     display:flex;
     justify-content:space-between;
     align-items:center;
@@ -258,6 +264,13 @@ body{
 
 .final-row strong{
     font-size:24px;
+.total-box span{
+    font-size:18px;
+    font-weight:600;
+}
+
+.total-box strong{
+    font-size:26px;
     color:#2563eb;
 }
 
@@ -315,4 +328,32 @@ body{
     .checkout-card h2{
         font-size:32px;
     }
+}
+.checkout-alert-error {
+    max-width: 900px;
+    margin: 16px auto;
+    padding: 12px 16px;
+    background: #f8d7da;
+    color: #842029;
+    border: 1px solid #f5c2c7;
+    border-radius: 8px;
+    font-weight: 500;
+}
+.voucher-alert-error {
+    margin-top: 10px;
+    padding: 10px 14px;
+    background: #fff5f5;
+    color: #c53030;
+    border: 1px solid #feb2b2;
+    border-left: 4px solid #e53e3e;
+    border-radius: 8px;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.voucher-alert-error .alert-icon {
+    font-size: 14px;
+    flex-shrink: 0;
 }

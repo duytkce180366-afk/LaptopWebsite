@@ -1,4 +1,3 @@
-
 package com.mycompany.techstore.Controllers;
 
 import com.mycompany.techstore.Models.Objects.User;
@@ -43,6 +42,7 @@ public class DeleteCartController extends HttpServlet {
             return;
         }
 
+        int userId = user.getUser_id();
         String id = request.getParameter("cartItemId");
 
         if (id != null && !id.isEmpty()) {

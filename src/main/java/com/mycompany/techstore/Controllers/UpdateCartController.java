@@ -1,4 +1,3 @@
-
 package com.mycompany.techstore.Controllers;
 
 import com.mycompany.techstore.Models.Objects.User;
@@ -12,10 +11,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-/**
- *
- * @author DuyTran
- */
 @WebServlet("/cart/update")
 public class UpdateCartController extends HttpServlet {
 

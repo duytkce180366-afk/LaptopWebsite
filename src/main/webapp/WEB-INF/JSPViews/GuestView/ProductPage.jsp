@@ -1,4 +1,4 @@
-﻿<%@page import="com.mycompany.techstore.Models.Objects.Category"%>
+<%@page import="com.mycompany.techstore.Models.Objects.Category"%>
 <%@page import="com.mycompany.techstore.Models.Objects.Product"%>
 <%@page import="com.mycompany.techstore.Models.Objects.Review"%>
 <%@page import="java.text.NumberFormat"%>

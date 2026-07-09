@@ -183,6 +183,8 @@
             <i class="fa-solid fa-cart-shopping"></i>
             <span>Cart</span>
         </a>
+        <a href="<%= request.getContextPath()%>/order-history">My Orders</a>
+
         <%
             User loggedUser = (User) session.getAttribute("loggedUser");
             if (loggedUser == null) {
