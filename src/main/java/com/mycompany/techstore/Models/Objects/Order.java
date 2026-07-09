@@ -1,10 +1,7 @@
 package com.mycompany.techstore.Models.Objects;
  
 import java.sql.Timestamp;
- 
-/**
- * @author Nguyen Lam Khang
- */
+
 public class Order {
  
     private int orderId;
