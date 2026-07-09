@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package com.mycompany.techstore.Controllers;
 
 import com.mycompany.techstore.Models.Objects.Order;
@@ -16,10 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 
-/**
- *
- * @author Nguyen Lam Khang
- */
+
 @WebServlet(name = "OrderHistoryController", urlPatterns = {"/order-history"})
 public class OrderHistoryController
         extends HttpServlet {
