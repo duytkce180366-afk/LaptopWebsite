@@ -17,6 +17,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import com.mycompany.techstore.Models.Objects.Category;
 import com.mycompany.techstore.Models.Objects.PriceRange;
 import com.mycompany.techstore.Models.Objects.Product;
+import com.mycompany.techstore.Models.Objects.Review;
 
 @WebServlet(name = "ProductController", urlPatterns = {"/product", "/index", "/home", ""})
 public class ProductController extends HttpServlet {
@@ -53,7 +54,12 @@ public class ProductController extends HttpServlet {
         }
         long effectiveMaxPrice = selectedMaxPrice >= sliderMaxPrice ? Long.MAX_VALUE : selectedMaxPrice + 1;
         Category activeCategory = ALL_CATEGORIES.equals(selectedCategoryId) ? null : this.categoryService.getById(selectedCategoryId);
-        Map<String, String> secondaryFilters = getSecondaryFilters(request, activeCategory);
+        Map<String, List<Map<String, Object>>> categoryMenuGroups = this.categoryService.getMenuGroupsByCategory();
+        Map<String, List<Map<String, String>>> categoryFilters = this.categoryService.getFiltersByCategory();
+        List<Map<String, String>> activeCategoryFilters = activeCategory == null
+                ? List.of()
+                : categoryFilters.getOrDefault(activeCategory.getId(), List.of());
+        Map<String, String> secondaryFilters = getSecondaryFilters(request, activeCategoryFilters);
         List<Product> filteredProducts = this.productService.search(
                 searchTerm,
                 selectedCategoryId,
@@ -72,6 +78,9 @@ public class ProductController extends HttpServlet {
         request.setAttribute("categories", categories);
         request.setAttribute("products", products);
         request.setAttribute("filteredProducts", filteredProducts);
+        request.setAttribute("categoryMenuGroups", categoryMenuGroups);
+        request.setAttribute("categoryFilters", categoryFilters);
+        request.setAttribute("activeCategoryFilters", activeCategoryFilters);
         request.setAttribute("paginatedProducts", paginatedProducts);
         request.setAttribute("currentPage", currentPage);
         request.setAttribute("totalPages", totalPages);
@@ -147,13 +156,25 @@ public class ProductController extends HttpServlet {
         return Math.max(200000000L, roundedMax);
     }
 
-    private Map<String, String> getSecondaryFilters(HttpServletRequest request, Category activeCategory) {
+    private double calculateAverageRating(List<Review> reviews) {
+        if (reviews == null || reviews.isEmpty()) {
+            return 0;
+        }
+
+        double total = 0;
+        for (Review review : reviews) {
+            total += review.getRating();
+        }
+        return Math.round((total / reviews.size()) * 10.0) / 10.0;
+    }
+
+    private Map<String, String> getSecondaryFilters(HttpServletRequest request, List<Map<String, String>> activeCategoryFilters) {
         Map<String, String> filters = new HashMap<>();
-        if (activeCategory == null) {
+        if (activeCategoryFilters == null) {
             return filters;
         }
 
-        for (Map<String, String> filter : activeCategory.getFilters()) {
+        for (Map<String, String> filter : activeCategoryFilters) {
             String key = filter.get("key");
             String value = request.getParameter(key);
             if (value != null && !value.isBlank() && !"all".equals(value)) {
@@ -181,8 +202,11 @@ public class ProductController extends HttpServlet {
             return;
         }
 
+        List<Review> reviews = this.productService.getReviewsByProductId(Integer.parseInt(id));
         setCatalogAttributes(request);
         request.setAttribute("product", product);
+        request.setAttribute("reviews", reviews);
+        request.setAttribute("averageRating", calculateAverageRating(reviews));
         request.getRequestDispatcher("/WEB-INF/JSPViews/GuestView/ProductPage.jsp").forward(request, response);
     }
 
