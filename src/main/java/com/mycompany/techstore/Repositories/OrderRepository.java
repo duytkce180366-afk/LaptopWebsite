@@ -11,9 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * @author Nguyen Lam Khang
- */
 public class OrderRepository {
 
     private static final double SHIPPING_FEE = 0;
