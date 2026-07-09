@@ -1,6 +1,7 @@
 package com.mycompany.techstore.services;
 
 import com.mycompany.techstore.Models.Objects.Product;
+import com.mycompany.techstore.Models.Objects.Review;
 import com.mycompany.techstore.Repositories.ProductRepository;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,10 @@ public class ProductService {
 
     public Product getById(int id) {
         return this.productRepository.getById(id);
+    }
+
+    public List<Review> getReviewsByProductId(int id) {
+        return this.productRepository.getReviewsByProductId(id);
     }
 
     public List<Product> getByCategory(String categoryId) {

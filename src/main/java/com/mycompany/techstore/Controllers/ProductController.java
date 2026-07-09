@@ -17,6 +17,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import com.mycompany.techstore.Models.Objects.Category;
 import com.mycompany.techstore.Models.Objects.PriceRange;
 import com.mycompany.techstore.Models.Objects.Product;
+import com.mycompany.techstore.Models.Objects.Review;
 
 @WebServlet(name = "ProductController", urlPatterns = {"/product", "/index", "/home", ""})
 public class ProductController extends HttpServlet {
@@ -155,6 +156,18 @@ public class ProductController extends HttpServlet {
         return Math.max(200000000L, roundedMax);
     }
 
+    private double calculateAverageRating(List<Review> reviews) {
+        if (reviews == null || reviews.isEmpty()) {
+            return 0;
+        }
+
+        double total = 0;
+        for (Review review : reviews) {
+            total += review.getRating();
+        }
+        return Math.round((total / reviews.size()) * 10.0) / 10.0;
+    }
+
     private Map<String, String> getSecondaryFilters(HttpServletRequest request, List<Map<String, String>> activeCategoryFilters) {
         Map<String, String> filters = new HashMap<>();
         if (activeCategoryFilters == null) {
@@ -189,8 +202,11 @@ public class ProductController extends HttpServlet {
             return;
         }
 
+        List<Review> reviews = this.productService.getReviewsByProductId(Integer.parseInt(id));
         setCatalogAttributes(request);
         request.setAttribute("product", product);
+        request.setAttribute("reviews", reviews);
+        request.setAttribute("averageRating", calculateAverageRating(reviews));
         request.getRequestDispatcher("/WEB-INF/JSPViews/GuestView/ProductPage.jsp").forward(request, response);
     }
 

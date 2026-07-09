@@ -99,7 +99,6 @@ public class ProductRepository extends DbClass {
 
         List<Integer> productIds = productRows.stream().map(row -> row.id).collect(Collectors.toList());
         Map<Integer, Map<String, String>> specsByProduct = getSpecsByProduct(productIds);
-        Map<Integer, List<Review>> reviewsByProduct = getReviewsByProduct(productIds);
         List<Product> products = new ArrayList<>();
 
         for (ProductRow row : productRows) {
@@ -122,8 +121,7 @@ public class ProductRepository extends DbClass {
                     row.stock,
                     row.thumbnail == null ? "" : row.thumbnail,
                     warranty,
-                    row.description == null ? "" : row.description,
-                    reviewsByProduct.getOrDefault(row.id, new ArrayList<>())
+                    row.description == null ? "" : row.description
             ));
         }
 
@@ -155,45 +153,42 @@ public class ProductRepository extends DbClass {
         return specsByProduct;
     }
 
-    private Map<Integer, List<Review>> getReviewsByProduct(List<Integer> productIds) {
-        Map<Integer, List<Review>> reviewsByProduct = new HashMap<>();
+    public List<Review> getReviewsByProductId(int productId) {
+        List<Review> reviews = new ArrayList<>();
         String sqlCommand = """
                             SELECT r.review_id, r.user_id, r.product_id, r.rating, r.comment, r.created_at,
                                    u.full_name AS user_name
                             FROM dbo.bs_Reviews r
                             LEFT JOIN dbo.bs_user u ON u.user_id = r.user_id
-                            ORDER BY r.product_id, r.created_at DESC, r.review_id DESC;
+                            WHERE r.product_id = ?
+                            ORDER BY r.created_at DESC, r.review_id DESC;
                             """;
 
-        try (PreparedStatement ps = super.getConnection().prepareStatement(sqlCommand); ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                int productId = rs.getInt("product_id");
-                if (!productIds.contains(productId)) {
-                    continue;
-                }
+        try (PreparedStatement ps = super.getConnection().prepareStatement(sqlCommand)) {
+            ps.setInt(1, productId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String reviewDate = "";
+                    if (rs.getTimestamp("created_at") != null) {
+                        reviewDate = rs.getTimestamp("created_at").toLocalDateTime().toLocalDate().toString();
+                    }
 
-                String reviewDate = "";
-                if (rs.getTimestamp("created_at") != null) {
-                    reviewDate = rs.getTimestamp("created_at").toLocalDateTime().toLocalDate().toString();
+                    reviews.add(new Review(
+                            rs.getInt("review_id"),
+                            rs.getInt("user_id"),
+                            rs.getInt("product_id"),
+                            rs.getInt("rating"),
+                            rs.getString("comment"),
+                            reviewDate,
+                            rs.getString("user_name")
+                    ));
                 }
-
-                reviewsByProduct
-                        .computeIfAbsent(productId, key -> new ArrayList<>())
-                        .add(new Review(
-                                rs.getInt("review_id"),
-                                rs.getInt("user_id"),
-                                rs.getInt("product_id"),
-                                rs.getInt("rating"),
-                                rs.getString("comment"),
-                                reviewDate,
-                                rs.getString("user_name")
-                        ));
             }
         } catch (SQLException sqlEx) {
             Logger.getLogger(ProductRepository.class.getName()).log(Level.SEVERE, null, sqlEx);
         }
 
-        return reviewsByProduct;
+        return reviews;
     }
 
     private String toSlug(String value) {

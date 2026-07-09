@@ -38,8 +38,16 @@
 <%
     Product product = (Product) request.getAttribute("product");
     List<Category> categories = (List<Category>) request.getAttribute("categories");
+    List<Review> reviews = (List<Review>) request.getAttribute("reviews");
+    Double averageRating = (Double) request.getAttribute("averageRating");
     if (categories == null) {
         categories = new ArrayList<>();
+    }
+    if (reviews == null) {
+        reviews = new ArrayList<>();
+    }
+    if (averageRating == null) {
+        averageRating = 0.0;
     }
     String contextPath = request.getContextPath();
 %>
@@ -74,7 +82,7 @@
                             <div class="detail-summary">
                                 <span><%= html(product.getBrand())%></span>
                                 <span><%= html(product.getCategory())%></span>
-                                <span><%= product.getAverageRating()%> / 5 rating</span>
+                                <span><%= averageRating%> / 5 rating</span>
                             </div>
                             <p><%= html(product.getDescription())%></p>
                             <h3><%= formatPrice(product.getPrice())%></h3>
@@ -104,7 +112,10 @@
                         <h2 id="reviews-title">Customer reviews for <%= html(product.getName())%></h2>
                     </div>
                     <div class="reviews-grid">
-                        <% for (Review review : product.getReviews()) {%>
+                        <% if (reviews.isEmpty()) {%>
+                        <p>No reviews yet for this product.</p>
+                        <% } else { %>
+                        <% for (Review review : reviews) {%>
                         <article class="review-card">
                             <div>
                                 <strong><%= html(review.getUser())%></strong>
@@ -113,6 +124,7 @@
                             <p class="stars" aria-label="<%= review.getRating()%> out of 5 rating">Rating: <%= review.getRating()%>/5</p>
                             <p><%= html(review.getComment())%></p>
                         </article>
+                        <% } %>
                         <% } %>
                     </div>
                 </section>

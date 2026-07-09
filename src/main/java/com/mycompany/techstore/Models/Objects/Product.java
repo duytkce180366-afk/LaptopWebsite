@@ -1,7 +1,6 @@
 package com.mycompany.techstore.Models.Objects;
 
 import java.sql.Timestamp;
-import java.util.List;
 import java.util.Map;
 
 public class Product {
@@ -21,12 +20,11 @@ public class Product {
     private final String status;
     private final Timestamp created_at;
     private final Timestamp updated_at;
-    private final List<Review> reviews;
 
     public Product(int product_id, String category_id, String category_name, String product_name, String brand_name,
             long price,
             String badge, Map<String, String> specs, int stock, String thumbnail,
-            String warranty, String description, List<Review> reviews) {
+            String warranty, String description) {
         this.product_id = product_id;
         this.category_id = category_id;
         this.category_name = category_name;
@@ -42,7 +40,6 @@ public class Product {
         this.status = null;
         this.created_at = null;
         this.updated_at = null;
-        this.reviews = reviews;
     }
 
     public int getProduct_id() {
@@ -129,15 +126,4 @@ public class Product {
         return description;
     }
 
-    public List<Review> getReviews() {
-        return reviews;
-    }
-
-    public double getAverageRating() {
-        if (reviews == null || reviews.isEmpty()) {
-            return 0;
-        }
-        double total = reviews.stream().mapToInt(Review::getRating).sum();
-        return Math.round((total / reviews.size()) * 10.0) / 10.0;
-    }
 }
