@@ -47,7 +47,7 @@ int userId = loggedUser.getUser_id();
                 orders);
 
         request.getRequestDispatcher(
-                "order-history.jsp")
+                "/WEB-INF/JSPViews/GuestView/order-history.jsp")
                 .forward(request, response);
     }
 }

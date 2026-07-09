@@ -242,9 +242,9 @@ protected void doGet(HttpServletRequest request,
 
     OrderService orderService = new OrderService();
 
-    if ("00".equals(responseCode)) {
+   if ("00".equals(responseCode)) {
 
-    orderService.updateOrderStatus(orderId, "Pending");
+    orderService.confirmPaymentSuccess(orderId);
     session.setAttribute("vnpayResult", "success");
 
 } else {

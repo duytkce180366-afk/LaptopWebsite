@@ -1,5 +1,5 @@
 package com.mycompany.techstore.Repositories;
- 
+
 import com.mycompany.techstore.Models.Objects.Order;
 import com.mycompany.techstore.Models.Objects.OrderDetail;
 import com.mycompany.techstore.resources.DbClass;
@@ -8,38 +8,35 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
- 
-/**
- * @author Nguyen Lam Khang
- */
+
 public class OrderDetailRepository {
- 
+
     public Order getOrderById(int orderId, int userId) {
- 
-        String sql = "SELECT  o.order_id,\n" +
-"        o.total_amount,\n" +
-"        o.shipping_fee,\n" +
-"        o.discount_amount,\n" +
-"        o.order_status,\n" +
-"        o.payment_method,\n" +
-"        o.created_at,\n" +
-"        o.address_info,\n" +
-"        o.phone,\n" +
-"        o.note,\n" +
-"        v.code\n" +
-"FROM bs_Orders o\n" +
-"LEFT JOIN bs_Vouchers v\n" +
-"       ON o.voucher_id = v.voucher_id\n" +
-"WHERE o.order_id = ?\n" +
-"AND o.user_id = ?";
- 
+
+        String sql = "SELECT  o.order_id,\n"
+                + "        o.total_amount,\n"
+                + "        o.shipping_fee,\n"
+                + "        o.discount_amount,\n"
+                + "        o.order_status,\n"
+                + "        o.payment_method,\n"
+                + "        o.created_at,\n"
+                + "        o.address_info,\n"
+                + "        o.phone,\n"
+                + "        o.note,\n"
+                + "        v.code\n"
+                + "FROM bs_Orders o\n"
+                + "LEFT JOIN bs_Vouchers v\n"
+                + "       ON o.voucher_id = v.voucher_id\n"
+                + "WHERE o.order_id = ?\n"
+                + "AND o.user_id = ?";
+
         try {
             Connection conn = new DbClass().getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setInt(1, orderId);
             ps.setInt(2, userId);
             ResultSet rs = ps.executeQuery();
- 
+
             if (rs.next()) {
                 Order o = new Order();
                 o.setOrderId(rs.getInt("order_id"));
@@ -56,29 +53,29 @@ public class OrderDetailRepository {
                 o.setVoucherCode(rs.getString("code"));
                 return o;
             }
- 
+
         } catch (Exception e) {
             e.printStackTrace();
         }
- 
+
         return null;
     }
- 
+
     public List<OrderDetail> getDetailsByOrderId(int orderId) {
- 
+
         List<OrderDetail> list = new ArrayList<>();
         String sql = "SELECT od.order_detail_id, od.quantity, od.unit_price, od.subtotal, "
-                   + "p.product_id, p.product_name, p.thumbnail, p.sku "
-                   + "FROM bs_OrderDetails od "
-                   + "JOIN bs_Products p ON od.product_id = p.product_id "
-                   + "WHERE od.order_id = ?";
- 
+                + "p.product_id, p.product_name, p.thumbnail, p.sku "
+                + "FROM bs_OrderDetails od "
+                + "JOIN bs_Products p ON od.product_id = p.product_id "
+                + "WHERE od.order_id = ?";
+
         try {
             Connection conn = new DbClass().getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setInt(1, orderId);
             ResultSet rs = ps.executeQuery();
- 
+
             while (rs.next()) {
                 OrderDetail d = new OrderDetail();
                 d.setOrderDetailId(rs.getInt("order_detail_id"));
@@ -91,12 +88,11 @@ public class OrderDetailRepository {
                 d.setSubtotal(rs.getDouble("subtotal"));
                 list.add(d);
             }
- 
+
         } catch (Exception e) {
             e.printStackTrace();
         }
- 
+
         return list;
     }
 }
- 

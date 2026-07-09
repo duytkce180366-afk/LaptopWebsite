@@ -93,6 +93,8 @@
                             <td>
                                 <% if ("Pending".equalsIgnoreCase(status)) { %>
                                 <span class="badge-status badge-pending">Pending</span>
+                                <% } else if ("Confirmed".equalsIgnoreCase(status)) { %>
+                                <span class="badge-status badge-confirmed">Confirmed</span>
 
                                 <% } else if ("Payment Failed".equalsIgnoreCase(status)) { %>
                                 <span class="badge-status badge-payment-failed">Payment Failed</span>
@@ -127,6 +129,10 @@
                                         onclick="openCancelModal('<%=o.getOrderId()%>')">
                                     &#10005; Cancel Order
                                 </button>
+                                <% } else if ("Payment Failed".equalsIgnoreCase(status)) {%>
+                                <a href="<%=request.getContextPath()%>/checkout" class="btn-retry-checkout">
+                                    &#8635; Retry Checkout
+                                </a>
                                 <% } else { %>
                                 <span class="no-action">&#8212; No Action</span>
                                 <% } %>
