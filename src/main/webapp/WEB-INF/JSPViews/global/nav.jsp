@@ -178,6 +178,7 @@
     <div class="nav-links">
         <a href="<%= request.getContextPath()%>/home#home">Home</a>
         <a href="<%= request.getContextPath()%>/home#products">Products</a>
+        <a href="<%= request.getContextPath()%>/order-history">My Orders</a>
 
         <%
             User loggedUser = (User) session.getAttribute("loggedUser");
