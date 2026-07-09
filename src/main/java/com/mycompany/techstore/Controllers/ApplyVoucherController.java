@@ -1,4 +1,3 @@
-
 package com.mycompany.techstore.Controllers;
 
 import com.mycompany.techstore.Models.Objects.User;
@@ -90,6 +89,7 @@ public class ApplyVoucherController extends HttpServlet {
         response.getWriter().write(
                 "{"
                 + "\"success\":true,"
+                + "\"voucherId\":" + voucher.getVoucherId() + ","
                 + "\"discount\":" + discount + ","
                 + "\"finalTotal\":" + finalTotal
                 + "}"
