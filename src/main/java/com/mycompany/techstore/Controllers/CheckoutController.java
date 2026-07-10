@@ -1,6 +1,8 @@
 package com.mycompany.techstore.Controllers;
 
+import com.mycompany.techstore.Models.Objects.Address;
 import com.mycompany.techstore.Models.Objects.CartItem;
+import com.mycompany.techstore.Repositories.AddressRepository;
 import com.mycompany.techstore.Models.Objects.User;
 import com.mycompany.techstore.services.CartService;
 import java.io.IOException;
@@ -20,6 +22,7 @@ public class CheckoutController extends HttpServlet {
 
     private CartService cartService
             = new CartService();
+    private AddressRepository addressRepo = new AddressRepository();
 
     @Override
     protected void doGet(
@@ -85,6 +88,14 @@ public class CheckoutController extends HttpServlet {
         if (finalTotal == null) {
             finalTotal = total;
         }
+        Address defaultAddress
+                = addressRepo.getDefaultAddress(
+                        user.getUser_id());
+
+        request.setAttribute(
+                "defaultAddress",
+                defaultAddress);
+        
         request.setAttribute(
                 "cartTotalFormatted",
                 vn.format(total));

@@ -357,4 +357,34 @@ body{
         font-size: 14px;
         flex-shrink: 0;
     }
+    .default-address{
+        border:1px solid #ddd;
+        border-radius:12px;
+        padding:18px;
+        background:#fafafa;
+        margin-bottom:25px;
+    }
+
+    .address-name{
+        font-size:18px;
+        font-weight:700;
+    }
+
+    .address-phone{
+        color:#666;
+        margin:8px 0;
+    }
+
+    .address-detail{
+        line-height:1.6;
+        color:#333;
+    }
+
+    .default-address a{
+        display:inline-block;
+        margin-top:12px;
+        color:#2563eb;
+        font-weight:600;
+        text-decoration:none;
+    }
 }

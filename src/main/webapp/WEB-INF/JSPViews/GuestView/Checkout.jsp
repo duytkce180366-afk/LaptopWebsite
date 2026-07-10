@@ -45,27 +45,45 @@
                         <input type="email" name="email" value="${user.email}" required>
                     </div>
 
-                    <div class="form-group">
-                        <label>Phone</label>
-                        <input type="text" name="phone" value="${user.phone}"
-                               pattern="[0-9]{10,11}" required>
-                    </div>
+                    <h3>Shipping Address</h3>
 
-                    <div class="form-group">
-                        <label>Province</label>
-                        <select id="province" name="province" required></select>
-                    </div>
+                    <div class="default-address">
 
-                    <div class="form-group">
-                        <label>District</label>
-                        <select id="district" name="district" required></select>
-                    </div>
+                        <div class="address-name">
+                            ${user.full_name}
+                        </div>
 
-                    <div class="form-group">
-                        <label>Address</label>
-                        <textarea name="address" rows="3" required></textarea>
-                    </div>
+                        <div class="address-phone">
+                            ${defaultAddress.phone}
+                        </div>
 
+                        <div class="address-detail">
+                            ${defaultAddress.homeAddress},
+                            ${defaultAddress.ward},
+                            ${defaultAddress.province}
+                        </div>
+
+                        <a href="${pageContext.request.contextPath}/profile?action=add_address">
+                            Change address
+                        </a>
+
+                    </div>
+                    <input type="hidden"
+                           name="phone"
+                           value="${defaultAddress.phone}">
+
+                    <input type="hidden"
+                           name="province"
+                           value="${defaultAddress.province}">
+
+                    <input type="hidden"
+                           name="district"
+                           value="${defaultAddress.ward}">
+
+                    <input type="hidden"
+                           name="address"
+                           value="${defaultAddress.homeAddress}">
+                    
                     <div class="form-group">
                         <label>Payment Method</label>
                         <div class="payment-options">
@@ -155,35 +173,6 @@
         <%@include file="/WEB-INF/JSPViews/global/footer.jsp" %>
 
         <script>
-            var provinceEl = document.getElementById("province");
-            var districtEl = document.getElementById("district");
-
-            fetch("https://provinces.open-api.vn/api/p/")
-                    .then(function (res) {
-                        return res.json();
-                    })
-                    .then(function (data) {
-                        provinceEl.innerHTML = '<option value="">Select Province</option>';
-                        data.forEach(function (p) {
-                            provinceEl.innerHTML +=
-                                    "<option value='" + p.code + "'>" + p.name + "</option>";
-                        });
-                    });
-
-            provinceEl.addEventListener("change", function () {
-                fetch("https://provinces.open-api.vn/api/p/" + this.value + "?depth=2")
-                        .then(function (res) {
-                            return res.json();
-                        })
-                        .then(function (data) {
-                            districtEl.innerHTML = '<option value="">Select District</option>';
-                            data.districts.forEach(function (d) {
-                                districtEl.innerHTML +=
-                                        "<option value='" + d.code + "'>" + d.name + "</option>";
-                            });
-                        });
-            });
-
             var currentFinalAmount = ${cartTotal};
 
             document.getElementById("applyVoucherBtn").addEventListener("click", function () {
@@ -221,7 +210,7 @@
                             errorText.innerText = "Voucher error, please try again.";
                             errorBox.style.display = "flex";
                         });
-                
+
             });
 
             document.getElementById("placeOrderBtn").addEventListener("click", function () {
