@@ -253,6 +253,7 @@ BEGIN
         discount_amount    DECIMAL(18,2) NOT NULL CONSTRAINT DF_bs_Orders_discount_amount DEFAULT (0),
         payment_method     NVARCHAR(30) NOT NULL,
         order_status       NVARCHAR(20) NOT NULL CONSTRAINT DF_bs_Orders_order_status DEFAULT ('Pending'),
+	    phone              NVARCHAR(40) NOT NULL, 
         note               NVARCHAR(500) NULL,
         address_info       NVARCHAR(1000) NOT NULL,
         created_at         DATETIME2(0) NOT NULL CONSTRAINT DF_bs_Orders_created_at DEFAULT SYSUTCDATETIME(),
