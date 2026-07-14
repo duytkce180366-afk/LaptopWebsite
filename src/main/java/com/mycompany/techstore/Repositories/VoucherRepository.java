@@ -59,4 +59,22 @@ public class VoucherRepository {
 
         return null;
     }
+        public boolean decreaseQuantity(int voucherId) {
+        String sql
+                = "UPDATE bs_Vouchers "
+                + "SET quantity = quantity - 1 "
+                + "WHERE voucher_id = ? AND quantity > 0";
+        try (
+                Connection con = new DbClass().getConnection(); PreparedStatement ps
+                = con.prepareStatement(sql)) {
+            ps.setInt(1, voucherId);
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    
 }

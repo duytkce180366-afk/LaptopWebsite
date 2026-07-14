@@ -1,57 +1,43 @@
 package com.mycompany.techstore.Controllers;
-
 import com.mycompany.techstore.Models.Objects.User;
 import com.mycompany.techstore.Models.Objects.Voucher;
 import com.mycompany.techstore.services.CartService;
 import com.mycompany.techstore.services.VoucherService;
 import com.mycompany.techstore.Repositories.OrderRepository;
 import java.io.IOException;
-import java.io.PrintWriter;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-
 @WebServlet("/apply-voucher")
 public class ApplyVoucherController extends HttpServlet {
-
     private VoucherService voucherService
             = new VoucherService();
     private CartService cartService
             = new CartService();
     private OrderRepository orderRepository
             = new OrderRepository();
-
     @Override
     protected void doPost(
             HttpServletRequest request,
             HttpServletResponse response)
             throws IOException {
-
         HttpSession session = request.getSession();
-
         User user
                 = (User) session.getAttribute(
                         "loggedUser");
-
         String code
                 = request.getParameter(
                         "voucherCode");
-
         Voucher voucher
                 = voucherService.validateVoucher(
                         code);
-
         response.setContentType(
                 "application/json");
-
         response.setCharacterEncoding(
                 "UTF-8");
-
         if (voucher == null) {
-
             response.getWriter().write(
                     """
                 {
@@ -83,6 +69,14 @@ public class ApplyVoucherController extends HttpServlet {
                 / 100.0;
         double finalTotal
                 = total - discount;
+
+        // NOTE: quantity is NOT decreased here anymore.
+        // The actual deduction happens only when the order is truly placed:
+        // - COD/other methods: deducted in OrderRepository.placeOrder()
+        // - VNPay: deducted in OrderRepository.confirmPaymentSuccess()
+        // This avoids double-deducting (once on Apply, once on real order completion)
+        // and avoids wasting a voucher use if the user applies it but never checks out.
+
         session.setAttribute(
                 "voucher",
                 voucher);
@@ -101,7 +95,6 @@ public class ApplyVoucherController extends HttpServlet {
                 + "}"
         );
     }
-
     @Override
     public String getServletInfo() {
         return "Short description";

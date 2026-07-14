@@ -222,11 +222,6 @@ protected void doGet(HttpServletRequest request,
                     VNPayConfig.HASH_SECRET,
                     hashData.toString());
 
-    System.out.println("===== VERIFY =====");
-    System.out.println("HASH DATA : " + hashData);
-    System.out.println("VNPay HASH: " + receivedHash);
-    System.out.println("LOCAL HASH: " + calculatedHash);
-
     if (!calculatedHash.equalsIgnoreCase(receivedHash)) {
 
         session.setAttribute("vnpayResult", "invalid");

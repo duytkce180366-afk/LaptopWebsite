@@ -113,12 +113,8 @@ body {
 
 .badge-pending           { background: transparent; color: #92400e; border: none; }
 .badge-pending::before   { background: #f59e0b; }
-.badge-confirmed         { background: transparent; color: #065f46; border: none; }
-.badge-confirmed::before { background: #10b981; }
-.badge-shipping          { background: transparent; color: #1e40af; border: none; }
-.badge-shipping::before  { background: #3b82f6; }
-.badge-delivered         { background: transparent; color: #166534; border: none; }
-.badge-delivered::before { background: #22c55e; }
+.badge-completed        { background: transparent; color: #065f46; border: none; }
+.badge-completed::before { background: #10b981; }
 .badge-cancelled         { background: transparent; color: #991b1b; border: none; }
 .badge-cancelled::before { background: #ef4444; }
 .badge-payment-failed         { background: transparent; color: #6b21a8; border: none; }
@@ -288,14 +284,14 @@ body {
     transition: background .15s;
 }
 .btn-modal-back:hover { background: #e5e7eb; }
-.btn-modal-confirm {
+.btn-modal-confirm{
     background: #dc2626; color: #fff; border: none;
     border-radius: 8px; padding: 9px 20px;
     font-size: 13px; font-weight: 600; cursor: pointer;
     transition: background .15s;
 }
-.btn-modal-confirm:hover { background: #b91c1c; }
-.btn-modal-confirm:disabled { background: #fca5a5; cursor: not-allowed; }
+.btn-modal-completed:hover { background: #b91c1c; }
+.btn-modal-completed:disabled { background: #fca5a5; cursor: not-allowed; }
 .btn-retry-checkout {
     display: inline-flex;
     align-items: center;
