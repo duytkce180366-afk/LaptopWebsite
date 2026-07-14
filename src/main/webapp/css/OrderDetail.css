@@ -201,3 +201,11 @@ body {
 .summary-row.total span:last-child{
     color:#2563eb;
 }
+.info-item-full {
+    grid-column: 1 / -1; /* span full width so the reason text has room */
+}
+
+.cancel-reason-text {
+    color: #991b1b;
+    font-size: 13.5px;
+}
