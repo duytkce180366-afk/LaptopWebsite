@@ -151,12 +151,12 @@
 
     <tr>
         <td>Subtotal</td>
-        <td><%=String.format("%,.0f", order.getTotalAmount())%> đ</td>
+        <td><%=String.format("%,.0f", order.getTotalAmount())%> VND</td>
     </tr>
 
     <tr>
         <td>Shipping Fee</td>
-        <td><%=String.format("%,.0f", order.getShippingFee())%> đ</td>
+        <td><%=String.format("%,.0f", order.getShippingFee())%> VND</td>
     </tr>
 
     <% if(order.getDiscountAmount() > 0){ %>
@@ -165,7 +165,7 @@
             Voucher ( <%=order.getVoucherCode()%> )
         </td>
         <td style="color:#dc2626;">
-            -<%=String.format("%,.0f", order.getDiscountAmount())%> đ
+            -<%=String.format("%,.0f", order.getDiscountAmount())%> VND
         </td>
     </tr>
     <% } %>
@@ -174,7 +174,7 @@
         <td><strong>Total</strong></td>
         <td>
             <strong style="color:#2563eb;">
-                <%=String.format("%,.0f", order.getFinalTotal())%> đ
+                <%=String.format("%,.0f", order.getFinalTotal())%> VND
             </strong>
         </td>
     </tr>

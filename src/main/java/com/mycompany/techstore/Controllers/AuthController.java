@@ -268,7 +268,7 @@ public class AuthController extends HttpServlet {
 
                 // Sign in locally (store sanitized copy without password)
                 session.setAttribute("loggedUser", user);
-                response.sendRedirect(request.getContextPath() + "/");
+                response.sendRedirect(request.getContextPath() + (user.getRole_id() == 1 ? "/admin/dashboard" : "/"));
             } catch (JOSEException | BadJOSEException | IOException | ParseException | AuthException ex) {
                 Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, ex.getLocalizedMessage(), ex);
                 response.sendError(500, ex.getLocalizedMessage());
@@ -295,14 +295,18 @@ public class AuthController extends HttpServlet {
                     return;
                 }
 
-                response.sendRedirect(request.getContextPath() + "/");
+                response.sendRedirect(request.getContextPath() + (user.getRole_id() == 1 ? "/admin/dashboard" : "/"));
             } else {
                 response.sendRedirect(request.getContextPath() + "/auth?action=denied");
             }
-        } catch (AuthException | NoSuchAlgorithmException ex) {
+        } catch (AuthException ex) {
+            Logger.getLogger(AuthController.class.getName()).log(Level.INFO, ex.getMessage());
+            String reason = "This account is blocked or inactive".equals(ex.getMessage())
+                    ? "blocked" : "invalid";
+            response.sendRedirect(request.getContextPath() + "/auth?action=signin&reason=" + reason);
+        } catch (NoSuchAlgorithmException ex) {
             Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, null, ex);
-            System.out.println(ex.toString());
-            response.sendError(500, ex.getLocalizedMessage());
+            response.sendError(500, "Unable to verify the supplied password.");
         }
     }
 

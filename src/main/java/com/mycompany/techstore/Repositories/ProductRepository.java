@@ -173,6 +173,7 @@ public class ProductRepository extends DbClass {
                 FROM dbo.bs_Reviews r
                 LEFT JOIN dbo.bs_user u ON u.user_id = r.user_id
                 WHERE r.product_id = ?
+                  AND (r.status IS NULL OR r.status = 'Visible')
                 ORDER BY r.created_at DESC, r.review_id DESC;
                 """;
 

@@ -70,6 +70,13 @@ public class OrderRepository {
             if (rs.next()) {
                 orderId = rs.getInt(1);
             }
+            String paymentSql = "INSERT INTO bs_Payments(order_id,payment_method,payment_status,created_at,updated_at) "
+                    + "VALUES(?,?,'Pending',SYSUTCDATETIME(),SYSUTCDATETIME())";
+            try (PreparedStatement psPayment = conn.prepareStatement(paymentSql)) {
+                psPayment.setInt(1, orderId);
+                psPayment.setString(2, paymentMethod);
+                psPayment.executeUpdate();
+            }
 
             // Nếu KHÔNG phải VNPay (VD: COD) -> trừ voucher ngay vì đơn coi như đã chốt
             if (!"VNPay".equals(paymentMethod) && voucherId > 0) {
@@ -111,15 +118,7 @@ public class OrderRepository {
                 psDetail.setDouble(4, price);
                 psDetail.executeUpdate();
 
-                // Only deduct stock immediately for non-VNPay orders (e.g. COD).
-                // For VNPay, stock is only deducted once payment is confirmed successful.
-                if (!"VNPay".equals(paymentMethod)) {
-                    String stockSql = "UPDATE bs_Products SET stock = stock - ? WHERE product_id=?";
-                    PreparedStatement psStock = conn.prepareStatement(stockSql);
-                    psStock.setInt(1, quantity);
-                    psStock.setInt(2, productId);
-                    psStock.executeUpdate();
-                }
+                // Stock is deducted when the order transitions to Confirmed.
             }
 
          // Only clear the cart immediately for non-VNPay orders (e.g. COD).
@@ -154,7 +153,7 @@ public class OrderRepository {
         return -1;
     }
 
-   public boolean cancelOrder(int orderId, String note) {
+   public boolean cancelOrder(int orderId, int userId, String note) {
 
         Connection conn = null;
 
@@ -164,9 +163,10 @@ public class OrderRepository {
 
             // Get current order info before cancelling
             String checkSql = "SELECT order_status, payment_method, voucher_id "
-                    + "FROM bs_Orders WHERE order_id=?";
+                    + "FROM bs_Orders WHERE order_id=? AND user_id=?";
             PreparedStatement psCheck = conn.prepareStatement(checkSql);
             psCheck.setInt(1, orderId);
+            psCheck.setInt(2, userId);
             ResultSet rs = psCheck.executeQuery();
 
             if (!rs.next()) {
@@ -188,7 +188,7 @@ public class OrderRepository {
             // Was stock/voucher actually deducted for this order?
             // - COD: deducted immediately at placeOrder (status Pending or Confirmed)
             // - VNPay: deducted only once Confirmed
-            boolean wasDeducted = !"VNPay".equals(paymentMethod) || "Confirmed".equals(currentStatus);
+            boolean wasDeducted = "Confirmed".equals(currentStatus);
 
             String updateSql = "UPDATE bs_Orders "
                     + "SET order_status='Cancelled', note=? "
@@ -420,6 +420,11 @@ public class OrderRepository {
             PreparedStatement psUpdate = conn.prepareStatement(updateSql);
             psUpdate.setInt(1, orderId);
             psUpdate.executeUpdate();
+            try (PreparedStatement payment = conn.prepareStatement(
+                    "UPDATE bs_Payments SET payment_status='Paid',paid_at=SYSUTCDATETIME(),updated_at=SYSUTCDATETIME() WHERE order_id=?")) {
+                payment.setInt(1, orderId);
+                payment.executeUpdate();
+            }
 
             if (hasVoucher) {
                 String voucherSql = "UPDATE bs_Vouchers SET quantity = quantity - 1 "

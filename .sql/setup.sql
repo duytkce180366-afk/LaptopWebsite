@@ -254,6 +254,7 @@ BEGIN
         payment_method     NVARCHAR(30) NOT NULL,
         order_status       NVARCHAR(20) NOT NULL CONSTRAINT DF_bs_Orders_order_status DEFAULT ('Pending'),
         note               NVARCHAR(500) NULL,
+        phone              NVARCHAR(20) NULL,
         address_info       NVARCHAR(1000) NOT NULL,
         created_at         DATETIME2(0) NOT NULL CONSTRAINT DF_bs_Orders_created_at DEFAULT SYSUTCDATETIME(),
         updated_at         DATETIME2(0) NULL,
@@ -312,10 +313,28 @@ BEGIN
         product_id     INT NOT NULL,
         rating         INT NOT NULL,
         comment        NVARCHAR(1000) NULL,
+        status         NVARCHAR(20) NOT NULL CONSTRAINT DF_bs_Reviews_status DEFAULT ('Visible'),
+        moderated_by   INT NULL,
+        moderated_at   DATETIME2(0) NULL,
         created_at     DATETIME2(0) NOT NULL CONSTRAINT DF_bs_Reviews_created_at DEFAULT SYSUTCDATETIME(),
         updated_at     DATETIME2(0) NULL,
         CONSTRAINT UQ_bs_Reviews_user_product UNIQUE (user_id, product_id),
-        CONSTRAINT CK_bs_Reviews_rating CHECK (rating BETWEEN 1 AND 5)
+        CONSTRAINT CK_bs_Reviews_rating CHECK (rating BETWEEN 1 AND 5),
+        CONSTRAINT CK_bs_Reviews_status CHECK (status IN ('Visible', 'Hidden'))
+    );
+END
+GO
+
+IF OBJECT_ID(N'dbo.bs_AdminAuditLogs', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.bs_AdminAuditLogs (
+        audit_id       BIGINT IDENTITY(1,1) NOT NULL CONSTRAINT PK_bs_AdminAuditLogs PRIMARY KEY,
+        admin_id       INT NOT NULL,
+        action         NVARCHAR(80) NOT NULL,
+        entity_type    NVARCHAR(80) NOT NULL,
+        entity_id      NVARCHAR(80) NULL,
+        details        NVARCHAR(1000) NULL,
+        created_at     DATETIME2(0) NOT NULL CONSTRAINT DF_bs_AdminAuditLogs_created_at DEFAULT SYSUTCDATETIME()
     );
 END
 GO
@@ -427,6 +446,18 @@ IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = N'FK_bs_Reviews_bs_Pr
     FOREIGN KEY (product_id) REFERENCES dbo.bs_Products(product_id) ON DELETE CASCADE;
 GO
 
+IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = N'FK_bs_Reviews_moderated_by')
+    ALTER TABLE dbo.bs_Reviews
+    ADD CONSTRAINT FK_bs_Reviews_moderated_by
+    FOREIGN KEY (moderated_by) REFERENCES dbo.bs_user(user_id);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = N'FK_bs_AdminAuditLogs_user')
+    ALTER TABLE dbo.bs_AdminAuditLogs
+    ADD CONSTRAINT FK_bs_AdminAuditLogs_user
+    FOREIGN KEY (admin_id) REFERENCES dbo.bs_user(user_id);
+GO
+
 /* =========================
    Helpful Indexes
    ========================= */
@@ -441,6 +472,18 @@ GO
 
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_bs_OrderDetails_order' AND object_id = OBJECT_ID(N'dbo.bs_OrderDetails'))
     CREATE INDEX IX_bs_OrderDetails_order ON dbo.bs_OrderDetails(order_id);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_bs_Orders_status_created' AND object_id = OBJECT_ID(N'dbo.bs_Orders'))
+    CREATE INDEX IX_bs_Orders_status_created ON dbo.bs_Orders(order_status, created_at DESC);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_bs_Reviews_status_created' AND object_id = OBJECT_ID(N'dbo.bs_Reviews'))
+    CREATE INDEX IX_bs_Reviews_status_created ON dbo.bs_Reviews(status, created_at DESC);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_bs_AdminAuditLogs_created_at' AND object_id = OBJECT_ID(N'dbo.bs_AdminAuditLogs'))
+    CREATE INDEX IX_bs_AdminAuditLogs_created_at ON dbo.bs_AdminAuditLogs(created_at DESC);
 GO
 
 PRINT 'LaptopWebsiteDB schema created successfully.';
@@ -578,10 +621,10 @@ MERGE dbo.bs_Categories AS target
 USING @Categories AS source
     ON target.category_name = source.category_name
 WHEN MATCHED THEN
-    UPDATE SET description = source.description, status = 'active', updated_at = SYSDATETIME()
+    UPDATE SET description = source.description, status = 'Active', updated_at = SYSDATETIME()
 WHEN NOT MATCHED THEN
     INSERT (category_name, description, status, created_at, updated_at)
-    VALUES (source.category_name, source.description, 'active', SYSDATETIME(), SYSDATETIME());
+    VALUES (source.category_name, source.description, 'Active', SYSDATETIME(), SYSDATETIME());
 
 DECLARE @Brands TABLE (brand_name NVARCHAR(120) NOT NULL);
 INSERT INTO @Brands (brand_name) VALUES
@@ -706,7 +749,14 @@ INSERT INTO @Products (category_name, brand_name, sku, product_name, description
 
 MERGE dbo.bs_Products AS target
 USING (
-    SELECT c.category_id, b.brand_id, p.sku, p.product_name, p.description, p.price, p.stock, p.thumbnail, p.status
+    SELECT c.category_id, b.brand_id, p.sku, p.product_name, p.description, p.price, p.stock, p.thumbnail,
+           CASE LOWER(p.status)
+               WHEN 'active' THEN N'Active'
+               WHEN 'out of stock' THEN N'Out of Stock'
+               WHEN 'hidden' THEN N'Hidden'
+               WHEN 'inactive' THEN N'Inactive'
+               ELSE p.status
+           END AS status
     FROM @Products p
     INNER JOIN dbo.bs_Categories c ON c.category_name = p.category_name
     INNER JOIN dbo.bs_Brands b ON b.brand_name = p.brand_name

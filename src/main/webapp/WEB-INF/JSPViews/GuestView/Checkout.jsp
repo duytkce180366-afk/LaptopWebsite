@@ -95,7 +95,7 @@
                                     <div class="item-qty">Quantity: ${item.quantity}</div>
                                 </div>
                                 <div class="item-price">
-                                    <fmt:formatNumber value="${item.subtotal}" pattern="#,###" /> đ
+                                    <fmt:formatNumber value="${item.subtotal}" pattern="#,###" /> VND
                                 </div>
                             </div>
                         </c:forEach>
@@ -124,7 +124,7 @@
                         </div>
                         <div class="total-row">
                             <span>Discount</span>
-                            <strong id="discountAmount">- 0 đ</strong>
+                            <strong id="discountAmount">- 0 VND</strong>
                         </div>
                         <div class="total-row final-row">
                             <span>Final Total</span>
@@ -212,9 +212,9 @@
                                 return;
                             }
                             document.getElementById("discountAmount").innerText =
-                                    "- " + data.discount.toLocaleString("vi-VN") + " đ";
+                                    "- " + data.discount.toLocaleString("en-US") + " VND";
                             document.getElementById("finalTotal").innerText =
-                                    data.finalTotal.toLocaleString("vi-VN") + " đ";
+                                    data.finalTotal.toLocaleString("en-US") + " VND";
                             document.getElementById("hiddenVoucherId").value = data.voucherId || 0;
                             document.getElementById("hiddenDiscountAmount").value = data.discount || 0;
                             document.getElementById("hiddenFinalAmount").value = data.finalTotal || currentFinalAmount;

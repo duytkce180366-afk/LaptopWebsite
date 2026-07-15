@@ -10,7 +10,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-@WebServlet(name = "AdminController", urlPatterns = {"/admin"})
+@WebServlet(name = "LegacyAdminController", urlPatterns = {"/admin/legacy"})
 public class AdminController extends HttpServlet {
 
     private final ProductService productService = new ProductService();

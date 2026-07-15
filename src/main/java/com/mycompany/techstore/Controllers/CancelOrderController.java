@@ -1,6 +1,7 @@
 package com.mycompany.techstore.Controllers;
 
 import com.mycompany.techstore.Repositories.OrderRepository;
+import com.mycompany.techstore.Models.Objects.User;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -30,8 +31,12 @@ public class CancelOrderController
 
         int orderId = Integer.parseInt(id);
 
-        boolean success
-                = repo.cancelOrder(orderId, note);
+        User user = (User) request.getSession().getAttribute("loggedUser");
+        if (user == null) {
+            response.sendError(401);
+            return;
+        }
+        boolean success = repo.cancelOrder(orderId, user.getUser_id(), note);
 
         System.out.println("SUCCESS = " + success);
 

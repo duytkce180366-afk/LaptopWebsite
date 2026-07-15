@@ -13,6 +13,20 @@
                 <div class="card auth-panel shadow-sm w-100" style="max-width:480px;">
                     <div class="card-body p-4">
                         <h2 class="card-title mb-3">Sign in to Tech Store</h2>
+                        <% String reason = request.getParameter("reason"); %>
+                        <% if ("blocked".equals(reason)) { %>
+                            <div class="alert alert-danger" role="alert">
+                                Your account has been locked. Please contact the administrator.
+                            </div>
+                        <% } else if ("disabled".equals(reason)) { %>
+                            <div class="alert alert-danger" role="alert">
+                             The account is no longer active. Please contact the administrator.
+                            </div>
+                        <% } else if ("invalid".equals(reason)) { %>
+                            <div class="alert alert-danger" role="alert">
+                               Incorrect email or password.
+                            </div>
+                        <% } %>
                         <form method="post" action="<%= ctx%>/auth?action=signin">
                             <div class="mb-3">
                                 <label class="form-label">Email</label>

@@ -101,6 +101,9 @@ public class AuthService {
         if (user == null) {
             throw new AuthException(-1, "User not found");
         }
+        if (!"Active".equalsIgnoreCase(user.getStatus())) {
+            throw new AuthException(-1, "This account is blocked or inactive");
+        }
 
         String stored = user.getPassword();
         if (stored == null) {
@@ -171,6 +174,9 @@ public class AuthService {
 
         User user = this.authRepo.GetUserOIDCSignIn(email);
         if (user != null) {
+            if (!"Active".equalsIgnoreCase(user.getStatus())) {
+                throw new AuthException(-1, "This account is blocked or inactive");
+            }
             return user;
         }
 
