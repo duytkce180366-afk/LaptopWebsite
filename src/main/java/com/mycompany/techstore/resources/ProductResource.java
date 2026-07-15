@@ -1,7 +1,6 @@
 package com.mycompany.techstore.resources;
 
 import com.mycompany.techstore.Models.Objects.Product;
-import com.mycompany.techstore.Models.Objects.Product;
 import com.mycompany.techstore.services.ProductService;
 
 import jakarta.ws.rs.*;
@@ -88,7 +87,7 @@ public class ProductResource {
     public Response createProduct(Product product) {
 
         boolean check = productService.createProduct(
-                product.getCategoryId(),
+                product.getCategoryNumericId(),
                 product.getBrandId(),
                 product.getSku(),
                 product.getProductName(),
@@ -129,7 +128,7 @@ public class ProductResource {
 
         boolean check = productService.updateProduct(
                 id,
-                product.getCategoryId(),
+                product.getCategoryNumericId(),
                 product.getBrandId(),
                 product.getSku(),
                 product.getProductName(),

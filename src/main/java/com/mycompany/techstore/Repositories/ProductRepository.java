@@ -28,9 +28,9 @@ public class ProductRepository extends DbClass {
         return products.isEmpty() ? null : products.get(0);
     }
 
-    public List<Product> getByCategory(int categoryId) {
+    public List<Product> getByCategory(String categoryId) {
         return getAll().stream()
-                .filter(product -> product.getCategoryId() == categoryId)
+                .filter(product -> product.getCategory_id().equals(categoryId))
                 .collect(Collectors.toList());
     }
 
@@ -39,8 +39,8 @@ public class ProductRepository extends DbClass {
         String normalizedQuery = query == null ? "" : query.toLowerCase();
         List<Product> results = getAll().stream()
                 .filter(product -> normalizedQuery.isEmpty() || getSearchableText(product).contains(normalizedQuery))
-                .filter(product -> categoryId == null || categoryId.isEmpty() || categoryId.equals("all")
-                || product.getCategoryId().equals(categoryId))
+                .filter(product -> categoryId == null || categoryId.isEmpty()
+                || categoryId.equals("all") || product.getCategory_id().equals(categoryId))
                 .filter(product -> product.getPrice() >= minPrice && product.getPrice() < maxPrice)
                 .filter(product -> matchesFilters(product, filters))
                 .collect(Collectors.toList());
@@ -52,8 +52,9 @@ public class ProductRepository extends DbClass {
     private List<ProductRow> queryProducts(Integer productId) {
         List<ProductRow> products = new ArrayList<>();
         String sqlCommand = """
-                SELECT p.product_id, p.product_name, p.description, p.price, p.stock, p.thumbnail,
-                       c.category_name, b.brand_name
+                SELECT p.product_id, p.category_id, p.brand_id, p.sku, p.product_name,
+                       p.description, p.price, p.stock, p.thumbnail, p.status,
+                       p.created_at, p.updated_at, c.category_name, b.brand_name
                 FROM dbo.bs_Products p
                 INNER JOIN dbo.bs_Categories c ON c.category_id = p.category_id
                 INNER JOIN dbo.bs_Brands b ON b.brand_id = p.brand_id
@@ -75,6 +76,9 @@ public class ProductRepository extends DbClass {
                 while (rs.next()) {
                     products.add(new ProductRow(
                             rs.getInt("product_id"),
+                            rs.getInt("category_id"),
+                            rs.getInt("brand_id"),
+                            rs.getString("sku"),
                             toSlug(rs.getString("category_name")),
                             rs.getString("category_name"),
                             rs.getString("product_name"),
@@ -82,7 +86,10 @@ public class ProductRepository extends DbClass {
                             rs.getLong("price"),
                             rs.getInt("stock"),
                             rs.getString("thumbnail"),
-                            rs.getString("description")));
+                            rs.getString("description"),
+                            rs.getString("status"),
+                            rs.getTimestamp("created_at"),
+                            rs.getTimestamp("updated_at")));
                 }
             }
         } catch (SQLException sqlEx) {
@@ -99,7 +106,6 @@ public class ProductRepository extends DbClass {
 
         List<Integer> productIds = productRows.stream().map(row -> row.id).collect(Collectors.toList());
         Map<Integer, Map<String, String>> specsByProduct = getSpecsByProduct(productIds);
-        Map<Integer, List<Review>> reviewsByProduct = getReviewsByProduct(productIds);
         List<Product> products = new ArrayList<>();
 
         for (ProductRow row : productRows) {
@@ -112,6 +118,9 @@ public class ProductRepository extends DbClass {
 
             products.add(new Product(
                     row.id,
+                    row.categoryNumericId,
+                    row.brandId,
+                    row.sku,
                     row.categorySlug,
                     row.categoryName,
                     row.name,
@@ -123,7 +132,9 @@ public class ProductRepository extends DbClass {
                     row.thumbnail == null ? "" : row.thumbnail,
                     warranty,
                     row.description == null ? "" : row.description,
-                    reviewsByProduct.getOrDefault(row.id, new ArrayList<>())));
+                    row.status,
+                    row.createdAt,
+                    row.updatedAt));
         }
 
         return products;
@@ -154,40 +165,42 @@ public class ProductRepository extends DbClass {
         return specsByProduct;
     }
 
-    private Map<Integer, List<Review>> getReviewsByProduct(List<Integer> productIds) {
-        Map<Integer, List<Review>> reviewsByProduct = new HashMap<>();
+    public List<Review> getReviewsByProductId(int productId) {
+        List<Review> reviews = new ArrayList<>();
         String sqlCommand = """
-                SELECT r.product_id, u.full_name, r.rating, r.comment, r.created_at
+                SELECT r.review_id, r.user_id, r.product_id, r.rating, r.comment, r.created_at,
+                       u.full_name AS user_name
                 FROM dbo.bs_Reviews r
-                INNER JOIN dbo.bs_user u ON u.user_id = r.user_id
-                ORDER BY r.product_id, r.created_at DESC, r.review_id DESC;
+                LEFT JOIN dbo.bs_user u ON u.user_id = r.user_id
+                WHERE r.product_id = ?
+                ORDER BY r.created_at DESC, r.review_id DESC;
                 """;
 
-        try (PreparedStatement ps = super.getConnection().prepareStatement(sqlCommand); ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                int productId = rs.getInt("product_id");
-                if (!productIds.contains(productId)) {
-                    continue;
-                }
+        try (PreparedStatement ps = super.getConnection().prepareStatement(sqlCommand)) {
+            ps.setInt(1, productId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String reviewDate = "";
+                    if (rs.getTimestamp("created_at") != null) {
+                        reviewDate = rs.getTimestamp("created_at").toLocalDateTime().toLocalDate().toString();
+                    }
 
-                String reviewDate = "";
-                if (rs.getTimestamp("created_at") != null) {
-                    reviewDate = rs.getTimestamp("created_at").toLocalDateTime().toLocalDate().toString();
+                    reviews.add(new Review(
+                            rs.getInt("review_id"),
+                            rs.getInt("user_id"),
+                            rs.getInt("product_id"),
+                            rs.getInt("rating"),
+                            rs.getString("comment"),
+                            reviewDate,
+                            rs.getString("user_name")
+                    ));
                 }
-
-                reviewsByProduct
-                        .computeIfAbsent(productId, key -> new ArrayList<>())
-                        .add(new Review(
-                                rs.getString("full_name"),
-                                rs.getInt("rating"),
-                                reviewDate,
-                                rs.getString("comment")));
             }
         } catch (SQLException sqlEx) {
             Logger.getLogger(ProductRepository.class.getName()).log(Level.SEVERE, null, sqlEx);
         }
 
-        return reviewsByProduct;
+        return reviews;
     }
 
     private String toSlug(String value) {
@@ -242,6 +255,9 @@ public class ProductRepository extends DbClass {
     private class ProductRow {
 
         private final int id;
+        private final int categoryNumericId;
+        private final int brandId;
+        private final String sku;
         private final String categorySlug;
         private final String categoryName;
         private final String name;
@@ -250,10 +266,18 @@ public class ProductRepository extends DbClass {
         private final int stock;
         private final String thumbnail;
         private final String description;
+        private final String status;
+        private final java.sql.Timestamp createdAt;
+        private final java.sql.Timestamp updatedAt;
 
-        private ProductRow(int id, String categorySlug, String categoryName, String name, String brand,
-                long price, int stock, String thumbnail, String description) {
+        private ProductRow(int id, int categoryNumericId, int brandId, String sku,
+                String categorySlug, String categoryName, String name, String brand,
+                long price, int stock, String thumbnail, String description, String status,
+                java.sql.Timestamp createdAt, java.sql.Timestamp updatedAt) {
             this.id = id;
+            this.categoryNumericId = categoryNumericId;
+            this.brandId = brandId;
+            this.sku = sku;
             this.categorySlug = categorySlug;
             this.categoryName = categoryName;
             this.name = name;
@@ -262,6 +286,9 @@ public class ProductRepository extends DbClass {
             this.stock = stock;
             this.thumbnail = thumbnail;
             this.description = description;
+            this.status = status;
+            this.createdAt = createdAt;
+            this.updatedAt = updatedAt;
         }
     }
 

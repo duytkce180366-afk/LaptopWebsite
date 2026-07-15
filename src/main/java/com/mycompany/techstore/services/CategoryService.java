@@ -25,6 +25,14 @@ public class CategoryService {
         return this.categoryRepository.getSecondaryFilterOptions();
     }
 
+    public Map<String, List<Map<String, Object>>> getMenuGroupsByCategory() {
+        return this.categoryRepository.getMenuGroupsByCategory();
+    }
+
+    public Map<String, List<Map<String, String>>> getFiltersByCategory() {
+        return this.categoryRepository.getFiltersByCategory();
+    }
+
     public List<Map<String, String>> getSecondaryFilterOptionsByCategory(String categoryId) {
         return this.categoryRepository.getSecondaryFilterOptionsByCategory(categoryId);
     }

@@ -1,0 +1,336 @@
+/*
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css to edit this template
+*/
+/* 
+    Created on : Jun 15, 2026, 8:22:20 PM
+    Author     : DuyTran
+*/
+/* =========================
+   CHECKOUT PAGE
+========================= */
+
+body{
+    background:#f3f6fb;
+}
+
+/* Layout */
+
+.checkout-container{
+    max-width:1400px;
+    margin:40px auto;
+    padding:0 20px;
+
+    display:grid;
+    grid-template-columns: 2fr 1fr;
+    gap:30px;
+}
+
+/* Card */
+
+.checkout-card,
+.summary-card{
+    background:#fff;
+
+    padding:30px;
+
+    border-radius:18px;
+
+    box-shadow:0 4px 18px rgba(0,0,0,.08);
+}
+
+.checkout-card h2{
+    font-size:42px;
+    margin-bottom:10px;
+    color:#0f172a;
+}
+
+.checkout-card h3{
+    font-size:28px;
+    margin-bottom:20px;
+    color:#1e293b;
+}
+
+.summary-card h3{
+    font-size:32px;
+    margin-bottom:20px;
+    color:#0f172a;
+}
+
+/* Form */
+
+.form-group{
+    display:flex;
+    flex-direction:column;
+    margin-bottom:20px;
+}
+
+.form-group label{
+    font-size:15px;
+    font-weight:600;
+    margin-bottom:8px;
+    color:#334155;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea{
+    width:100%;
+
+    padding:14px 16px;
+
+    border:1px solid #cbd5e1;
+
+    border-radius:12px;
+
+    font-size:15px;
+
+    outline:none;
+
+    transition:.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus{
+    border-color:#2563eb;
+}
+
+/* Payment */
+
+.payment-options{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+}
+
+.payment-options label{
+    display:flex;
+    align-items:center;
+    gap:10px;
+
+    padding:12px;
+
+    border:1px solid #e2e8f0;
+
+    border-radius:12px;
+
+    cursor:pointer;
+}
+
+/* =========================
+   ORDER SUMMARY
+========================= */
+
+.order-items{
+    display:flex;
+    flex-direction:column;
+}
+
+/* Item */
+
+.order-item{
+    display:flex;
+    align-items:center;
+
+    gap:15px;
+
+    padding:15px 0;
+
+    border-bottom:1px solid #e5e7eb;
+}
+
+.order-item img{
+    width:80px !important;
+    height:80px !important;
+
+    min-width:80px;
+
+    object-fit:cover;
+
+    border-radius:12px;
+
+    flex-shrink:0;
+}
+
+.item-info{
+    flex:1;
+}
+
+.item-name{
+    font-size:15px;
+    font-weight:600;
+
+    color:#111827;
+
+    line-height:1.4;
+}
+
+.item-qty{
+    margin-top:5px;
+
+    font-size:13px;
+
+    color:#6b7280;
+}
+
+.item-price{
+    font-size:15px;
+
+    font-weight:700;
+
+    color:#2563eb;
+
+    white-space:nowrap;
+}
+
+/* Voucher */
+
+.voucher-box{
+    margin-top:25px;
+}
+
+.voucher-box label{
+    display:block;
+
+    font-weight:600;
+
+    margin-bottom:10px;
+}
+
+.voucher-row{
+    display:flex;
+    gap:10px;
+}
+
+.voucher-row input{
+    flex:1;
+
+    padding:12px;
+
+    border:1px solid #cbd5e1;
+
+    border-radius:10px;
+}
+
+.btn-apply{
+    padding:12px 18px;
+
+    border:none;
+
+    border-radius:10px;
+
+    background:#111827;
+
+    color:white;
+
+    cursor:pointer;
+}
+
+/* Total */
+
+.total-box{
+    margin-top:25px;
+
+    padding-top:20px;
+
+    border-top:2px solid #e5e7eb;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.total-box span{
+    font-size:18px;
+    font-weight:600;
+}
+
+.total-box strong{
+    font-size:26px;
+    color:#2563eb;
+}
+
+/* Place order */
+
+.btn-place-order{
+    width:100%;
+
+    margin-top:20px;
+
+    padding:16px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:#2563eb;
+
+    color:white;
+
+    font-size:16px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.2s;
+}
+
+.btn-place-order:hover{
+    background:#1d4ed8;
+}
+
+/* Sticky summary */
+
+.summary-card{
+    position:sticky;
+    top:100px;
+
+    height:fit-content;
+}
+
+/* Mobile */
+
+@media(max-width:992px){
+
+    .checkout-container{
+        grid-template-columns:1fr;
+    }
+
+    .summary-card{
+        position:static;
+    }
+
+    .checkout-card h2{
+        font-size:32px;
+    }
+}
+.checkout-alert-error {
+    max-width: 900px;
+    margin: 16px auto;
+    padding: 12px 16px;
+    background: #f8d7da;
+    color: #842029;
+    border: 1px solid #f5c2c7;
+    border-radius: 8px;
+    font-weight: 500;
+}
+.voucher-alert-error {
+    margin-top: 10px;
+    padding: 10px 14px;
+    background: #fff5f5;
+    color: #c53030;
+    border: 1px solid #feb2b2;
+    border-left: 4px solid #e53e3e;
+    border-radius: 8px;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.voucher-alert-error .alert-icon {
+    font-size: 14px;
+    flex-shrink: 0;
+}

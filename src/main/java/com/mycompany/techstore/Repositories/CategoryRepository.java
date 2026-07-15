@@ -17,17 +17,10 @@ public class CategoryRepository extends DbClass {
 
     public List<Category> getAll() {
         Map<Integer, CategoryRow> categoryRows = getCategoryRows();
-        Map<Integer, List<Map<String, Object>>> menuGroups = getMenuGroups();
-        Map<Integer, List<Map<String, String>>> filters = getFilters();
         List<Category> categories = new ArrayList<>();
 
         for (CategoryRow row : categoryRows.values()) {
-            categories.add(new Category(
-                    row.slug,
-                    row.name,
-                    menuGroups.getOrDefault(row.categoryId, new ArrayList<>()),
-                    filters.getOrDefault(row.categoryId, new ArrayList<>())
-            ));
+            categories.add(new Category(row.slug, row.name, null, null, null, null));
         }
 
         return categories;
@@ -45,6 +38,30 @@ public class CategoryRepository extends DbClass {
         }
 
         return null;
+    }
+
+    public Map<String, List<Map<String, Object>>> getMenuGroupsByCategory() {
+        Map<String, List<Map<String, Object>>> menuGroupsByCategory = new LinkedHashMap<>();
+        Map<Integer, CategoryRow> categoryRows = getCategoryRows();
+        Map<Integer, List<Map<String, Object>>> menuGroups = getMenuGroups();
+
+        for (Map.Entry<Integer, CategoryRow> entry : categoryRows.entrySet()) {
+            menuGroupsByCategory.put(entry.getValue().slug, menuGroups.getOrDefault(entry.getKey(), new ArrayList<>()));
+        }
+
+        return menuGroupsByCategory;
+    }
+
+    public Map<String, List<Map<String, String>>> getFiltersByCategory() {
+        Map<String, List<Map<String, String>>> filtersByCategory = new LinkedHashMap<>();
+        Map<Integer, CategoryRow> categoryRows = getCategoryRows();
+        Map<Integer, List<Map<String, String>>> filters = getFilters();
+
+        for (Map.Entry<Integer, CategoryRow> entry : categoryRows.entrySet()) {
+            filtersByCategory.put(entry.getValue().slug, filters.getOrDefault(entry.getKey(), new ArrayList<>()));
+        }
+
+        return filtersByCategory;
     }
 
     public Map<String, List<Map<String, String>>> getSecondaryFilterOptions() {

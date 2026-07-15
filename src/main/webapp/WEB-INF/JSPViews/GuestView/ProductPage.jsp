@@ -1,4 +1,4 @@
-﻿<%@page import="com.mycompany.techstore.Models.Objects.Category"%>
+<%@page import="com.mycompany.techstore.Models.Objects.Category"%>
 <%@page import="com.mycompany.techstore.Models.Objects.Product"%>
 <%@page import="com.mycompany.techstore.Models.Objects.Review"%>
 <%@page import="java.text.NumberFormat"%>
@@ -6,6 +6,8 @@
 <%@page import="java.util.List"%>
 <%@page import="java.util.Locale"%>
 <%@page import="java.util.Map"%>
+<%@ taglib prefix="c"
+           uri="http://java.sun.com/jsp/jstl/core" %>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%!
     private String html(Object value) {
@@ -38,8 +40,16 @@
 <%
     Product product = (Product) request.getAttribute("product");
     List<Category> categories = (List<Category>) request.getAttribute("categories");
+    List<Review> reviews = (List<Review>) request.getAttribute("reviews");
+    Double averageRating = (Double) request.getAttribute("averageRating");
     if (categories == null) {
         categories = new ArrayList<>();
+    }
+    if (reviews == null) {
+        reviews = new ArrayList<>();
+    }
+    if (averageRating == null) {
+        averageRating = 0.0;
     }
     String contextPath = request.getContextPath();
 %>
@@ -69,15 +79,44 @@
                     </div>
 
                     <div class="details-layout">
-                        <img src="<%= html(product.getImage())%>" alt="<%= html(product.getName())%> product view" />
+                        <img src="<%= html(product.getThumbnail())%>" alt="<%= html(product.getName())%> product view" />
                         <div class="details-content">
                             <div class="detail-summary">
                                 <span><%= html(product.getBrand())%></span>
                                 <span><%= html(product.getCategory())%></span>
-                                <span><%= product.getAverageRating()%> / 5 rating</span>
+                                <span><%= averageRating%> / 5 rating</span>
                             </div>
                             <p><%= html(product.getDescription())%></p>
                             <h3><%= formatPrice(product.getPrice())%></h3>
+
+                            <form action="<%= request.getContextPath()%>/cart/add"
+                                  method="post">
+
+                                <input type="hidden"
+                                       name="productId"
+                                       value="<%= product.getId()%>"/>
+
+                                <input type="hidden"
+                                       name="price"
+                                       value="<%= product.getPrice()%>"/>
+
+                                <input type="number"
+                                       name="quantity"
+                                       value="1"
+                                       min="1"/>
+
+                                <button type="submit">
+                                    Add To Cart
+                                </button>
+                                <c:if test="${not empty sessionScope.cartError}">
+                                    <div class="alert-stock">
+                                        ${sessionScope.cartError}
+                                    </div>
+
+                                    <c:remove var="cartError"
+                                              scope="session"/>
+                                </c:if>
+                            </form>
                             <dl class="spec-table">
                                 <% for (Map.Entry<String, String> spec : product.getSpecs().entrySet()) {%>
                                 <div>
@@ -104,7 +143,10 @@
                         <h2 id="reviews-title">Customer reviews for <%= html(product.getName())%></h2>
                     </div>
                     <div class="reviews-grid">
-                        <% for (Review review : product.getReviews()) {%>
+                        <% if (reviews.isEmpty()) {%>
+                        <p>No reviews yet for this product.</p>
+                        <% } else { %>
+                        <% for (Review review : reviews) {%>
                         <article class="review-card">
                             <div>
                                 <strong><%= html(review.getUser())%></strong>
@@ -113,6 +155,7 @@
                             <p class="stars" aria-label="<%= review.getRating()%> out of 5 rating">Rating: <%= review.getRating()%>/5</p>
                             <p><%= html(review.getComment())%></p>
                         </article>
+                        <% } %>
                         <% } %>
                     </div>
                 </section>

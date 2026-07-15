@@ -134,7 +134,12 @@
 
             <% for (Category category : navCategories) {%>
             <div class="mega-panel <%= category.getId().equals(visibleCategoryId) ? "visible" : ""%>" data-mega-panel="<%= nav_html(category.getId())%>">
-                <% for (Map<String, Object> group : category.getMenuGroups()) {
+                <%
+                    Map<String, List<Map<String, Object>>> categoryMenuGroups = (Map<String, List<Map<String, Object>>>) request.getAttribute("categoryMenuGroups");
+                    List<Map<String, Object>> menuGroups = categoryMenuGroups == null
+                            ? java.util.Collections.<Map<String, Object>>emptyList()
+                            : categoryMenuGroups.getOrDefault(category.getId(), java.util.Collections.<Map<String, Object>>emptyList());
+                    for (Map<String, Object> group : menuGroups) {
                         String title = String.valueOf(group.get("title"));
                         List<String> options = (List<String>) group.get("options");
                 %>
@@ -173,6 +178,7 @@
     <div class="nav-links">
         <a href="<%= request.getContextPath()%>/home#home">Home</a>
         <a href="<%= request.getContextPath()%>/home#products">Products</a>
+        <a href="<%= request.getContextPath()%>/order-history">My Orders</a>
 
         <%
             User loggedUser = (User) session.getAttribute("loggedUser");
@@ -197,9 +203,9 @@
                 <span class="user-email"><%= nav_html(loggedUser.getEmail())%></span>
             </a>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                <% if (!loggedUser.isIsVerified()) { %>
+                <% if (!loggedUser.isIsVerified()) {%>
                 <li><a class="dropdown-item" href="<%= request.getContextPath()%>/auth?action=verify">Verify email</a></li>
-                <% } %>
+                    <% }%>
                 <li><a class="dropdown-item" href="<%= request.getContextPath()%>/profile">Edit profile</a></li>
                 <li><a class="dropdown-item" href="<%= request.getContextPath()%>/auth?action=resetpwd">Reset Password</a></li>
                 <li><a class="dropdown-item" href="<%= request.getContextPath()%>/auth?action=logout">Logout</a></li>
