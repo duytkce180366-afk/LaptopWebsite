@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.techstore.services;
 
 import com.mycompany.techstore.Models.Objects.CartItem;
@@ -9,10 +5,6 @@ import com.mycompany.techstore.Repositories.CartRepository;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- *
- * @author DuyTran
- */
 public class CartService {
 
     private CartRepository repo
@@ -65,7 +57,8 @@ public class CartService {
 
         return repo.updateQuantity(
                 item.getCartItemId(),
-                newQuantity);
+                newQuantity,
+                userId);
     }
 
     public List<CartItem> getCartItems(int userId) {
@@ -80,8 +73,8 @@ public class CartService {
         return repo.getCartItems(cartId);
     }
 
-    public boolean deleteCartItem(int cartItemId) {
-        return repo.deleteCartItem(cartItemId);
+    public boolean deleteCartItem(int cartItemId, int userId) {
+        return repo.deleteCartItem(cartItemId, userId);
     }
 
     public int getProductStock(int productId) {

@@ -15,7 +15,6 @@ public class OrderRepository {
 
     private static final double SHIPPING_FEE = 0;
 
-    // Returns orderId if success, -1 if failed
     public int placeOrder(int userId, String paymentMethod,
             String address, String district,
             String province, String phone) {
@@ -33,7 +32,7 @@ public class OrderRepository {
             conn = new DbClass().getConnection();
             conn.setAutoCommit(false);
 
-            // Chặn sớm nếu user đã dùng voucher này rồi (đơn khác, còn hiệu lực)
+            // Block if user already used this voucher
             if (voucherId > 0 && isVoucherUsedByUser(userId, voucherId, conn)) {
                 conn.rollback();
                 return -2;
@@ -41,7 +40,6 @@ public class OrderRepository {
 
             double subtotal = calculateTotal(userId, conn);
 
-            // Insert new order
             String createOrder = "INSERT INTO bs_Orders("
                     + "user_id, voucher_id, total_amount, shipping_fee, discount_amount, "
                     + "payment_method, order_status, phone, address_info)"
@@ -64,14 +62,13 @@ public class OrderRepository {
             psOrder.setString(8, address + ", " + district + ", " + province);
             psOrder.executeUpdate();
 
-            // Get generated order ID
             ResultSet rs = psOrder.getGeneratedKeys();
             int orderId = -1;
             if (rs.next()) {
                 orderId = rs.getInt(1);
             }
 
-            // Nếu KHÔNG phải VNPay (VD: COD) -> trừ voucher ngay vì đơn coi như đã chốt
+            // For non-VNPay orders, deduct voucher immediately
             if (!"VNPay".equals(paymentMethod) && voucherId > 0) {
                 String voucherSql = "UPDATE bs_Vouchers SET quantity = quantity - 1 "
                         + "WHERE voucher_id = ? AND quantity > 0";
@@ -80,7 +77,6 @@ public class OrderRepository {
                 psVoucher.executeUpdate();
             }
 
-            // Get cart ID for this user
             String cartSql = "SELECT cart_id FROM bs_Cart WHERE user_id=?";
             PreparedStatement psCart = conn.prepareStatement(cartSql);
             psCart.setInt(1, userId);
@@ -90,7 +86,6 @@ public class OrderRepository {
                 cartId = rsCart.getInt("cart_id");
             }
 
-            // Move cart items to order details
             String itemSql = "SELECT * FROM bs_CartItems WHERE cart_id=?";
             PreparedStatement psItem = conn.prepareStatement(itemSql);
             psItem.setInt(1, cartId);
@@ -98,8 +93,8 @@ public class OrderRepository {
 
             while (rsItem.next()) {
                 int productId = rsItem.getInt("product_id");
-                int quantity = rsItem.getInt("quantity");
-                double price = rsItem.getDouble("unit_price");
+                int quantity  = rsItem.getInt("quantity");
+                double price  = rsItem.getDouble("unit_price");
 
                 String detailSql = "INSERT INTO bs_OrderDetails("
                         + "order_id, product_id, quantity, unit_price)"
@@ -111,8 +106,7 @@ public class OrderRepository {
                 psDetail.setDouble(4, price);
                 psDetail.executeUpdate();
 
-                // Only deduct stock immediately for non-VNPay orders (e.g. COD).
-                // For VNPay, stock is only deducted once payment is confirmed successful.
+                // For non-VNPay orders, deduct stock immediately
                 if (!"VNPay".equals(paymentMethod)) {
                     String stockSql = "UPDATE bs_Products SET stock = stock - ? WHERE product_id=?";
                     PreparedStatement psStock = conn.prepareStatement(stockSql);
@@ -122,9 +116,7 @@ public class OrderRepository {
                 }
             }
 
-         // Only clear the cart immediately for non-VNPay orders (e.g. COD).
-            // For VNPay, keep the cart intact until payment is confirmed successful,
-            // so the user can return to checkout with the same items if payment fails.
+            // For non-VNPay orders, clear cart immediately
             if (!"VNPay".equals(paymentMethod)) {
                 String clearSql = "DELETE FROM bs_CartItems WHERE cart_id=?";
                 PreparedStatement psClear = conn.prepareStatement(clearSql);
@@ -134,27 +126,18 @@ public class OrderRepository {
 
             conn.commit();
             return orderId;
+
         } catch (Exception e) {
-            try {
-                if (conn != null) {
-                    conn.rollback();
-                }
-            } catch (Exception ex) {
-            }
+            try { if (conn != null) conn.rollback(); } catch (Exception ex) {}
             e.printStackTrace();
         } finally {
-            try {
-                if (conn != null) {
-                    conn.setAutoCommit(true);
-                }
-            } catch (Exception ex) {
-            }
+            try { if (conn != null) conn.setAutoCommit(true); } catch (Exception ex) {}
         }
 
         return -1;
     }
 
-   public boolean cancelOrder(int orderId, String note) {
+    public boolean cancelOrder(int orderId, String note) {
 
         Connection conn = null;
 
@@ -162,7 +145,6 @@ public class OrderRepository {
             conn = new DbClass().getConnection();
             conn.setAutoCommit(false);
 
-            // Get current order info before cancelling
             String checkSql = "SELECT order_status, payment_method, voucher_id "
                     + "FROM bs_Orders WHERE order_id=?";
             PreparedStatement psCheck = conn.prepareStatement(checkSql);
@@ -179,16 +161,14 @@ public class OrderRepository {
             int voucherId = rs.getInt("voucher_id");
             boolean hasVoucher = !rs.wasNull() && voucherId > 0;
 
-            // Only allow cancelling orders that are Pending or Confirmed
-            if (!"Pending".equals(currentStatus) && !"Confirmed".equals(currentStatus)) {
+            // Only allow cancelling Pending orders
+            if (!"Pending".equals(currentStatus)) {
                 conn.rollback();
                 return false;
             }
 
-            // Was stock/voucher actually deducted for this order?
-            // - COD: deducted immediately at placeOrder (status Pending or Confirmed)
-            // - VNPay: deducted only once Confirmed
-            boolean wasDeducted = !"VNPay".equals(paymentMethod) || "Confirmed".equals(currentStatus);
+            // Stock/voucher deducted only for non-VNPay or Completed VNPay
+            boolean wasDeducted = !"VNPay".equals(paymentMethod) || "Completed".equals(currentStatus);
 
             String updateSql = "UPDATE bs_Orders "
                     + "SET order_status='Cancelled', note=? "
@@ -228,7 +208,6 @@ public class OrderRepository {
             }
 
             conn.commit();
-            System.out.println("ROW = " + row);
             return row > 0;
 
         } catch (Exception e) {
@@ -243,10 +222,6 @@ public class OrderRepository {
 
     public boolean updateOrderStatus(int orderId, String status) {
 
-        System.out.println("=== UPDATE ORDER STATUS ===");
-        System.out.println("OrderId = " + orderId);
-        System.out.println("Status = " + status);
-
         String sql = "UPDATE bs_Orders SET order_status=? WHERE order_id=?";
 
         try {
@@ -254,15 +229,105 @@ public class OrderRepository {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, status);
             ps.setInt(2, orderId);
-
-            int row = ps.executeUpdate();
-
-            System.out.println("Updated rows = " + row);
-
-            return row > 0;
-
+            return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    public boolean confirmPaymentSuccess(int orderId) {
+
+        Connection conn = null;
+
+        try {
+            conn = new DbClass().getConnection();
+            conn.setAutoCommit(false);
+
+            String checkSql = "SELECT order_status, voucher_id FROM bs_Orders WHERE order_id=?";
+            PreparedStatement psCheck = conn.prepareStatement(checkSql);
+            psCheck.setInt(1, orderId);
+            ResultSet rs = psCheck.executeQuery();
+
+            if (!rs.next()) {
+                conn.rollback();
+                return false;
+            }
+
+            String currentStatus = rs.getString("order_status");
+            int voucherId = rs.getInt("voucher_id");
+            boolean hasVoucher = !rs.wasNull() && voucherId > 0;
+
+            // Already completed — avoid double deduction
+            if ("Completed".equals(currentStatus)) {
+                conn.commit();
+                return true;
+            }
+
+            // Update order status to Completed
+            String updateSql = "UPDATE bs_Orders SET order_status='Completed' WHERE order_id=?";
+            PreparedStatement psUpdate = conn.prepareStatement(updateSql);
+            psUpdate.setInt(1, orderId);
+            psUpdate.executeUpdate();
+
+            // Deduct voucher quantity
+            if (hasVoucher) {
+                String voucherSql = "UPDATE bs_Vouchers SET quantity = quantity - 1 "
+                        + "WHERE voucher_id = ? AND quantity > 0";
+                PreparedStatement psVoucher = conn.prepareStatement(voucherSql);
+                psVoucher.setInt(1, voucherId);
+                psVoucher.executeUpdate();
+            }
+
+            // Deduct product stock (was not deducted at placeOrder for VNPay)
+            String itemsSql = "SELECT product_id, quantity FROM bs_OrderDetails WHERE order_id=?";
+            PreparedStatement psItems = conn.prepareStatement(itemsSql);
+            psItems.setInt(1, orderId);
+            ResultSet rsItems = psItems.executeQuery();
+
+            while (rsItems.next()) {
+                int productId = rsItems.getInt("product_id");
+                int quantity  = rsItems.getInt("quantity");
+
+                String stockSql = "UPDATE bs_Products SET stock = stock - ? WHERE product_id=?";
+                PreparedStatement psStock = conn.prepareStatement(stockSql);
+                psStock.setInt(1, quantity);
+                psStock.setInt(2, productId);
+                psStock.executeUpdate();
+            }
+
+            // Clear cart after VNPay payment confirmed
+            String userSql = "SELECT user_id FROM bs_Orders WHERE order_id=?";
+            PreparedStatement psUser = conn.prepareStatement(userSql);
+            psUser.setInt(1, orderId);
+            ResultSet rsUser = psUser.executeQuery();
+
+            if (rsUser.next()) {
+                int confirmedUserId = rsUser.getInt("user_id");
+
+                String cartSql = "SELECT cart_id FROM bs_Cart WHERE user_id=?";
+                PreparedStatement psCart = conn.prepareStatement(cartSql);
+                psCart.setInt(1, confirmedUserId);
+                ResultSet rsCart = psCart.executeQuery();
+
+                if (rsCart.next()) {
+                    int cartId = rsCart.getInt("cart_id");
+                    String clearSql = "DELETE FROM bs_CartItems WHERE cart_id=?";
+                    PreparedStatement psClear = conn.prepareStatement(clearSql);
+                    psClear.setInt(1, cartId);
+                    psClear.executeUpdate();
+                }
+            }
+
+            conn.commit();
+            return true;
+
+        } catch (Exception e) {
+            try { if (conn != null) conn.rollback(); } catch (Exception ex) {}
+            e.printStackTrace();
+        } finally {
+            try { if (conn != null) conn.setAutoCommit(true); } catch (Exception ex) {}
         }
 
         return false;
@@ -361,10 +426,10 @@ public class OrderRepository {
             while (rs.next()) {
                 Map<String, Object> item = new HashMap<>();
                 item.put("product_name", rs.getString("product_name"));
-                item.put("thumbnail", rs.getString("thumbnail"));
-                item.put("quantity", rs.getInt("quantity"));
-                item.put("unit_price", rs.getDouble("unit_price"));
-                item.put("subtotal", rs.getDouble("subtotal"));
+                item.put("thumbnail",    rs.getString("thumbnail"));
+                item.put("quantity",     rs.getInt("quantity"));
+                item.put("unit_price",   rs.getDouble("unit_price"));
+                item.put("subtotal",     rs.getDouble("subtotal"));
                 list.add(item);
             }
 
@@ -380,7 +445,7 @@ public class OrderRepository {
                 + "WHERE user_id = ? AND voucher_id = ? "
                 + "AND ("
                 + "  (payment_method <> 'VNPay' AND order_status <> 'Cancelled')"
-                + "  OR (payment_method = 'VNPay' AND order_status = 'Confirmed')"
+                + "  OR (payment_method = 'VNPay' AND order_status = 'Completed')"
                 + ")";
         PreparedStatement ps = conn.prepareStatement(sql);
         ps.setInt(1, userId);
@@ -389,116 +454,15 @@ public class OrderRepository {
         return rs.next();
     }
 
-    public boolean confirmPaymentSuccess(int orderId) {
-
-        Connection conn = null;
-
-        try {
-            conn = new DbClass().getConnection();
-            conn.setAutoCommit(false);
-
-            String checkSql = "SELECT order_status, voucher_id FROM bs_Orders WHERE order_id=?";
-            PreparedStatement psCheck = conn.prepareStatement(checkSql);
-            psCheck.setInt(1, orderId);
-            ResultSet rs = psCheck.executeQuery();
-
-            if (!rs.next()) {
-                conn.rollback();
-                return false;
-            }
-
-            String currentStatus = rs.getString("order_status");
-            int voucherId = rs.getInt("voucher_id");
-            boolean hasVoucher = !rs.wasNull() && voucherId > 0;
-
-            if ("Confirmed".equals(currentStatus)) {
-                conn.commit();
-                return true; // already confirmed before -> avoid deducting voucher/stock again
-            }
-
-            String updateSql = "UPDATE bs_Orders SET order_status='Confirmed' WHERE order_id=?";
-            PreparedStatement psUpdate = conn.prepareStatement(updateSql);
-            psUpdate.setInt(1, orderId);
-            psUpdate.executeUpdate();
-
-            if (hasVoucher) {
-                String voucherSql = "UPDATE bs_Vouchers SET quantity = quantity - 1 "
-                        + "WHERE voucher_id = ? AND quantity > 0";
-                PreparedStatement psVoucher = conn.prepareStatement(voucherSql);
-                psVoucher.setInt(1, voucherId);
-                psVoucher.executeUpdate();
-            }
-
-            // Deduct stock for all products in this order
-            // (was not deducted at placeOrder time since this was a VNPay order)
-            String itemsSql = "SELECT product_id, quantity FROM bs_OrderDetails WHERE order_id=?";
-            PreparedStatement psItems = conn.prepareStatement(itemsSql);
-            psItems.setInt(1, orderId);
-            ResultSet rsItems = psItems.executeQuery();
-
-            while (rsItems.next()) {
-                int productId = rsItems.getInt("product_id");
-                int quantity = rsItems.getInt("quantity");
-
-                String stockSql = "UPDATE bs_Products SET stock = stock - ? WHERE product_id=?";
-                PreparedStatement psStock = conn.prepareStatement(stockSql);
-                psStock.setInt(1, quantity);
-                psStock.setInt(2, productId);
-                psStock.executeUpdate();
-            }
-            // Now that payment is confirmed, clear this user's cart
-            // (cart was intentionally kept for VNPay orders until now)
-            String userSql = "SELECT user_id FROM bs_Orders WHERE order_id=?";
-            PreparedStatement psUser = conn.prepareStatement(userSql);
-            psUser.setInt(1, orderId);
-            ResultSet rsUser = psUser.executeQuery();
-            if (rsUser.next()) {
-                int confirmedUserId = rsUser.getInt("user_id");
-
-                String cartSql = "SELECT cart_id FROM bs_Cart WHERE user_id=?";
-                PreparedStatement psCart = conn.prepareStatement(cartSql);
-                psCart.setInt(1, confirmedUserId);
-                ResultSet rsCart = psCart.executeQuery();
-                if (rsCart.next()) {
-                    int cartId = rsCart.getInt("cart_id");
-                    String clearSql = "DELETE FROM bs_CartItems WHERE cart_id=?";
-                    PreparedStatement psClear = conn.prepareStatement(clearSql);
-                    psClear.setInt(1, cartId);
-                    psClear.executeUpdate();
-                }
-            }
-
-            conn.commit();
-            return true;
-
-        } catch (Exception e) {
-            try {
-                if (conn != null) {
-                    conn.rollback();
-                }
-            } catch (Exception ex) {
-            }
-            e.printStackTrace();
-        } finally {
-            try {
-                if (conn != null) {
-                    conn.setAutoCommit(true);
-                }
-            } catch (Exception ex) {
-            }
-        }
-
-        return false;
-    }
-
     public boolean isVoucherUsedByUser(int userId, int voucherId) {
         String sql = "SELECT 1 FROM bs_Orders "
                 + "WHERE user_id = ? AND voucher_id = ? "
                 + "AND ("
                 + "  (payment_method <> 'VNPay' AND order_status <> 'Cancelled')"
-                + "  OR (payment_method = 'VNPay' AND order_status = 'Confirmed')"
+                + "  OR (payment_method = 'VNPay' AND order_status = 'Completed')"
                 + ")";
-        try (Connection con = new DbClass().getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = new DbClass().getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, userId);
             ps.setInt(2, voucherId);
             ResultSet rs = ps.executeQuery();
