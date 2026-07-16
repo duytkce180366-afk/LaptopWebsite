@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.techstore.Repositories;
 
 import com.mycompany.techstore.Models.Objects.CartItem;
@@ -13,10 +9,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- *
- * @author DuyTran
- */
 public class CartRepository {
 
     public int getCartIdByUserId(int userId) {
@@ -142,20 +134,24 @@ public class CartRepository {
 
     public boolean updateQuantity(
             int cartItemId,
-            int quantity) {
+            int quantity,
+            int userId) {
 
         String sql
-                = "UPDATE bs_CartItems "
-                + "SET quantity=? "
-                + "WHERE cart_item_id=? ";
+                = "UPDATE ci "
+                + "SET ci.quantity = ? "
+                + "FROM bs_CartItems ci "
+                + "INNER JOIN bs_Cart c "
+                + "ON ci.cart_id = c.cart_id "
+                + "WHERE ci.cart_item_id = ? "
+                + "AND c.user_id = ?";
 
         try (
-                Connection con
-                = new DbClass().getConnection(); PreparedStatement ps
-                = con.prepareStatement(sql)) {
+                Connection con = new DbClass().getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, quantity);
             ps.setInt(2, cartItemId);
+            ps.setInt(3, userId);
 
             return ps.executeUpdate() > 0;
 
@@ -216,16 +212,20 @@ public class CartRepository {
         return list;
     }
 
-    public boolean deleteCartItem(int cartItemId) {
+    public boolean deleteCartItem(int cartItemId, int userId) {
 
         String sql
-                = "DELETE FROM bs_CartItems "
-                + "WHERE cart_item_id = ?";
+                = "DELETE ci "
+                + "FROM bs_CartItems ci "
+                + "INNER JOIN bs_Cart c ON ci.cart_id = c.cart_id "
+                + "WHERE ci.cart_item_id = ? "
+                + "AND c.user_id = ?";
 
         try (
                 Connection con = new DbClass().getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, cartItemId);
+            ps.setInt(2, userId);
 
             return ps.executeUpdate() > 0;
 

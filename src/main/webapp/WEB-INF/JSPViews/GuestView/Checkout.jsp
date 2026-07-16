@@ -1,18 +1,15 @@
-<%-- 
-    Document   : Checkout
-    Created on : Jun 15, 2026, 7:58:23 PM
-    Author     : DuyTran
---%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="c"
+           uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt"
+           uri="http://java.sun.com/jsp/jstl/fmt" %>
 <!DOCTYPE html>
 <html>
     <head>
         <title>Check Out - Tech Store</title>
         <%@include file="/WEB-INF/JSPViews/global/header.jsp" %>
-        <link rel="stylesheet" href="${pageContext.request.contextPath}/css/Checkout.css">
+        <link rel="stylesheet" href="${pageContext.request.contextPath}/css/Checkout.css?=v2">
     </head>
     <body>
         <c:if test="${empty cartItems}">
@@ -48,39 +45,63 @@
                         <input type="email" name="email" value="${user.email}" required>
                     </div>
 
-                    <div class="form-group">
-                        <label>Phone</label>
-                        <input type="text" name="phone" value="${user.phone}"
-                               pattern="[0-9]{10,11}" required>
-                    </div>
+                    <h3>Shipping Address</h3>
 
-                    <div class="form-group">
-                        <label>Province</label>
-                        <select id="province" name="province" required></select>
-                    </div>
+                    <div class="default-address">
 
-                    <div class="form-group">
-                        <label>District</label>
-                        <select id="district" name="district" required></select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Address</label>
-                        <textarea name="address" rows="3" required></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Payment Method</label>
-                        <div class="payment-options">
-                            <label>
-                                <input type="radio" name="paymentMethod" value="COD" checked>
-                                Cash On Delivery (COD)
-                            </label>
-                            <label>
-                                <input type="radio" name="paymentMethod" value="VNPAY">
-                                VNPay
-                            </label>
+                        <div class="address-name">
+                            ${user.full_name}
                         </div>
+
+                        <div class="address-phone">
+                            ${defaultAddress.phone}
+                        </div>
+
+                        <div class="address-detail">
+                            ${defaultAddress.homeAddress},
+                            ${defaultAddress.ward},
+                            ${defaultAddress.province}
+                        </div>
+
+                        <a href="${pageContext.request.contextPath}/profile?action=add_address">
+                            Change address
+                        </a>
+
+                    </div>
+                    <input type="hidden"
+                           name="phone"
+                           value="${defaultAddress.phone}">
+
+                    <input type="hidden"
+                           name="province"
+                           value="${defaultAddress.province}">
+
+                    <input type="hidden"
+                           name="district"
+                           value="${defaultAddress.ward}">
+
+                    <input type="hidden"
+                           name="address"
+                           value="${defaultAddress.homeAddress}">
+                    <div class="payment-options">
+
+                        <label class="payment-option">
+                            <input type="radio"
+                                   name="paymentMethod"
+                                   value="COD"
+                                   checked>
+
+                            <span>Cash On Delivery (COD)</span>
+                        </label>
+
+                        <label class="payment-option">
+                            <input type="radio"
+                                   name="paymentMethod"
+                                   value="VNPAY">
+
+                            <span>VNPay</span>
+                        </label>
+
                     </div>
                 </div>
 
@@ -158,35 +179,6 @@
         <%@include file="/WEB-INF/JSPViews/global/footer.jsp" %>
 
         <script>
-            var provinceEl = document.getElementById("province");
-            var districtEl = document.getElementById("district");
-
-            fetch("https://provinces.open-api.vn/api/p/")
-                    .then(function (res) {
-                        return res.json();
-                    })
-                    .then(function (data) {
-                        provinceEl.innerHTML = '<option value="">Select Province</option>';
-                        data.forEach(function (p) {
-                            provinceEl.innerHTML +=
-                                    "<option value='" + p.code + "'>" + p.name + "</option>";
-                        });
-                    });
-
-            provinceEl.addEventListener("change", function () {
-                fetch("https://provinces.open-api.vn/api/p/" + this.value + "?depth=2")
-                        .then(function (res) {
-                            return res.json();
-                        })
-                        .then(function (data) {
-                            districtEl.innerHTML = '<option value="">Select District</option>';
-                            data.districts.forEach(function (d) {
-                                districtEl.innerHTML +=
-                                        "<option value='" + d.code + "'>" + d.name + "</option>";
-                            });
-                        });
-            });
-
             var currentFinalAmount = ${cartTotal};
 
             document.getElementById("applyVoucherBtn").addEventListener("click", function () {
@@ -224,7 +216,7 @@
                             errorText.innerText = "Voucher error, please try again.";
                             errorBox.style.display = "flex";
                         });
-                
+
             });
 
             document.getElementById("placeOrderBtn").addEventListener("click", function () {
