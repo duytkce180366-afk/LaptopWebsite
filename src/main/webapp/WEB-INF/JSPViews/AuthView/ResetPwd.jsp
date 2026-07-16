@@ -13,6 +13,14 @@
                 <div class="card auth-panel shadow-sm w-100" style="max-width:480px;">
                     <div class="card-body p-4">
                         <h2 class="card-title mb-3">Reset password</h2>
+                        <%
+                            String error = request.getParameter("error");
+                            if (error != null) {
+                        %>
+                        <div class="alert alert-danger" role="alert">
+                            Error: <%= error%>
+                        </div>
+                        <% }%>                         
                         <form method="post" action="<%= ctx%>/auth?action=resetpwd">
                             <div class="mb-3">
                                 <label class="form-label">OTP (Check via email)</label>

@@ -328,7 +328,7 @@ public class AuthController extends HttpServlet {
         String repeatPwd = request.getParameter("repeatPwd");
 
         if (newPwd == null || repeatPwd == null || !newPwd.equals(repeatPwd)) {
-            response.sendRedirect(request.getContextPath() + "/auth?action=verify&error=Error+input.+Please+validate+the+password");
+            response.sendRedirect(request.getContextPath() + "/auth?action=verify&error=Error+input.+Please+validate+the+password.");
             return;
         }
 
@@ -447,7 +447,6 @@ public class AuthController extends HttpServlet {
     /*
       GET/POST methods
      */
-    
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         switch (request.getParameter("action")) {
@@ -537,7 +536,7 @@ public class AuthController extends HttpServlet {
                     if (this.isOidcEnabled) {
                         this.HandleOidcLogin(request, response);
                     } else {
-                        response.sendRedirect(request.getContextPath() + "/auth?action=signin&error=OIDC+is+not+enabled");
+                        response.sendRedirect(request.getContextPath() + "/auth?action=signin&error=OIDC+is+not+enabled.");
                     }
                 }
             }
@@ -546,7 +545,7 @@ public class AuthController extends HttpServlet {
                     if (this.isOidcEnabled) {
                         this.HandleOidcCallback(request, response);
                     } else {
-                        response.sendRedirect(request.getContextPath() + "/auth?action=signin&error=OIDC+is+not+enabled");
+                        response.sendRedirect(request.getContextPath() + "/auth?action=signin&error=OIDC+is+not+enabled.");
                     }
                 } catch (URISyntaxException ex) {
                     Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, null, ex);
@@ -567,7 +566,7 @@ public class AuthController extends HttpServlet {
                     }
                     request.getRequestDispatcher("/WEB-INF/JSPViews/AuthView/ResetPwd.jsp").forward(request, response);
                 } else {
-                    response.sendRedirect(request.getContextPath() + "/auth?action=signin&error=Not+signed+in");
+                    response.sendRedirect(request.getContextPath() + "/auth?action=signin&error=Not+signed+in.");
                 }
             }
             // Logout and end session
@@ -596,33 +595,33 @@ public class AuthController extends HttpServlet {
                 if (!this.IsSignedIn(request)) {
                     this.HandleSignIn(request, response);
                 } else {
-                    response.sendRedirect(request.getContextPath() + "/auth?action=signin&error=Already+signed+in");
+                    response.sendRedirect(request.getContextPath() + "/auth?action=signin&error=Already+signed+in.");
                 }
             }
             case "signup" -> {
                 if (!this.IsSignedIn(request)) {
                     this.HandleSignUp(request, response);
                 } else {
-                    response.sendRedirect(request.getContextPath() + "/auth?action=signin&error=Already+signed+in");
+                    response.sendRedirect(request.getContextPath() + "/auth?action=signin&error=Already+signed+in.");
                 }
             }
             case "resetpwd" -> {
                 if (this.IsSignedIn(request)) {
                     this.HandleResetPassword(request, response);
                 } else {
-                    response.sendRedirect(request.getContextPath() + "/auth?action=signin&error=Not+signed+in");
+                    response.sendRedirect(request.getContextPath() + "/auth?action=signin&error=Not+signed+in.");
                 }
             }
             case "verify" -> {
                 HttpSession session = request.getSession(false);
                 if (session == null) {
-                    response.sendRedirect(request.getContextPath() + "/auth?action=verify&error=Not+signed+in");
+                    response.sendRedirect(request.getContextPath() + "/auth?action=verify&error=Not+signed+in.");
                     return;
                 }
 
                 User logged = (User) session.getAttribute("loggedUser");
                 if (logged == null) {
-                    response.sendRedirect(request.getContextPath() + "/auth?action=verify&error=Not+signed+in");
+                    response.sendRedirect(request.getContextPath() + "/auth?action=verify&error=Not+signed+in.");
                     return;
                 }
 
@@ -647,7 +646,7 @@ public class AuthController extends HttpServlet {
                         session.removeAttribute("otp");
                         response.sendRedirect(request.getContextPath() + "/");
                     } else {
-                        response.sendRedirect(request.getContextPath() + "/auth?action=verify&error=Failed+to+verify+email");
+                        response.sendRedirect(request.getContextPath() + "/auth?action=verify&error=Failed+to+verify+email.");
                     }
                 } catch (AuthException ex) {
                     Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, null, ex);
@@ -661,7 +660,7 @@ public class AuthController extends HttpServlet {
             }
         }
     }
-    
+
     @Override
     public void destroy() {
         this.emailService.shutdown();
