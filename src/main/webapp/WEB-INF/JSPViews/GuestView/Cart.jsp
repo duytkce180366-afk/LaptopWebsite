@@ -13,39 +13,11 @@
         <link rel="stylesheet"
               href="${pageContext.request.contextPath}/css/Cart.css">
     </head>
-
+    <%@include file="/WEB-INF/JSPViews/global/nav.jsp" %>
     <body id="top">
 
         <main class="app-shell">
 
-            <nav class="topbar">
-
-                <a class="brand-button"
-                   href="${pageContext.request.contextPath}/home">
-
-                    <span class="brand-mark">
-                        Tech Store
-                    </span>
-
-                    <span class="brand-subtitle">
-                        Computer Store
-                    </span>
-
-                </a>
-
-                <div class="nav-links">
-
-                    <a href="${pageContext.request.contextPath}/home#home">
-                        Home
-                    </a>
-
-                    <a href="${pageContext.request.contextPath}/home#products">
-                        Products
-                    </a>
-
-                </div>
-
-            </nav>
 
             <section class="cart-section">
 

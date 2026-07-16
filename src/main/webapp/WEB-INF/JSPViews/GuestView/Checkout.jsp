@@ -8,7 +8,7 @@
     <head>
         <title>Check Out - Tech Store</title>
         <%@include file="/WEB-INF/JSPViews/global/header.jsp" %>
-        <link rel="stylesheet" href="${pageContext.request.contextPath}/css/Checkout.css">
+        <link rel="stylesheet" href="${pageContext.request.contextPath}/css/Checkout.css?=v2">
     </head>
     <body>
         <c:if test="${empty cartItems}">
@@ -111,19 +111,25 @@
                     <input type="hidden"
                            name="address"
                            value="${defaultAddress.homeAddress}">
+                    <div class="payment-options">
 
-                    <div class="form-group">
-                        <label>Payment Method</label>
-                        <div class="payment-options">
-                            <label>
-                                <input type="radio" name="paymentMethod" value="COD" <%= !preferVnpay ? "checked" : ""%>>
-                                Cash On Delivery (COD)
-                            </label>
-                            <label>
-                                <input type="radio" name="paymentMethod" value="VNPAY" <%= preferVnpay ? "checked" : ""%>>
-                                VNPay
-                            </label>
-                        </div>
+                        <label class="payment-option">
+                            <input type="radio"
+                                   name="paymentMethod"
+                                   value="COD"
+                                   checked>
+
+                            <span>Cash On Delivery (COD)</span>
+                        </label>
+
+                        <label class="payment-option">
+                            <input type="radio"
+                                   name="paymentMethod"
+                                   value="VNPAY">
+
+                            <span>VNPay</span>
+                        </label>
+
                     </div>
                 </div>
 
