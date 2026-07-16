@@ -114,4 +114,49 @@ public class AddressRepository extends DbClass {
 
         return status;
     }
+
+    public Address getDefaultAddress(int userId) {
+
+        String sql = """
+        SELECT TOP 1
+               address_id,
+               user_id,
+               home_address,
+               phone,
+               province,
+               ward,
+               is_default,
+               created_at
+        FROM bs_Addresses
+        WHERE user_id = ?
+          AND is_default = 1
+        """;
+
+        try (PreparedStatement ps
+                = super.getConnection().prepareStatement(sql)) {
+
+            ps.setInt(1, userId);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+
+                return new Address(
+                        rs.getInt("address_id"),
+                        rs.getInt("user_id"),
+                        rs.getString("home_address"),
+                        rs.getString("phone"),
+                        rs.getString("province"),
+                        rs.getString("ward"),
+                        rs.getBoolean("is_default"),
+                        rs.getTimestamp("created_at"));
+            }
+
+        } catch (SQLException ex) {
+            Logger.getLogger(AddressRepository.class.getName())
+                    .log(Level.SEVERE, null, ex);
+        }
+
+        return null;
+    }
 }
