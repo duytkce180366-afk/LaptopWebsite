@@ -1,3 +1,5 @@
+<%@page import="org.jsoup.Jsoup"%>
+<%@page import="org.jsoup.safety.Safelist"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html lang="en">
@@ -13,6 +15,14 @@
                 <div class="card auth-panel shadow-sm w-100" style="max-width:480px;">
                     <div class="card-body p-4">
                         <h2 class="card-title mb-3">Create an account</h2>
+                        <%
+                            String error = request.getParameter("error");
+                            if (error != null) {
+                        %>
+                        <div class="alert alert-danger" role="alert">
+                            Error: <%= Jsoup.clean(error, Safelist.basic())%>
+                        </div>
+                        <% }%>
                         <form method="post" action="<%= ctx %>/auth?action=signup">
                             <div class="mb-3">
                                 <label class="form-label">Full name</label>
