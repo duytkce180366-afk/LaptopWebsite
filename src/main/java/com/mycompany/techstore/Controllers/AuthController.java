@@ -330,24 +330,24 @@ public class AuthController extends HttpServlet {
         String repeatPwd = request.getParameter("repeatPwd");
 
         if (newPwd == null || repeatPwd == null || !newPwd.equals(repeatPwd)) {
-            response.sendRedirect(request.getContextPath() + "/auth?action=verify&error=Error+input.+Please+validate+the+password.");
+            response.sendRedirect(request.getContextPath() + "/home?error=Error+input.+Please+validate+the+password.");
             return;
         }
 
         HttpSession session = request.getSession(false);
         if (session == null) {
-            response.sendRedirect(request.getContextPath() + "/auth?action=verify&error=Not+signed+in.");
+            response.sendRedirect(request.getContextPath() + "/home?error=Not+signed+in.");
             return;
         }
 
         User logged = (User) session.getAttribute("loggedUser");
         if (logged == null) {
-            response.sendRedirect(request.getContextPath() + "/auth?action=verify&error=Not+signed+in.");
+            response.sendRedirect(request.getContextPath() + "/home?error=verify&error=Not+signed+in.");
             return;
         }
 
         if (otp == null || !session.getAttribute("otp").equals(otp)) {
-            response.sendRedirect(request.getContextPath() + "/auth?action=verify&error=Invalid+OTP.");
+            response.sendRedirect(request.getContextPath() + "/home?error=Invalid+OTP.");
             return;
         }
 
@@ -360,12 +360,12 @@ public class AuthController extends HttpServlet {
                 session.setAttribute("loggedUser", userRefresh);
                 response.sendRedirect(request.getContextPath() + "/");
             } else {
-                response.sendRedirect(request.getContextPath() + "/auth?action=verify&error=Failed+to+update+password.");
+                response.sendRedirect(request.getContextPath() + "/home?error=Failed+to+update+password.");
             }
         } catch (AuthException | NoSuchAlgorithmException ex) {
             Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, ex.getLocalizedMessage(), ex);
             String errorEx = URLEncoder.encode(ex.getMessage(), StandardCharsets.UTF_8);
-            response.sendRedirect(request.getContextPath() + "/auth?action=verify&error=" + errorEx);
+            response.sendRedirect(request.getContextPath() + "/home?error=" + errorEx);
         }
     }
 
@@ -648,7 +648,7 @@ public class AuthController extends HttpServlet {
                         session.removeAttribute("otp");
                         response.sendRedirect(request.getContextPath() + "/");
                     } else {
-                        response.sendRedirect(request.getContextPath() + "/auth?action=verify&error=Failed+to+verify+email.");
+                        response.sendRedirect(request.getContextPath() + "/home?error=Failed+to+verify+email.");
                     }
                 } catch (AuthException ex) {
                     Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, null, ex);
