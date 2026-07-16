@@ -73,10 +73,9 @@ public class EmailService {
         });
     }
 
-    /**
-     * OTP Functions
+    /*
+      OTP Functions
      */
-    ////////////////////
     
     public String generateOtp(int length) {
         StringBuilder otp = new StringBuilder();

@@ -1,8 +1,10 @@
 package com.mycompany.techstore.Controllers;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.net.URLEncoder;
 
-import com.mycompany.techstore.Exceptions.AuthException;
+import com.mycompany.techstore.Exceptions.ProfileException;
 import com.mycompany.techstore.Models.Objects.Address;
 import com.mycompany.techstore.Models.Objects.User;
 import com.mycompany.techstore.services.ProfileService;
@@ -24,26 +26,31 @@ public class ProfileController extends HttpServlet {
     }
 
     // Update new 
-    private void UpdateProfile(HttpServletRequest request, HttpServletResponse response, HttpSession session) throws AuthException, IOException {
+    private void UpdateProfile(HttpServletRequest request, HttpServletResponse response, HttpSession session) throws ProfileException, IOException {
         String fullName = request.getParameter("full_name");
         String phone = request.getParameter("phone");
 
         User logged = (User) session.getAttribute("loggedUser");
         if (logged == null) {
-            throw new AuthException(-1, "User not logged in");
+            throw new ProfileException(-1, "User not logged in");
         }
 
-        User refreshed = this.profileService.UpdateProfile(logged.getEmail(), fullName, phone);
-        if (refreshed == null) {
-            throw new AuthException(-1, "Failed to update profile");
-        }
+        try {
+            User user = this.profileService.UpdateProfile(logged.getEmail(), fullName, phone);
+            if (user == null) {
+                throw new ProfileException(-1, "Failed to update profile");
+            }
 
-        session.setAttribute("loggedUser", refreshed);
-        response.sendRedirect(request.getContextPath() + "/profile");
+            session.setAttribute("loggedUser", user);
+            response.sendRedirect(request.getContextPath() + "/profile");
+        } catch (ProfileException ex) {
+            String errorEx = URLEncoder.encode(ex.getMessage(), StandardCharsets.UTF_8);
+            response.sendRedirect(request.getContextPath() + "/profile?action=edit_profile&error=" + errorEx);
+        }
     }
 
     // Address Update
-    private void UpdateAddress(HttpServletRequest request, HttpServletResponse response, HttpSession session) throws AuthException, IOException {
+    private void UpdateAddress(HttpServletRequest request, HttpServletResponse response, HttpSession session) throws ProfileException, IOException {
         String addressIdStr = request.getParameter("address_id");
         String homeAddress = request.getParameter("home_address");
         String phone = request.getParameter("phone");
@@ -53,7 +60,7 @@ public class ProfileController extends HttpServlet {
 
         User logged = (User) session.getAttribute("loggedUser");
         if (logged == null) {
-            throw new AuthException(-1, "User not logged in");
+            throw new ProfileException(-1, "User not logged in");
         }
 
         try {
@@ -62,46 +69,38 @@ public class ProfileController extends HttpServlet {
             boolean status = this.profileService.UpdateAddress(userId, addressId, homeAddress, phone, province, ward, isDefault);
 
             if (!status) {
-                throw new AuthException(-1, "Failed to save address");
+                throw new ProfileException(-1, "Failed to save address");
             }
-        } catch (NumberFormatException ex) {
-            throw new AuthException(-1, "Invalid ID");
-        }
 
-        response.sendRedirect(request.getContextPath() + "/profile");
+            response.sendRedirect(request.getContextPath() + "/profile");
+        } catch (NumberFormatException | ProfileException ex) {
+            String errorEx = URLEncoder.encode(ex.getMessage(), StandardCharsets.UTF_8);
+            response.sendRedirect(request.getContextPath() + "/profile?action=edit_address&error=" + errorEx);
+        }
     }
 
     // Delete address
-    private void DeleteAddress(HttpServletRequest request, HttpServletResponse response, HttpSession session) throws AuthException, IOException {
+    private void DeleteAddress(HttpServletRequest request, HttpServletResponse response, HttpSession session) throws ProfileException, IOException {
         User logged = (User) session.getAttribute("loggedUser");
         if (logged == null) {
-            throw new AuthException(-1, "User not logged in");
+            throw new ProfileException(-1, "User not logged in");
         }
 
-        String idStr = request.getParameter("id");
-        int id = -1;
         try {
-            id = Integer.parseInt(idStr);
-        } catch (NumberFormatException ignore) {
+            int id = Integer.parseInt(request.getParameter("id"));
+            if (!this.profileService.DeleteAddress(id, logged.getUser_id())) {
+                throw new ProfileException(-1, "Failed to delete address");
+            }
 
+            response.sendRedirect(request.getContextPath() + "/profile");
+        } catch (NumberFormatException | ProfileException ex) {
+            String errorEx = URLEncoder.encode(ex.getMessage(), StandardCharsets.UTF_8);
+            response.sendRedirect(request.getContextPath() + "/profile?action=remove_address&error=" + errorEx);
         }
-
-        if (id <= 0) {
-            response.sendError(400, "Invalid address id");
-            return;
-        }
-
-        boolean ok = this.profileService.DeleteAddress(id, logged.getUser_id());
-        if (!ok) {
-            response.sendError(500, "Failed to delete address");
-            return;
-        }
-
-        response.sendRedirect(request.getContextPath() + "/profile");
     }
 
     // Add address
-    private void AddAddress(HttpServletRequest request, HttpServletResponse response, HttpSession session) throws AuthException, IOException {
+    private void AddAddress(HttpServletRequest request, HttpServletResponse response, HttpSession session) throws ProfileException, IOException {
         String homeAddress = request.getParameter("home_address");
         String phone = request.getParameter("phone");
         String province = request.getParameter("province");
@@ -110,18 +109,23 @@ public class ProfileController extends HttpServlet {
 
         User logged = (User) session.getAttribute("loggedUser");
         if (logged == null) {
-            throw new AuthException(-1, "User not logged in");
+            throw new ProfileException(-1, "User not logged in");
         }
 
-        int userId = logged.getUser_id();
+        try {
+            int userId = logged.getUser_id();
 
-        boolean status = this.profileService.CreateAddress(userId, homeAddress, phone, province, ward, isDefault);
+            boolean status = this.profileService.CreateAddress(userId, homeAddress, phone, province, ward, isDefault);
 
-        if (!status) {
-            throw new AuthException(-1, "Failed to save address");
+            if (!status) {
+                throw new ProfileException(-1, "Failed to save address");
+            }
+
+            response.sendRedirect(request.getContextPath() + "/profile");
+        } catch (ProfileException ex) {
+            String errorEx = URLEncoder.encode(ex.getMessage(), StandardCharsets.UTF_8);
+            response.sendRedirect(request.getContextPath() + "/profile?action=add_address&error=" + errorEx);
         }
-
-        response.sendRedirect(request.getContextPath() + "/profile");
     }
 
     @Override
@@ -159,15 +163,15 @@ public class ProfileController extends HttpServlet {
                             .orElse(null);
 
                     if (addr == null) {
-                        response.sendError(404, "Address not found");
-                        return;
+                        throw new ProfileException(-1, "Address not found");
                     }
 
                     request.setAttribute("user", logged);
                     request.setAttribute("address", addr);
                     request.getRequestDispatcher("/WEB-INF/JSPViews/ProfileView/AddressForm.jsp").forward(request, response);
-                } catch (NumberFormatException ignore) {
-                    response.sendError(400, "Invalid address id");
+                } catch (NumberFormatException | ProfileException ex) {
+                    String errorEx = URLEncoder.encode(ex.getMessage(), StandardCharsets.UTF_8);
+                    response.sendRedirect(request.getContextPath() + "/profile?action=edit_address&error=" + errorEx);
                 }
             }
 
@@ -182,8 +186,9 @@ public class ProfileController extends HttpServlet {
             case "remove_address" -> {
                 try {
                     this.DeleteAddress(request, response, session);
-                } catch (AuthException ex) {
-                    response.sendError(400, ex.getLocalizedMessage());
+                } catch (ProfileException ex) {
+                    String errorEx = URLEncoder.encode(ex.getMessage(), StandardCharsets.UTF_8);
+                    response.sendRedirect(request.getContextPath() + "/profile?action=remove_address&error=" + errorEx);
                 }
             }
 
@@ -203,21 +208,18 @@ public class ProfileController extends HttpServlet {
         User logged = (session != null) ? (User) session.getAttribute("loggedUser") : null;
 
         if (logged == null) {
-            response.sendError(400, "Not signed in");
+            response.sendRedirect(request.getContextPath() + "/auth?action=signin");
             return;
         }
-        String action = request.getParameter("action");
-        if (action == null) {
-            action = "";
-        }
 
-        switch (action) {
+        switch (request.getParameter("action")) {
             // Update profile (POST)
             case "edit_profile" -> {
                 try {
                     this.UpdateProfile(request, response, session);
-                } catch (AuthException | IOException ex) {
-                    response.sendError(400, ex.getLocalizedMessage());
+                } catch (ProfileException | IOException ex) {
+                    String errorEx = URLEncoder.encode(ex.getMessage(), StandardCharsets.UTF_8);
+                    response.sendRedirect(request.getContextPath() + "/profile?action=edit_profile&error=" + errorEx);
                 }
             }
 
@@ -225,8 +227,9 @@ public class ProfileController extends HttpServlet {
             case "add_address" -> {
                 try {
                     this.AddAddress(request, response, session);
-                } catch (AuthException | IOException ex) {
-                    response.sendError(400, ex.getLocalizedMessage());
+                } catch (ProfileException | IOException ex) {
+                    String errorEx = URLEncoder.encode(ex.getMessage(), StandardCharsets.UTF_8);
+                    response.sendRedirect(request.getContextPath() + "/profile?action=add_address&error=" + errorEx);
                 }
             }
 
@@ -234,8 +237,9 @@ public class ProfileController extends HttpServlet {
             case "edit_address" -> {
                 try {
                     this.UpdateAddress(request, response, session);
-                } catch (AuthException | IOException ex) {
-                    response.sendError(400, ex.getLocalizedMessage());
+                } catch (ProfileException | IOException ex) {
+                    String errorEx = URLEncoder.encode(ex.getMessage(), StandardCharsets.UTF_8);
+                    response.sendRedirect(request.getContextPath() + "/profile?action=edit_address&error=" + errorEx);
                 }
             }
 
@@ -243,13 +247,14 @@ public class ProfileController extends HttpServlet {
             case "remove_address" -> {
                 try {
                     this.DeleteAddress(request, response, session);
-                } catch (AuthException | IOException ex) {
-                    response.sendError(400, ex.getLocalizedMessage());
+                } catch (ProfileException | IOException ex) {
+                    String errorEx = URLEncoder.encode(ex.getMessage(), StandardCharsets.UTF_8);
+                    response.sendRedirect(request.getContextPath() + "/profile?action=remove_address&error=" + errorEx);
                 }
             }
 
             default -> {
-                response.sendError(400, "Invalid action");
+                response.sendRedirect(request.getContextPath() + "/profile?action=remove_address&error=Invalid+action");
             }
         }
     }
