@@ -7,12 +7,19 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.mycompany.techstore.Exceptions.AuthException;
+import com.mycompany.techstore.Models.Objects.User;
+import com.mycompany.techstore.services.AuthService;
 import com.mycompany.techstore.services.EmailService;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
@@ -26,22 +33,17 @@ import com.nimbusds.jose.util.ResourceRetriever;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
+
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
 import jakarta.mail.MessagingException;
-import com.mycompany.techstore.Models.Objects.User;
-import com.mycompany.techstore.Exceptions.AuthException;
-import com.mycompany.techstore.services.AuthService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import java.security.MessageDigest;
-import java.time.LocalDateTime;
-import java.security.NoSuchAlgorithmException;
 
 @WebServlet(name = "AuthController", urlPatterns = {"/auth"})
 public class AuthController extends HttpServlet {
@@ -561,7 +563,7 @@ public class AuthController extends HttpServlet {
                     } catch (AuthException ex) {
                         Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, ex.getLocalizedMessage(), ex);
                         String errorEx = URLEncoder.encode(ex.getMessage(), StandardCharsets.UTF_8);
-                        response.sendRedirect(request.getContextPath() + "/auth?action=signin&error=" + errorEx);
+                        response.sendRedirect(request.getContextPath() + "/home&error=" + errorEx);
                         return;
                     }
                     request.getRequestDispatcher("/WEB-INF/JSPViews/AuthView/ResetPwd.jsp").forward(request, response);
