@@ -1,4 +1,3 @@
-
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c"
            uri="http://java.sun.com/jsp/jstl/core" %>
@@ -19,10 +18,39 @@
         <%@include file="/WEB-INF/JSPViews/global/nav.jsp" %>
         <c:if test="${not empty orderError}">
             <div class="checkout-alert-error">
-                ${orderError}
+                <c:out value="${orderError}"/>
             </div>
         </c:if>
         <%    session.removeAttribute("orderError");
+
+            // NOTE: this used to be declared a second time further down the
+            // page, which broke compilation ("variable already defined in
+            // method _jspService"). Declared once here and reused below.
+            String preferredPayment = (String) session.getAttribute("preferredPaymentMethod");
+            boolean preferVnpay = "VNPAY".equalsIgnoreCase(preferredPayment);
+            session.removeAttribute("preferredPaymentMethod");
+
+            com.mycompany.techstore.Models.Objects.Voucher restoredVoucher
+                    = (com.mycompany.techstore.Models.Objects.Voucher) session.getAttribute("voucher");
+            Object restoredDiscountObj = session.getAttribute("discountAmount");
+            double restoredDiscount = (restoredDiscountObj != null) ? (Double) restoredDiscountObj : 0;
+            session.removeAttribute("voucher");
+            session.removeAttribute("discountAmount");
+            // Expose to EL so the voucher code can be pre-filled safely via c:out
+            pageContext.setAttribute("restoredVoucher", restoredVoucher);
+
+            // FIX: khi restore voucher từ session (ví dụ retry sau khi thanh toán
+            // thất bại), Final Total và hiddenFinalAmount trước đây luôn lấy
+            // cartTotal gốc, không trừ discount đã được khôi phục -> hiển thị
+            // sai và gửi sai finalAmount lên server nếu khách bấm Place Order
+            // ngay mà không bấm Apply lại.
+            Object cartTotalObj = pageContext.findAttribute("cartTotal");
+            double cartTotalValue = (cartTotalObj != null) ? ((Number) cartTotalObj).doubleValue() : 0;
+            double restoredFinalTotal = cartTotalValue - restoredDiscount;
+            if (restoredFinalTotal < 0) {
+                restoredFinalTotal = 0;
+            }
+            pageContext.setAttribute("restoredFinalTotal", restoredFinalTotal);
         %>
         <form id="codForm"
               action="${pageContext.request.contextPath}/place-order"
@@ -83,16 +111,16 @@
                     <input type="hidden"
                            name="address"
                            value="${defaultAddress.homeAddress}">
-                    
+
                     <div class="form-group">
                         <label>Payment Method</label>
                         <div class="payment-options">
                             <label>
-                                <input type="radio" name="paymentMethod" value="COD" checked>
+                                <input type="radio" name="paymentMethod" value="COD" <%= !preferVnpay ? "checked" : ""%>>
                                 Cash On Delivery (COD)
                             </label>
                             <label>
-                                <input type="radio" name="paymentMethod" value="VNPAY">
+                                <input type="radio" name="paymentMethod" value="VNPAY" <%= preferVnpay ? "checked" : ""%>>
                                 VNPay
                             </label>
                         </div>
@@ -119,7 +147,8 @@
                     <div class="voucher-box">
                         <label>Voucher</label>
                         <div class="voucher-row">
-                            <input type="text" id="voucherCode" placeholder="Enter voucher code">
+                            <input type="text" id="voucherCode" placeholder="Enter voucher code"
+                                   value="<c:if test="${not empty restoredVoucher}"><c:out value="${restoredVoucher.code}"/></c:if>">
                             <button type="button" id="applyVoucherBtn" class="btn-apply">Apply</button>
                         </div>
                         <div class="voucher-alert-error" id="voucherErrorBox" style="display:none;">
@@ -128,9 +157,12 @@
                         </div>
                     </div>
 
-                    <input type="hidden" name="voucherId"      id="hiddenVoucherId"      value="0">
-                    <input type="hidden" name="discountAmount" id="hiddenDiscountAmount" value="0">
-                    <input type="hidden" name="finalAmount"    id="hiddenFinalAmount"    value="${cartTotal}">
+                    <input type="hidden" name="voucherId"      id="hiddenVoucherId"
+       value="<%= restoredVoucher != null ? restoredVoucher.getVoucherId() : 0 %>">
+<input type="hidden" name="discountAmount" id="hiddenDiscountAmount"
+       value="<%= restoredDiscount %>">
+<input type="hidden" name="finalAmount"    id="hiddenFinalAmount"
+       value="${restoredFinalTotal}">
 
                     <div class="summary-footer">
                         <div class="total-row">
@@ -138,12 +170,14 @@
                             <strong>${cartTotalFormatted}</strong>
                         </div>
                         <div class="total-row">
-                            <span>Discount</span>
-                            <strong id="discountAmount">- 0 đ</strong>
-                        </div>
+    <span>Discount</span>
+    <strong id="discountAmount">
+        <% if (restoredDiscount > 0) { %>- <%= String.format("%,.0f", restoredDiscount) %> đ<% } else { %>- 0 đ<% } %>
+    </strong>
+</div>
                         <div class="total-row final-row">
                             <span>Final Total</span>
-                            <strong id="finalTotal">${cartTotalFormatted}</strong>
+                            <strong id="finalTotal"><fmt:formatNumber value="${restoredFinalTotal}" pattern="#,###" /> đ</strong>
                         </div>
 
                         <button type="button" class="btn-place-order" id="placeOrderBtn">
@@ -173,7 +207,7 @@
         <%@include file="/WEB-INF/JSPViews/global/footer.jsp" %>
 
         <script>
-            var currentFinalAmount = ${cartTotal};
+            var currentFinalAmount = ${restoredFinalTotal};
 
             document.getElementById("applyVoucherBtn").addEventListener("click", function () {
                 var code = document.getElementById("voucherCode").value;
