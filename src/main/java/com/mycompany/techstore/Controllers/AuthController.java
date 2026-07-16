@@ -563,7 +563,7 @@ public class AuthController extends HttpServlet {
                     } catch (AuthException ex) {
                         Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, ex.getLocalizedMessage(), ex);
                         String errorEx = URLEncoder.encode(ex.getMessage(), StandardCharsets.UTF_8);
-                        response.sendRedirect(request.getContextPath() + "/home&error=" + errorEx);
+                        response.sendRedirect(request.getContextPath() + "/home?error=" + errorEx);
                         return;
                     }
                     request.getRequestDispatcher("/WEB-INF/JSPViews/AuthView/ResetPwd.jsp").forward(request, response);
@@ -611,19 +611,19 @@ public class AuthController extends HttpServlet {
                 if (this.IsSignedIn(request)) {
                     this.HandleResetPassword(request, response);
                 } else {
-                    response.sendRedirect(request.getContextPath() + "/auth?action=signin&error=Not+signed+in.");
+                    response.sendRedirect(request.getContextPath() + "/home?error=Not+signed+in.");
                 }
             }
             case "verify" -> {
                 HttpSession session = request.getSession(false);
                 if (session == null) {
-                    response.sendRedirect(request.getContextPath() + "/auth?action=verify&error=Not+signed+in.");
+                    response.sendRedirect(request.getContextPath() + "/home?error=Not+signed+in.");
                     return;
                 }
 
                 User logged = (User) session.getAttribute("loggedUser");
                 if (logged == null) {
-                    response.sendRedirect(request.getContextPath() + "/auth?action=verify&error=Not+signed+in.");
+                    response.sendRedirect(request.getContextPath() + "/home?error=Not+signed+in.");
                     return;
                 }
 
@@ -653,7 +653,7 @@ public class AuthController extends HttpServlet {
                 } catch (AuthException ex) {
                     Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, null, ex);
                     String errorEx = URLEncoder.encode(ex.getMessage(), StandardCharsets.UTF_8);
-                    response.sendRedirect(request.getContextPath() + "/auth?action=verify&error=" + errorEx);
+                    response.sendRedirect(request.getContextPath() + "/home?error=" + errorEx);
                 }
             }
             default -> {
