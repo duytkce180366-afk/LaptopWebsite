@@ -1,3 +1,5 @@
+<%@page import="org.jsoup.safety.Safelist"%>
+<%@page import="org.jsoup.Jsoup"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html lang="en">
@@ -18,7 +20,7 @@
                             if (error != null) {
                         %>
                         <div class="alert alert-danger" role="alert">
-                            Error: <%= error%>
+                            Error: <%= Jsoup.clean(error, Safelist.basic())%>
                         </div>
                         <% }%>
                         <form method="post" action="<%= ctx%>/auth?action=signin">

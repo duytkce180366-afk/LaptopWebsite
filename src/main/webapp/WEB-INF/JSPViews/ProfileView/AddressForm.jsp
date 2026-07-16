@@ -1,3 +1,5 @@
+<%@page import="org.jsoup.safety.Safelist"%>
+<%@page import="org.jsoup.Jsoup"%>
 <%@page import="com.mycompany.techstore.Models.Objects.Address"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
@@ -19,7 +21,7 @@
                             if (error != null) {
                         %>
                         <div class="alert alert-danger" role="alert">
-                            Error: <%= error%>
+                            Error: <%= Jsoup.clean(error, Safelist.basic())%>
                         </div>
                         <% }%> 
                         <% Address addr = (Address) request.getAttribute("address");%>
