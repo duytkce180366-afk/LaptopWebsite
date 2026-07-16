@@ -3,15 +3,15 @@ package com.mycompany.techstore.services;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
-import java.security.spec.InvalidKeySpecException;
 
+import com.mycompany.techstore.Exceptions.AuthException;
 import com.mycompany.techstore.Models.Objects.User;
 import com.mycompany.techstore.Repositories.AuthRepository;
-import com.mycompany.techstore.Exceptions.AuthException;
 
 public class AuthService {
 
@@ -98,12 +98,12 @@ public class AuthService {
         User user = this.authRepo.GetUserOIDCSignIn(email);
 
         if (user == null) {
-            throw new AuthException(-1, "User not found");
+            throw new AuthException(-1, "Invalid credential");
         }
 
         String stored = user.getPassword();
         if (stored == null) {
-            throw new AuthException(-1, "User does not have a password set");
+            throw new AuthException(-1, "Invalid credential");
         }
 
         boolean verified = false;
