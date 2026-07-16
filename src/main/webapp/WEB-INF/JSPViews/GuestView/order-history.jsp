@@ -93,18 +93,11 @@
                             <td>
                                 <% if ("Pending".equalsIgnoreCase(status)) { %>
                                 <span class="badge-status badge-pending">Pending</span>
-                                <% } else if ("Confirmed".equalsIgnoreCase(status)) { %>
-                                <span class="badge-status badge-confirmed">Confirmed</span>
+                                <% } else if ("Completed".equalsIgnoreCase(status)) { %>
+                                <span class="badge-status badge-completed">Completed</span>
 
                                 <% } else if ("Payment Failed".equalsIgnoreCase(status)) { %>
                                 <span class="badge-status badge-payment-failed">Payment Failed</span>
-
-                                <% } else if ("Shipping".equalsIgnoreCase(status)) { %>
-                                <span class="badge-status badge-shipping">Shipping</span>
-
-                                <% } else if ("Delivered".equalsIgnoreCase(status)) { %>
-                                <span class="badge-status badge-delivered">Delivered</span>
-
                                 <% } else { %>
                                 <span class="badge-status badge-cancelled">Cancelled</span>
                                 <% } %>
