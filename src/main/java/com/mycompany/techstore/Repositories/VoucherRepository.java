@@ -59,7 +59,8 @@ public class VoucherRepository {
 
         return null;
     }
-        public boolean decreaseQuantity(int voucherId) {
+
+    public boolean decreaseQuantity(int voucherId) {
         String sql
                 = "UPDATE bs_Vouchers "
                 + "SET quantity = quantity - 1 "
@@ -76,5 +77,25 @@ public class VoucherRepository {
         return false;
     }
 
-    
+    public Voucher getById(int voucherId) {
+        String sql = "SELECT * FROM bs_Vouchers WHERE voucher_id = ?";
+        try (Connection con = new DbClass().getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, voucherId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                Voucher v = new Voucher();
+                v.setVoucherId(rs.getInt("voucher_id"));
+                v.setCode(rs.getString("code"));
+                v.setDiscountPercent(rs.getDouble("discount_percent"));
+                v.setQuantity(rs.getInt("quantity"));
+                v.setExpiredDate(rs.getDate("expired_date"));
+                v.setStatus(rs.getString("status"));
+                return v;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 }

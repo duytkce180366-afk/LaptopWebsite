@@ -113,8 +113,12 @@ body {
 
 .badge-pending           { background: transparent; color: #92400e; border: none; }
 .badge-pending::before   { background: #f59e0b; }
-.badge-completed        { background: transparent; color: #065f46; border: none; }
-.badge-completed::before { background: #10b981; }
+.badge-confirmed          { background: transparent; color: #1e40af; border: none; }
+.badge-confirmed::before  { background: #2563eb; }
+.badge-shipping           { background: transparent; color: #9a3412; border: none; }
+.badge-shipping::before   { background: #f97316; }
+.badge-delivered         { background: transparent; color: #065f46; border: none; }
+.badge-delivered::before { background: #10b981; }
 .badge-cancelled         { background: transparent; color: #991b1b; border: none; }
 .badge-cancelled::before { background: #ef4444; }
 .badge-payment-failed         { background: transparent; color: #6b21a8; border: none; }
