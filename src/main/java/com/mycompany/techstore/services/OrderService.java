@@ -1,9 +1,7 @@
 package com.mycompany.techstore.services;
- 
+
 import com.mycompany.techstore.Repositories.OrderRepository;
- 
-
-
+import java.util.Map;
 
 public class OrderService {
 
@@ -31,7 +29,14 @@ public class OrderService {
         return repo.updateOrderStatus(orderId, status);
     }
 
+    public boolean canRetryPayment(int orderId, int userId) {
+        return repo.canRetryPayment(orderId, userId);
+    }
+
     public boolean confirmPaymentSuccess(int orderId) {
         return repo.confirmPaymentSuccess(orderId);
     }
+    public Map<String, Object> retryToCheckout(int orderId, int userId) {
+    return repo.retryToCheckout(orderId, userId);
+}
 }
