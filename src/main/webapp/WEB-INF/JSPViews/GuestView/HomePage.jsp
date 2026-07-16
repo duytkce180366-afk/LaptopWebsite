@@ -1,3 +1,5 @@
+<%@page import="org.jsoup.safety.Safelist"%>
+<%@page import="org.jsoup.Jsoup"%>
 <%@page import="com.mycompany.techstore.Models.Objects.Category"%>
 <%@page import="com.mycompany.techstore.Models.Objects.PriceRange"%>
 <%@page import="com.mycompany.techstore.Models.Objects.Product"%>
@@ -176,7 +178,14 @@
     <body id="top">
         <main class="app-shell" id="app">
             <%@include file="/WEB-INF/JSPViews/global/nav.jsp" %>
-
+                        <%
+                            String error = request.getParameter("error");
+                            if (error != null) {
+                        %>
+                        <div class="alert alert-danger" role="alert">
+                            Error: <%= Jsoup.clean(error, Safelist.basic())%>
+                        </div>
+                        <% }%>
             <section class="storefront-hero" id="home" aria-label="Promotions">
                 <div id="bannerCarousel" class="carousel slide hero-carousel" data-bs-ride="carousel">
                     <div class="carousel-inner">
