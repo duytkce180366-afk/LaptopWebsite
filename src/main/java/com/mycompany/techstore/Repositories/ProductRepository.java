@@ -156,7 +156,7 @@ public class ProductRepository extends DbClass {
     public List<Review> getReviewsByProductId(int productId) {
         List<Review> reviews = new ArrayList<>();
         String sqlCommand = """
-                            SELECT r.review_id, r.user_id, r.product_id, r.rating, r.comment, r.created_at,
+                            SELECT r.review_id, r.user_id, r.order_id, r.product_id, r.rating, r.comment, r.created_at,
                                    u.full_name AS user_name
                             FROM dbo.bs_Reviews r
                             LEFT JOIN dbo.bs_user u ON u.user_id = r.user_id
@@ -176,6 +176,7 @@ public class ProductRepository extends DbClass {
                     reviews.add(new Review(
                             rs.getInt("review_id"),
                             rs.getInt("user_id"),
+                            rs.getInt("order_id"),
                             rs.getInt("product_id"),
                             rs.getInt("rating"),
                             rs.getString("comment"),
@@ -189,6 +190,143 @@ public class ProductRepository extends DbClass {
         }
 
         return reviews;
+    }
+
+    public Review getReviewByOrderAndProduct(int orderId, int productId, int userId) {
+        String sqlCommand = """
+                            SELECT TOP 1 r.review_id, r.user_id, r.order_id, r.product_id, r.rating, r.comment, r.created_at,
+                                   u.full_name AS user_name
+                            FROM dbo.bs_Reviews r
+                            LEFT JOIN dbo.bs_user u ON u.user_id = r.user_id
+                            WHERE r.order_id = ? AND r.product_id = ? AND r.user_id = ?
+                            ORDER BY r.created_at DESC, r.review_id DESC;
+                            """;
+
+        try (PreparedStatement ps = super.getConnection().prepareStatement(sqlCommand)) {
+            ps.setInt(1, orderId);
+            ps.setInt(2, productId);
+            ps.setInt(3, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String reviewDate = "";
+                    if (rs.getTimestamp("created_at") != null) {
+                        reviewDate = rs.getTimestamp("created_at").toLocalDateTime().toLocalDate().toString();
+                    }
+
+                    return new Review(
+                            rs.getInt("review_id"),
+                            rs.getInt("user_id"),
+                            rs.getInt("order_id"),
+                            rs.getInt("product_id"),
+                            rs.getInt("rating"),
+                            rs.getString("comment"),
+                            reviewDate,
+                            rs.getString("user_name")
+                    );
+                }
+            }
+        } catch (SQLException sqlEx) {
+            Logger.getLogger(ProductRepository.class.getName()).log(Level.SEVERE, null, sqlEx);
+        }
+
+        return null;
+    }
+
+    public List<Integer> getReviewedProductIdsByOrder(int orderId, int userId) {
+        List<Integer> reviewedProductIds = new ArrayList<>();
+        String sqlCommand = """
+                            SELECT r.product_id
+                            FROM dbo.bs_Reviews r
+                            WHERE r.order_id = ? AND r.user_id = ?;
+                            """;
+
+        try (PreparedStatement ps = super.getConnection().prepareStatement(sqlCommand)) {
+            ps.setInt(1, orderId);
+            ps.setInt(2, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    reviewedProductIds.add(rs.getInt("product_id"));
+                }
+            }
+        } catch (SQLException sqlEx) {
+            Logger.getLogger(ProductRepository.class.getName()).log(Level.SEVERE, null, sqlEx);
+        }
+
+        return reviewedProductIds;
+    }
+
+    public boolean saveReview(int userId, int orderId, int productId, int rating, String comment) {
+        String existingSql = """
+                             SELECT review_id
+                             FROM dbo.bs_Reviews
+                             WHERE user_id = ? AND order_id = ? AND product_id = ?;
+                             """;
+        String updateSql = """
+                           UPDATE dbo.bs_Reviews
+                           SET rating = ?, comment = ?, updated_at = GETDATE()
+                           WHERE review_id = ?;
+                           """;
+        String insertSql = """
+                           INSERT INTO dbo.bs_Reviews (user_id, order_id, product_id, rating, comment, created_at, updated_at)
+                           VALUES (?, ?, ?, ?, ?, GETDATE(), GETDATE());
+                           """;
+
+        try (PreparedStatement existingPs = super.getConnection().prepareStatement(existingSql)) {
+            existingPs.setInt(1, userId);
+            existingPs.setInt(2, orderId);
+            existingPs.setInt(3, productId);
+
+            Integer reviewId = null;
+            try (ResultSet rs = existingPs.executeQuery()) {
+                if (rs.next()) {
+                    reviewId = rs.getInt("review_id");
+                }
+            }
+
+            if (reviewId != null) {
+                try (PreparedStatement updatePs = super.getConnection().prepareStatement(updateSql)) {
+                    updatePs.setInt(1, rating);
+                    updatePs.setString(2, comment);
+                    updatePs.setInt(3, reviewId);
+                    return updatePs.executeUpdate() > 0;
+                }
+            }
+
+            try (PreparedStatement insertPs = super.getConnection().prepareStatement(insertSql)) {
+                insertPs.setInt(1, userId);
+                insertPs.setInt(2, orderId);
+                insertPs.setInt(3, productId);
+                insertPs.setInt(4, rating);
+                insertPs.setString(5, comment);
+                return insertPs.executeUpdate() > 0;
+            }
+        } catch (SQLException sqlEx) {
+            Logger.getLogger(ProductRepository.class.getName()).log(Level.SEVERE, null, sqlEx);
+        }
+
+        return false;
+    }
+
+    public boolean canReviewOrderProduct(int orderId, int productId, int userId) {
+        String sqlCommand = """
+                            SELECT 1
+                            FROM dbo.bs_Orders o
+                            INNER JOIN dbo.bs_OrderDetails od ON od.order_id = o.order_id
+                            WHERE o.order_id = ? AND o.user_id = ? AND o.order_status = 'Delivered' AND od.product_id = ?;
+                            """;
+
+        try (PreparedStatement ps = super.getConnection().prepareStatement(sqlCommand)) {
+            ps.setInt(1, orderId);
+            ps.setInt(2, userId);
+            ps.setInt(3, productId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException sqlEx) {
+            Logger.getLogger(ProductRepository.class.getName()).log(Level.SEVERE, null, sqlEx);
+        }
+
+        return false;
     }
 
     private String toSlug(String value) {

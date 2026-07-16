@@ -1,6 +1,8 @@
 <%@page import="com.mycompany.techstore.Models.Objects.User"%>
 <%@page import="com.mycompany.techstore.Models.Objects.OrderDetail"%>
 <%@page import="com.mycompany.techstore.Models.Objects.Order"%>
+<%@page import="java.util.HashSet"%>
+<%@page import="java.util.Set"%>
 <%@page import="java.util.List"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
@@ -12,6 +14,11 @@
     }
     Order order = (Order) request.getAttribute("order");
     List<OrderDetail> details = (List<OrderDetail>) request.getAttribute("details");
+    List<Integer> reviewedProductIds = (List<Integer>) request.getAttribute("reviewedProductIds");
+    Set<Integer> reviewedProductIdSet = new HashSet<>();
+    if (reviewedProductIds != null) {
+        reviewedProductIdSet.addAll(reviewedProductIds);
+    }
     if (order == null) {
         response.sendRedirect(request.getContextPath() + "/order-history");
         return;
@@ -130,7 +137,7 @@
                 <div class="card-body">
 
                     <% for (OrderDetail d : details) { %>
-                    <div class="product-row">
+                    <div class="product-row" id="product-<%=d.getProductId()%>">
                         <% if (d.getThumbnail() != null && !d.getThumbnail().isEmpty()) {%>
                         <img src="<%=d.getThumbnail()%>"
                              alt="<%=d.getProductName()%>"
@@ -144,6 +151,16 @@
                         <div class="product-info">
                             <p class="product-name"><%=d.getProductName()%></p>
                             <span class="product-sku">SKU: <%=d.getSku()%></span>
+                            <% if ("Delivered".equalsIgnoreCase(status)) {
+                                    boolean alreadyReviewed = reviewedProductIdSet.contains(d.getProductId());
+                            %>
+                            <div style="margin-top:10px;">
+                                <a class="btn-back" style="display:inline-flex;align-items:center;gap:6px;padding:8px 12px;font-size:13px;"
+                                   href="<%=request.getContextPath()%>/review?orderId=<%=order.getOrderId()%>&productId=<%=d.getProductId()%>">
+                                    <%= alreadyReviewed ? "Edit Review" : "Write Review" %>
+                                </a>
+                            </div>
+                            <% } %>
                         </div>
                         <div class="product-qty">x<%=d.getQuantity()%></div>
                         <div class="product-price"><%=String.format("%,.0f", d.getUnitPrice())%> d</div>

@@ -5,6 +5,7 @@ import com.mycompany.techstore.Models.Objects.Order;
 import com.mycompany.techstore.Models.Objects.OrderDetail;
 import com.mycompany.techstore.Models.Objects.User;
 import com.mycompany.techstore.Repositories.OrderDetailRepository;
+import com.mycompany.techstore.services.ProductService;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -38,6 +39,7 @@ public class OrderDetailController extends HttpServlet {
         int orderId = Integer.parseInt(idParam);
 
         OrderDetailRepository repo = new OrderDetailRepository();
+        ProductService productService = new ProductService();
         Order order = repo.getOrderById(orderId, userId);
         List<OrderDetail> details = repo.getDetailsByOrderId(orderId);
 
@@ -48,6 +50,7 @@ public class OrderDetailController extends HttpServlet {
 
         request.setAttribute("order", order);
         request.setAttribute("details", details);
+        request.setAttribute("reviewedProductIds", productService.getReviewedProductIdsByOrder(orderId, userId));
 
         request.getRequestDispatcher(
                 "/WEB-INF/JSPViews/GuestView/order-detail.jsp")
