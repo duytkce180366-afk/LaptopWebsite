@@ -13,6 +13,14 @@
                 <div class="card auth-panel shadow-sm w-100" style="max-width:680px;">
                     <div class="card-body p-4">
                         <h2 class="card-title mb-3">Edit Profile</h2>
+                        <%
+                            String error = request.getParameter("error");
+                            if (error != null) {
+                        %>
+                        <div class="alert alert-danger" role="alert">
+                            Error: <%= error%>
+                        </div>
+                        <% }%>                         
                         <form method="post" action="<%= ctx%>/profile?action=edit_profile">
                             <div class="mb-3">
                                 <label class="form-label">Full name</label>
@@ -20,7 +28,7 @@
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Phone</label>
-                                <input type="text" name="phone" class="form-control" value="<%= ((User) request.getAttribute("user")).getPhone() == null ? "" : ((User) request.getAttribute("user")).getPhone()%>" />
+                                <input type="text" name="phone" class="form-control" value="<%= ((User) request.getAttribute("user")).getPhone() == null ? "" : ((User) request.getAttribute("user")).getPhone()%>" required />
                             </div>
                             <div class="d-flex gap-2 align-items-center">
                                 <button class="btn btn-primary primary-action" type="submit">Save changes</button>

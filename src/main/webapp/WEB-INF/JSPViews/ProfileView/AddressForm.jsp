@@ -14,18 +14,22 @@
                 <div class="card auth-panel shadow-sm w-100" style="max-width:680px;">
                     <div class="card-body p-4">
                         <h2 class="card-title mb-3">Address Form</h2>
-
+                        <%
+                            String error = request.getParameter("error");
+                            if (error != null) {
+                        %>
+                        <div class="alert alert-danger" role="alert">
+                            Error: <%= error%>
+                        </div>
+                        <% }%> 
                         <% Address addr = (Address) request.getAttribute("address");%>
                         <form id="address-form" method="post" action="<%= ctx%>/profile?action=<%= request.getParameter("action")%>" style="display:none;">
                             <input type="hidden" name="address_id" value="<%= addr == null ? -1 : addr.getAddressId()%>" />
-
                             <input type="hidden" id="initial_province_val" value="<%= addr == null ? "" : addr.getProvince()%>" />
                             <input type="hidden" id="initial_ward_val" value="<%= addr == null ? "" : addr.getWard()%>" />
-
                             <div id="address-loading" class="mb-3">
                                 Loading address data...
                             </div>
-
                             <div class="mb-3">
                                 <label class="form-label">Home Address</label>
                                 <input type="text" name="home_address" class="form-control" value="<%= addr == null ? "" : addr.getHomeAddress()%>" required />

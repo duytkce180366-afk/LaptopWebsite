@@ -14,6 +14,14 @@
                 <div class="card auth-panel shadow-sm w-100" style="max-width:680px;">
                     <div class="card-body p-4">
                         <h2 class="card-title mb-3">My Profile</h2>
+                        <%
+                            String error = request.getParameter("error");
+                            if (error != null) {
+                        %>
+                        <div class="alert alert-danger" role="alert">
+                            Error: <%= error%>
+                        </div>
+                        <% }%>                         
                         <% User user = (User) request.getAttribute("user");%>
                         <dl class="row">
                             <dt class="col-sm-3">Full name</dt>
