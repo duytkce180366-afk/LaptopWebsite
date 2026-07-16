@@ -508,7 +508,7 @@ public class AuthController extends HttpServlet {
                         }
                     } catch (AuthException ex) {
                         Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, null, ex);
-                        response.sendRedirect(request.getContextPath() + "/auth?action=signin&error=Internal+server+error+during+auto-verification.");
+                        response.sendRedirect(request.getContextPath() + "/home?error=Internal+server+error+during+auto-verification.");
                         return;
                     }
                 }
@@ -521,7 +521,7 @@ public class AuthController extends HttpServlet {
                     } catch (AuthException ex) {
                         Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, ex.getLocalizedMessage(), ex);
                         String errorEx = URLEncoder.encode(ex.getMessage(), StandardCharsets.UTF_8);
-                        response.sendRedirect(request.getContextPath() + "/auth?action=signin&error=" + errorEx);
+                        response.sendRedirect(request.getContextPath() + "/home?error=" + errorEx);
                         return;
                     }
                 } else {
