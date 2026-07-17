@@ -111,7 +111,7 @@ public class ReviewController extends HttpServlet {
     private int parseInt(String value) {
         try {
             return Integer.parseInt(value);
-        } catch (Exception ex) {
+        } catch (NumberFormatException ex) {
             return -1;
         }
     }
