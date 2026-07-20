@@ -52,7 +52,7 @@ public class AdminProductController extends HttpServlet {
     private AdminProduct fromRequest(HttpServletRequest req){
         AdminProduct p=new AdminProduct();p.setProductId(intParam(req,"id",0));p.setCategoryId(intParam(req,"categoryId",0));
         p.setBrandId(intParam(req,"brandId",0));p.setSku(value(req,"sku"));p.setProductName(value(req,"productName"));
-        p.setDescription(value(req,"description"));p.setPrice(decimal(req,"price"));p.setStock(intParam(req,"stock",-1));
+        p.setDescription(value(req,"description"));p.setPrice(decimal(req,"price"));p.setStock(0);
         p.setThumbnail(value(req,"thumbnail"));p.setStatus(value(req,"status"));
         String[] keys=req.getParameterValues("specKey"),values=req.getParameterValues("specValue");Map<String,String> specs=new LinkedHashMap<>();
         if(keys!=null&&values!=null)for(int i=0;i<Math.min(keys.length,values.length);i++)if(!keys[i].isBlank()&&!values[i].isBlank())specs.put(keys[i].trim(),values[i].trim());

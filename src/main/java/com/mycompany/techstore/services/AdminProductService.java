@@ -17,9 +17,19 @@ public class AdminProductService {
     public AdminProduct findById(int id)throws SQLException{return repository.findById(id);}
     public List<LookupOption> categories()throws SQLException{return repository.categories();}
     public List<LookupOption> brands()throws SQLException{return repository.brands();}
-    public int create(AdminProduct product,int adminId)throws SQLException{validate(product);return repository.create(product,adminId);}
-    public void update(AdminProduct product,int adminId)throws SQLException{validate(product);repository.update(product,adminId);}
+    public int create(AdminProduct product,int adminId)throws SQLException{product.setStock(0);validate(product);return repository.create(product,adminId);}
+    public void update(AdminProduct product,int adminId)throws SQLException{
+        AdminProduct current=repository.findById(product.getProductId());if(current==null)throw new IllegalArgumentException("Product not found.");
+        product.setStock(current.getStock());validate(product);repository.update(product,adminId);
+    }
     public void deactivate(int id,int adminId)throws SQLException{repository.deactivate(id,adminId);}
+    public void receiveStock(int id,int quantity,String note,int adminId)throws SQLException{
+        if(id<=0)throw new IllegalArgumentException("Product is required.");
+        if(quantity<=0)throw new IllegalArgumentException("Received quantity must be greater than zero.");
+        if(quantity>100000)throw new IllegalArgumentException("Received quantity is too large.");
+        repository.receiveStock(id,quantity,clean(note),adminId);
+    }
+    public List<StockReceipt> recentReceipts()throws SQLException{return repository.recentReceipts();}
 
     private void validate(AdminProduct p)throws SQLException{
         p.setSku(clean(p.getSku()));p.setProductName(clean(p.getProductName()));

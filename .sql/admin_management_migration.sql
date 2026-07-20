@@ -2,6 +2,22 @@ USE LaptopWebsiteDB;
 GO
 
 /* Admin management migration. Safe to run more than once. */
+IF EXISTS (SELECT 1 FROM dbo.bs_Roles WHERE role_name=N'User')
+   AND NOT EXISTS (SELECT 1 FROM dbo.bs_Roles WHERE role_name=N'Customer')
+    UPDATE dbo.bs_Roles SET role_name=N'Customer' WHERE role_name=N'User';
+GO
+IF EXISTS (SELECT 1 FROM dbo.bs_Roles WHERE role_name=N'User')
+   AND EXISTS (SELECT 1 FROM dbo.bs_Roles WHERE role_name=N'Customer')
+BEGIN
+    DECLARE @CustomerRoleId INT=(SELECT role_id FROM dbo.bs_Roles WHERE role_name=N'Customer');
+    UPDATE dbo.bs_user SET role_id=@CustomerRoleId WHERE role_id=(SELECT role_id FROM dbo.bs_Roles WHERE role_name=N'User');
+    DELETE FROM dbo.bs_Roles WHERE role_name=N'User';
+END
+GO
+IF NOT EXISTS (SELECT 1 FROM dbo.bs_Roles WHERE role_name=N'Staff')
+    INSERT INTO dbo.bs_Roles(role_name) VALUES(N'Staff');
+GO
+
 IF COL_LENGTH('dbo.bs_Orders', 'phone') IS NULL
     ALTER TABLE dbo.bs_Orders ADD phone NVARCHAR(20) NULL;
 GO
@@ -35,6 +51,23 @@ BEGIN
     );
 END
 GO
+IF OBJECT_ID(N'dbo.bs_StockReceipts', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.bs_StockReceipts (
+        receipt_id BIGINT IDENTITY(1,1) NOT NULL CONSTRAINT PK_bs_StockReceipts PRIMARY KEY,
+        product_id INT NOT NULL,
+        quantity INT NOT NULL,
+        previous_stock INT NOT NULL,
+        resulting_stock INT NOT NULL,
+        note NVARCHAR(500) NULL,
+        admin_id INT NOT NULL,
+        created_at DATETIME2(0) NOT NULL CONSTRAINT DF_bs_StockReceipts_created_at DEFAULT SYSUTCDATETIME(),
+        CONSTRAINT CK_bs_StockReceipts_quantity CHECK (quantity > 0),
+        CONSTRAINT FK_bs_StockReceipts_product FOREIGN KEY (product_id) REFERENCES dbo.bs_Products(product_id),
+        CONSTRAINT FK_bs_StockReceipts_admin FOREIGN KEY (admin_id) REFERENCES dbo.bs_user(user_id)
+    );
+END
+GO
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name=N'IX_bs_AdminAuditLogs_created_at' AND object_id=OBJECT_ID(N'dbo.bs_AdminAuditLogs'))
     CREATE INDEX IX_bs_AdminAuditLogs_created_at ON dbo.bs_AdminAuditLogs(created_at DESC);
 GO
@@ -43,6 +76,9 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name=N'IX_bs_Reviews_status_creat
 GO
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name=N'IX_bs_Orders_status_created' AND object_id=OBJECT_ID(N'dbo.bs_Orders'))
     CREATE INDEX IX_bs_Orders_status_created ON dbo.bs_Orders(order_status,created_at DESC);
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name=N'IX_bs_StockReceipts_created' AND object_id=OBJECT_ID(N'dbo.bs_StockReceipts'))
+    CREATE INDEX IX_bs_StockReceipts_created ON dbo.bs_StockReceipts(created_at DESC);
 GO
 
 /* Normalize legacy status casing so text and CSS are consistent. */

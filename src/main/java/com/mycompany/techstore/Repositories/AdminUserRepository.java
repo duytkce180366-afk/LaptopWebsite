@@ -22,8 +22,15 @@ public class AdminUserRepository {
         }return new PageResult<>(items,page,size,total);
     }
     public List<LookupOption> roles()throws SQLException{
-        List<LookupOption> out=new ArrayList<>();try(Connection con=new DbClass().getConnection();PreparedStatement ps=con.prepareStatement("SELECT role_id,role_name FROM dbo.bs_Roles WHERE role_name IN ('Admin','User') ORDER BY role_id");ResultSet rs=ps.executeQuery()){
+        List<LookupOption> out=new ArrayList<>();try(Connection con=new DbClass().getConnection();PreparedStatement ps=con.prepareStatement("SELECT role_id,role_name FROM dbo.bs_Roles WHERE role_name IN ('Admin','Customer','Staff') ORDER BY CASE role_name WHEN 'Admin' THEN 1 WHEN 'Staff' THEN 2 ELSE 3 END");ResultSet rs=ps.executeQuery()){
             while(rs.next())out.add(new LookupOption(rs.getInt(1),rs.getString(2)));}return out;
+    }
+    public AdminUser findById(int id)throws SQLException{
+        String sql="SELECT u.user_id,u.role_id,r.role_name,u.full_name,u.email,u.phone,u.isverified,u.status,u.created_at,u.updated_at FROM dbo.bs_user u JOIN dbo.bs_Roles r ON r.role_id=u.role_id WHERE u.user_id=?";
+        try(Connection con=new DbClass().getConnection();PreparedStatement ps=con.prepareStatement(sql)){ps.setInt(1,id);try(ResultSet rs=ps.executeQuery()){return rs.next()?map(rs):null;}}
+    }
+    public boolean isManagedRole(int roleId)throws SQLException{
+        try(Connection con=new DbClass().getConnection();PreparedStatement ps=con.prepareStatement("SELECT 1 FROM dbo.bs_Roles WHERE role_id=? AND role_name IN ('Admin','Customer','Staff')")){ps.setInt(1,roleId);try(ResultSet rs=ps.executeQuery()){return rs.next();}}
     }
     public void setStatus(int id,String status,int adminId)throws SQLException{
         mutate(id,adminId,"STATUS_CHANGE",status,"UPDATE dbo.bs_user SET status=?,updated_at=SYSUTCDATETIME() WHERE user_id=?");
@@ -33,8 +40,8 @@ public class AdminUserRepository {
     }
     public boolean isLastActiveAdmin(int id)throws SQLException{
         String sql="""
-                SELECT CASE WHEN EXISTS(SELECT 1 FROM dbo.bs_user WHERE user_id=? AND role_id=1 AND status='Active')
-            AND (SELECT COUNT(*) FROM dbo.bs_user WHERE role_id=1 AND status='Active')<=1 THEN 1 ELSE 0 END""";
+                SELECT CASE WHEN EXISTS(SELECT 1 FROM dbo.bs_user u JOIN dbo.bs_Roles r ON r.role_id=u.role_id WHERE u.user_id=? AND r.role_name='Admin' AND u.status='Active')
+            AND (SELECT COUNT(*) FROM dbo.bs_user u JOIN dbo.bs_Roles r ON r.role_id=u.role_id WHERE r.role_name='Admin' AND u.status='Active')<=1 THEN 1 ELSE 0 END""";
         try(Connection con=new DbClass().getConnection();PreparedStatement ps=con.prepareStatement(sql)){ps.setInt(1,id);try(ResultSet rs=ps.executeQuery()){rs.next();return rs.getBoolean(1);}}
     }
     private void mutate(int id,int adminId,String action,Object value,String sql)throws SQLException{

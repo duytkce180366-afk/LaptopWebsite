@@ -9,6 +9,7 @@
     <a class="admin-brand" href="${pageContext.request.contextPath}/admin/dashboard">TechStore <span>Admin</span></a>
     <nav><a href="${pageContext.request.contextPath}/admin/dashboard">Dashboard</a>
         <a href="${pageContext.request.contextPath}/admin/products">Products</a>
+        <a href="${pageContext.request.contextPath}/admin/inventory">Inventory</a>
         <a href="${pageContext.request.contextPath}/admin/orders">Orders</a>
         <a href="${pageContext.request.contextPath}/admin/users">Users</a>
         <a href="${pageContext.request.contextPath}/admin/reviews">Reviews</a>
@@ -18,3 +19,4 @@
     <div class="admin-user"><c:out value="${sessionScope.loggedUser.full_name}"/></div></header>
 <c:if test="${not empty sessionScope.adminMessage}"><div class="alert alert-success"><c:out value="${sessionScope.adminMessage}"/></div><c:remove var="adminMessage" scope="session"/></c:if>
 <c:if test="${not empty sessionScope.adminError}"><div class="alert alert-danger"><c:out value="${sessionScope.adminError}"/></div><c:remove var="adminError" scope="session"/></c:if>
+<c:if test="${not empty error}"><div class="alert alert-danger"><c:out value="${error}"/></div></c:if>

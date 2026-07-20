@@ -24,16 +24,21 @@ public class EmailService {
     private final Session mailSession;
     private final ExecutorService emailExecutor;
     private final SecureRandom random;
+    private final String smtpUsername;
+    private final boolean configured;
 
     public EmailService() {
         this.random = new SecureRandom();
         this.mailProps = new Properties();
 
-        String smtpHost = System.getenv("SMTP_HOST");
-        String smtpPort = System.getenv("SMTP_PORT");
-        String smtpAuth = System.getenv("SMTP_AUTH");
-        String smtpStartTls = System.getenv("SMTP_START_TLS_ENABLE");
-        String trustMailTLS = System.getenv("SMTP_TRUST_ALL");
+        String smtpHost = value("SMTP_HOST", "");
+        String smtpPort = value("SMTP_PORT", "587");
+        String smtpAuth = value("SMTP_AUTH", "true");
+        String smtpStartTls = value("SMTP_START_TLS_ENABLE", "true");
+        String trustMailTLS = value("SMTP_TRUST_ALL", "false");
+        this.smtpUsername=value("SMTP_USERNAME", "");
+        String smtpPassword=value("SMTP_PASSWORD", "");
+        this.configured=!smtpHost.isBlank()&&!smtpUsername.isBlank()&&!smtpPassword.isBlank();
 
         this.mailProps.put("mail.smtp.host", smtpHost);
         this.mailProps.put("mail.smtp.port", smtpPort);
@@ -61,7 +66,7 @@ public class EmailService {
         this.mailSession = Session.getInstance(this.mailProps, new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(System.getenv("SMTP_USERNAME"), System.getenv("SMTP_PASSWORD"));
+                return new PasswordAuthentication(smtpUsername, smtpPassword);
             }
         });
 
@@ -86,13 +91,14 @@ public class EmailService {
     }
 
     public String sendOtpEmail(User user) throws MessagingException {
+        if(!configured)throw new MessagingException("Email service is not configured");
         String otp = this.generateOtp(6);
 
         // Send the email asynchronously so callers don't block on network I/O.
         this.emailExecutor.submit(() -> {
             try {
                 Message message = new MimeMessage(mailSession);
-                message.setFrom(new InternetAddress(System.getenv("SMTP_USERNAME")));
+                message.setFrom(new InternetAddress(smtpUsername));
                 message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(user.getEmail()));
                 message.setSubject("Verify your Tech Store account");
                 String body = """
@@ -117,6 +123,19 @@ public class EmailService {
 
         return otp;
     }
+
+    public boolean sendAccountChangeEmail(String email,String fullName,String subject,String detail){
+        if(!configured){Logger.getLogger(EmailService.class.getName()).log(Level.WARNING,"Account notification was not sent because SMTP is not configured.");return false;}
+        this.emailExecutor.submit(()->{
+            try{
+                Message message=new MimeMessage(mailSession);message.setFrom(new InternetAddress(smtpUsername));message.setRecipients(Message.RecipientType.TO,InternetAddress.parse(email));message.setSubject(subject);
+                message.setText("Hi "+(fullName==null||fullName.isBlank()?"customer":fullName)+",\n\n"+detail+"\n\nIf you did not expect this change, please contact TechStore support.\n\nBest regards");
+                Transport.send(message);
+            }catch(Exception ex){Logger.getLogger(EmailService.class.getName()).log(Level.SEVERE,"Failed to send account notification to "+email,ex);}
+        });return true;
+    }
+
+    private static String value(String name,String fallback){String value=System.getenv(name);return value==null||value.isBlank()?fallback:value.trim();}
 
     // Optional: allow graceful shutdown of executor if the application wants to
     // close resources. Not invoked automatically.

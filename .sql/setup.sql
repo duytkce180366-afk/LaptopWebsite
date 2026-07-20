@@ -60,7 +60,8 @@ BEGIN
 
     INSERT INTO dbo.bs_Roles ([role_name])
         VALUES ('Admin'),
-                ('User'),
+                ('Customer'),
+                ('Staff'),
                 ('Guest');
 END
 GO
@@ -253,7 +254,6 @@ BEGIN
         discount_amount    DECIMAL(18,2) NOT NULL CONSTRAINT DF_bs_Orders_discount_amount DEFAULT (0),
         payment_method     NVARCHAR(30) NOT NULL,
         order_status       NVARCHAR(20) NOT NULL CONSTRAINT DF_bs_Orders_order_status DEFAULT ('Pending'),
-        phone              NVARCHAR(40) NOT NULL, 
         note               NVARCHAR(500) NULL,
         phone              NVARCHAR(20) NULL,
         address_info       NVARCHAR(1000) NOT NULL,
@@ -336,6 +336,24 @@ BEGIN
         entity_id      NVARCHAR(80) NULL,
         details        NVARCHAR(1000) NULL,
         created_at     DATETIME2(0) NOT NULL CONSTRAINT DF_bs_AdminAuditLogs_created_at DEFAULT SYSUTCDATETIME()
+    );
+END
+GO
+
+IF OBJECT_ID(N'dbo.bs_StockReceipts', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.bs_StockReceipts (
+        receipt_id    BIGINT IDENTITY(1,1) NOT NULL CONSTRAINT PK_bs_StockReceipts PRIMARY KEY,
+        product_id    INT NOT NULL,
+        quantity      INT NOT NULL,
+        previous_stock INT NOT NULL,
+        resulting_stock INT NOT NULL,
+        note          NVARCHAR(500) NULL,
+        admin_id      INT NOT NULL,
+        created_at    DATETIME2(0) NOT NULL CONSTRAINT DF_bs_StockReceipts_created_at DEFAULT SYSUTCDATETIME(),
+        CONSTRAINT CK_bs_StockReceipts_quantity CHECK (quantity > 0),
+        CONSTRAINT FK_bs_StockReceipts_product FOREIGN KEY (product_id) REFERENCES dbo.bs_Products(product_id),
+        CONSTRAINT FK_bs_StockReceipts_admin FOREIGN KEY (admin_id) REFERENCES dbo.bs_user(user_id)
     );
 END
 GO

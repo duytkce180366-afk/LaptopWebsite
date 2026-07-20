@@ -144,7 +144,7 @@ public class OrderRepository {
         return -1;
     }
 
-    public boolean cancelOrder(int orderId, String note) {
+    public boolean cancelOrder(int orderId, int userId, String note) {
 
         Connection conn = null;
 

@@ -13,7 +13,8 @@ import java.util.*;
 public class AdminReportController extends HttpServlet {
     private final DashboardService service=new DashboardService();
     @Override protected void doGet(HttpServletRequest req,HttpServletResponse res)throws ServletException,IOException{
-        String type=text(req,"type");if(type.isBlank())type="sales";LocalDate from=date(req,"from"),to=date(req,"to");
+        String type=text(req,"type");if(type.isBlank())type="sales";LocalDate to=date(req,"to");if(to==null)to=LocalDate.now();LocalDate from=date(req,"from");if(from==null)from=to.minusDays(29);
+        if(from.isAfter(to)){req.setAttribute("error","From date must not be after To date.");from=to.minusDays(29);}
         try{
             List<Map<String,Object>> rows=service.report(type,from,to);
             if("csv".equals(text(req,"format"))){csv(res,type,rows);return;}
