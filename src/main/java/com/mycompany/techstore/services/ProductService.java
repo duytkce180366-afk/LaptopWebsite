@@ -26,6 +26,22 @@ public class ProductService {
         return this.productRepository.getReviewsByProductId(id);
     }
 
+    public Review getReviewByOrderAndProduct(int orderId, int productId, int userId) {
+        return this.productRepository.getReviewByOrderAndProduct(orderId, productId, userId);
+    }
+
+    public List<Integer> getReviewedProductIdsByOrder(int orderId, int userId) {
+        return this.productRepository.getReviewedProductIdsByOrder(orderId, userId);
+    }
+
+    public boolean saveReview(int userId, int orderId, int productId, int rating, String comment) {
+        return this.productRepository.saveReview(userId, orderId, productId, rating, comment);
+    }
+
+    public boolean canReviewOrderProduct(int orderId, int productId, int userId) {
+        return this.productRepository.canReviewOrderProduct(orderId, productId, userId);
+    }
+
     public List<Product> getByCategory(String categoryId) {
         return this.productRepository.getByCategory(categoryId);
     }

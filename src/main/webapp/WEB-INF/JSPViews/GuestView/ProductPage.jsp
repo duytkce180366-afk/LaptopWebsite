@@ -51,12 +51,13 @@
     if (averageRating == null) {
         averageRating = 0.0;
     }
+    int reviewCount = reviews.size();
     String contextPath = request.getContextPath();
 %>
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title><%= product != null ? html(product.getName()) : "Product Detail"%> - Tech Storee</title>
+        <title><%= product != null ? html(product.getName()) : "Product Detail"%> - Tech Store</title>
         <%@include file="/WEB-INF/JSPViews/global/header.jsp" %>
     </head>
     <body id="top">
@@ -84,7 +85,7 @@
                             <div class="detail-summary">
                                 <span><%= html(product.getBrand())%></span>
                                 <span><%= html(product.getCategory())%></span>
-                                <span><%= averageRating%> / 5 rating</span>
+                                <span><%= averageRating%> / 5 ★ (<%= reviewCount%> review<%= reviewCount == 1 ? "" : "s" %>)</span>
                             </div>
                             <p><%= html(product.getDescription())%></p>
                             <h3><%= formatPrice(product.getPrice())%></h3>
@@ -140,7 +141,7 @@
                 <section class="reviews-section" id="reviews" aria-labelledby="reviews-title">
                     <div class="section-heading">
                         <p class="eyebrow">View Reviews</p>
-                        <h2 id="reviews-title">Customer reviews for <%= html(product.getName())%></h2>
+                        <h2 id="reviews-title">Customer reviews for <%= html(product.getName())%> (<%= reviewCount%> review<%= reviewCount == 1 ? "" : "s" %>)</h2>
                     </div>
                     <div class="reviews-grid">
                         <% if (reviews.isEmpty()) {%>
@@ -152,7 +153,7 @@
                                 <strong><%= html(review.getUser())%></strong>
                                 <span><%= html(review.getDate())%></span>
                             </div>
-                            <p class="stars" aria-label="<%= review.getRating()%> out of 5 rating">Rating: <%= review.getRating()%>/5</p>
+                            <p class="stars" aria-label="<%= review.getRating()%> out of 5 ★">Rating: <%= review.getRating()%> / 5 ★</p>
                             <p><%= html(review.getComment())%></p>
                         </article>
                         <% } %>
