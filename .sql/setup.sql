@@ -310,12 +310,13 @@ BEGIN
     CREATE TABLE dbo.bs_Reviews (
         review_id      INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_bs_Reviews PRIMARY KEY,
         user_id        INT NOT NULL,
+        order_id       INT NULL,
         product_id     INT NOT NULL,
         rating         INT NOT NULL,
         comment        NVARCHAR(1000) NULL,
         created_at     DATETIME2(0) NOT NULL CONSTRAINT DF_bs_Reviews_created_at DEFAULT SYSUTCDATETIME(),
         updated_at     DATETIME2(0) NULL,
-        CONSTRAINT UQ_bs_Reviews_user_product UNIQUE (user_id, product_id),
+        CONSTRAINT UQ_bs_Reviews_user_order_product UNIQUE (user_id, order_id, product_id),
         CONSTRAINT CK_bs_Reviews_rating CHECK (rating BETWEEN 1 AND 5)
     );
 END
@@ -1270,17 +1271,17 @@ INSERT INTO @Reviews (sku, user_id, rating, comment) VALUES
 
 MERGE dbo.bs_Reviews AS target
 USING (
-    SELECT u.user_id, p.product_id, r.rating, r.comment
+    SELECT u.user_id, CAST(NULL AS INT) AS order_id, p.product_id, r.rating, r.comment
     FROM @Reviews r
     INNER JOIN dbo.bs_user u ON u.user_id = r.user_id
     INNER JOIN dbo.bs_Products p ON p.sku = r.sku
 ) AS source
-    ON target.user_id = source.user_id AND target.product_id = source.product_id
+    ON target.user_id = source.user_id AND target.order_id = source.order_id AND target.product_id = source.product_id
 WHEN MATCHED THEN
     UPDATE SET rating = source.rating, updated_at = SYSUTCDATETIME()
 WHEN NOT MATCHED THEN
-    INSERT (user_id, product_id, rating, comment, created_at, updated_at)
-    VALUES (source.user_id, source.product_id, source.rating, source.comment, SYSUTCDATETIME(), SYSUTCDATETIME());
+    INSERT (user_id, order_id, product_id, rating, comment, created_at, updated_at)
+    VALUES (source.user_id, source.order_id, source.product_id, source.rating, source.comment, SYSUTCDATETIME(), SYSUTCDATETIME());
 
 DELETE cfo
 FROM dbo.bs_CategoryFilterOptions cfo

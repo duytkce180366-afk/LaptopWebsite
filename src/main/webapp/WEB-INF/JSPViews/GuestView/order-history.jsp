@@ -50,6 +50,8 @@
             <div class="filter-tabs">
                 <button class="filter-tab active" onclick="filterOrders('all', this)">All</button>
                 <button class="filter-tab" onclick="filterOrders('pending', this)">Pending</button>
+                <button class="filter-tab" onclick="filterOrders('confirmed', this)">Confirmed</button>
+                <button class="filter-tab" onclick="filterOrders('shipping', this)">Shipping</button>
                 <button class="filter-tab" onclick="filterOrders('delivered', this)">Delivered</button>
                 <button class="filter-tab" onclick="filterOrders('cancelled', this)">Cancelled</button>
             </div>
@@ -93,11 +95,15 @@
                             <td>
                                 <% if ("Pending".equalsIgnoreCase(status)) { %>
                                 <span class="badge-status badge-pending">Pending</span>
-                                <% } else if ("Completed".equalsIgnoreCase(status)) { %>
-                                <span class="badge-status badge-completed">Completed</span>
-
+                                <% } else if ("Confirmed".equalsIgnoreCase(status)) { %>
+                                <span class="badge-status badge-confirmed">Confirmed</span>
                                 <% } else if ("Payment Failed".equalsIgnoreCase(status)) { %>
                                 <span class="badge-status badge-payment-failed">Payment Failed</span>
+                                <% } else if ("Confirmed".equalsIgnoreCase(status)) { %>
+                                <% } else if ("Shipping".equalsIgnoreCase(status)) { %>
+                                <span class="badge-status badge-shipping">Shipping</span>
+                                <% } else if ("Delivered".equalsIgnoreCase(status)) { %>
+                                <span class="badge-status badge-delivered">Delivered</span>
                                 <% } else { %>
                                 <span class="badge-status badge-cancelled">Cancelled</span>
                                 <% } %>
@@ -117,15 +123,19 @@
                                 <span class="order-date"><%=dateStr%></span>
                             </td>
                             <td>
-                                <% if ("Pending".equalsIgnoreCase(status)) {%>
+                                <% if ("Pending".equalsIgnoreCase(status) || "Confirmed".equalsIgnoreCase(status)) {%>
                                 <button type="button" class="btn-cancel-open"
                                         onclick="openCancelModal('<%=o.getOrderId()%>')">
                                     &#10005; Cancel Order
                                 </button>
                                 <% } else if ("Payment Failed".equalsIgnoreCase(status)) {%>
-                                <a href="<%=request.getContextPath()%>/checkout" class="btn-retry-checkout">
-                                    &#8635; Retry Checkout
+                                <a href="<%=request.getContextPath()%>/vnpay-retry?orderId=<%=o.getOrderId()%>" class="btn-retry-checkout">
+                                    &#8635; Retry Payment
                                 </a>
+                                <button type="button" class="btn-cancel-open"
+                                        onclick="openCancelModal('<%=o.getOrderId()%>')">
+                                    &#10005; Cancel
+                                </button>
                                 <% } else { %>
                                 <span class="no-action">&#8212; No Action</span>
                                 <% } %>
