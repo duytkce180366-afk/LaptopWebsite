@@ -1,21 +1,151 @@
-<%@taglib prefix="c" uri="jakarta.tags.core"%><c:set var="pageTitle" value="${product.productId==0?'Add Product':'Edit Product'}"/><%@include file="_start.jsp"%>
-<c:if test="${not empty error}"><div class="alert alert-danger"><c:out value="${error}"/></div></c:if>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<c:set var="pageTitle" value="${product.productId == 0 ? 'Add Product' : 'Edit Product'}" />
+<%@ include file="_start.jsp" %>
+
+<c:if test="${not empty error}">
+    <div class="alert alert-danger">
+        <c:out value="${error}" />
+    </div>
+</c:if>
+
 <form method="post" action="${pageContext.request.contextPath}/admin/products/save">
-<input type="hidden" name="csrfToken" value="${sessionScope.adminCsrfToken}"><input type="hidden" name="id" value="${product.productId}">
-<div class="admin-card"><h2 class="h5 mb-3">Product information</h2><div class="row g-3">
- <div class="col-md-4"><label class="form-label">SKU *</label><input class="form-control" required name="sku" value="<c:out value='${product.sku}'/>"></div>
- <div class="col-md-8"><label class="form-label">Product name *</label><input class="form-control" required name="productName" value="<c:out value='${product.productName}'/>"></div>
- <div class="col-md-6"><label class="form-label">Category *</label><select class="form-select" required name="categoryId"><option value="">Select</option><c:forEach var="x" items="${categories}"><option value="${x.id}" ${product.categoryId==x.id?'selected':''}><c:out value="${x.name}"/></option></c:forEach></select></div>
- <div class="col-md-6"><label class="form-label">Brand *</label><select class="form-select" required name="brandId"><option value="">Select</option><c:forEach var="x" items="${brands}"><option value="${x.id}" ${product.brandId==x.id?'selected':''}><c:out value="${x.name}"/></option></c:forEach></select></div>
- <div class="col-md-4"><label class="form-label">Price *</label><input class="form-control" type="number" min="1" step="0.01" required name="price" value="${product.price}"></div>
- <div class="col-md-4"><label class="form-label">Current stock</label><input class="form-control" value="${product.stock}" readonly><div class="form-text">Stock is updated from the Inventory menu.</div></div>
- <div class="col-md-4"><label class="form-label">Status *</label><select class="form-select" name="status"><c:forEach var="s" items="${['Active','Out of Stock','Hidden','Inactive']}"><option ${product.status==s?'selected':''}><c:out value="${s}"/></option></c:forEach></select></div>
- <div class="col-12"><label class="form-label">Thumbnail URL</label><input class="form-control" type="url" name="thumbnail" value="<c:out value='${product.thumbnail}'/>"></div>
- <div class="col-12"><label class="form-label">Description</label><textarea class="form-control" rows="4" name="description"><c:out value="${product.description}"/></textarea></div>
-</div></div>
-<div class="admin-card"><div class="d-flex justify-content-between"><h2 class="h5">Specifications</h2><button class="btn btn-sm btn-outline-primary" type="button" onclick="addSpec()">Add row</button></div><div id="specs">
-<c:if test="${empty product.specifications}"><c:forEach var="key" items="${['cpu','ram','storage','gpu','display','battery','os']}"><div class="spec-row"><input class="form-control" name="specKey" value="${key}"><input class="form-control" name="specValue" placeholder="Value"><button class="btn btn-outline-danger" type="button" onclick="this.parentElement.remove()">&times;</button></div></c:forEach></c:if>
-<c:forEach var="spec" items="${product.specifications}"><div class="spec-row"><input class="form-control" name="specKey" value="<c:out value='${spec.key}'/>"><input class="form-control" name="specValue" value="<c:out value='${spec.value}'/>"><button class="btn btn-outline-danger" type="button" onclick="this.parentElement.remove()">&times;</button></div></c:forEach>
-</div></div><div class="admin-actions"><button class="btn btn-primary">Save product</button><a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/admin/products">Cancel</a></div></form>
-<script>function addSpec(){const d=document.createElement('div');d.className='spec-row';d.innerHTML='<input class="form-control" name="specKey" placeholder="Key"><input class="form-control" name="specValue" placeholder="Value"><button class="btn btn-outline-danger" type="button" onclick="this.parentElement.remove()">&times;</button>';document.getElementById('specs').appendChild(d)}</script>
-<%@include file="_end.jsp"%>
+    <input type="hidden" name="csrfToken" value="${sessionScope.adminCsrfToken}">
+    <input type="hidden" name="id" value="${product.productId}">
+
+    <div class="admin-card">
+        <h2 class="h5 mb-3">Product information</h2>
+
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">SKU *</label>
+                <input class="form-control" required name="sku" value="<c:out value='${product.sku}' />">
+            </div>
+
+            <div class="col-md-8">
+                <label class="form-label">Product name *</label>
+                <input class="form-control" required name="productName" value="<c:out value='${product.productName}' />">
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Category *</label>
+                <select class="form-select" required name="categoryId">
+                    <option value="">Select</option>
+
+                    <c:forEach var="x" items="${categories}">
+                        <option value="${x.id}" ${product.categoryId == x.id ? 'selected' : ''}>
+                            <c:out value="${x.name}" />
+                        </option>
+                    </c:forEach>
+                </select>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Brand *</label>
+                <select class="form-select" required name="brandId">
+                    <option value="">Select</option>
+
+                    <c:forEach var="x" items="${brands}">
+                        <option value="${x.id}" ${product.brandId == x.id ? 'selected' : ''}>
+                            <c:out value="${x.name}" />
+                        </option>
+                    </c:forEach>
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Price *</label>
+                <input
+                    class="form-control"
+                    type="number"
+                    min="1"
+                    step="0.01"
+                    required
+                    name="price"
+                    value="${product.price}">
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Current stock</label>
+                <input class="form-control" value="${product.stock}" readonly>
+                <div class="form-text">Stock is updated from the Inventory menu.</div>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Status *</label>
+                <select class="form-select" name="status">
+                    <c:forEach var="s" items="${['Active','Out of Stock','Hidden','Inactive']}">
+                        <option ${product.status == s ? 'selected' : ''}>
+                            <c:out value="${s}" />
+                        </option>
+                    </c:forEach>
+                </select>
+            </div>
+
+            <div class="col-12">
+                <label class="form-label">Thumbnail URL</label>
+                <input class="form-control" type="url" name="thumbnail" value="<c:out value='${product.thumbnail}' />">
+            </div>
+
+            <div class="col-12">
+                <label class="form-label">Description</label>
+                <textarea class="form-control" rows="4" name="description">
+                    <c:out value="${product.description}" />
+                </textarea>
+            </div>
+        </div>
+    </div>
+
+    <div class="admin-card">
+        <div class="d-flex justify-content-between">
+            <h2 class="h5">Specifications</h2>
+            <button class="btn btn-sm btn-outline-primary" type="button" onclick="addSpec()">
+                Add row
+            </button>
+        </div>
+
+        <div id="specs">
+            <c:if test="${empty product.specifications}">
+                <c:forEach var="key" items="${['cpu','ram','storage','gpu','display','battery','os']}">
+                    <div class="spec-row">
+                        <input class="form-control" name="specKey" value="${key}">
+                        <input class="form-control" name="specValue" placeholder="Value">
+                        <button class="btn btn-outline-danger" type="button" onclick="this.parentElement.remove()">
+                            &times;
+                        </button>
+                    </div>
+                </c:forEach>
+            </c:if>
+
+            <c:forEach var="spec" items="${product.specifications}">
+                <div class="spec-row">
+                    <input class="form-control" name="specKey" value="<c:out value='${spec.key}' />">
+                    <input class="form-control" name="specValue" value="<c:out value='${spec.value}' />">
+                    <button class="btn btn-outline-danger" type="button" onclick="this.parentElement.remove()">
+                        &times;
+                    </button>
+                </div>
+            </c:forEach>
+        </div>
+    </div>
+
+    <div class="admin-actions">
+        <button class="btn btn-primary">Save product</button>
+        <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/admin/products">
+            Cancel
+        </a>
+    </div>
+</form>
+
+<script>
+    function addSpec() {
+        const d = document.createElement('div');
+        d.className = 'spec-row';
+        d.innerHTML =
+            '<input class="form-control" name="specKey" placeholder="Key">' +
+            '<input class="form-control" name="specValue" placeholder="Value">' +
+            '<button class="btn btn-outline-danger" type="button" onclick="this.parentElement.remove()">&times;</button>';
+        document.getElementById('specs').appendChild(d);
+    }
+</script>
+
+<%@ include file="_end.jsp" %>
