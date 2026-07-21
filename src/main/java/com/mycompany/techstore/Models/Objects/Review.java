@@ -4,6 +4,7 @@ public class Review {
 
     private final int review_id;
     private final int user_id;
+    private final int order_id;
     private final int product_id;
     private final int rating;
     private final String comment;
@@ -11,12 +12,17 @@ public class Review {
     private final String user_name;
 
     public Review(int review_id, int user_id, int product_id, int rating, String comment, String created_at) {
-        this(review_id, user_id, product_id, rating, comment, created_at, null);
+        this(review_id, user_id, 0, product_id, rating, comment, created_at, null);
     }
 
     public Review(int review_id, int user_id, int product_id, int rating, String comment, String created_at, String user_name) {
+        this(review_id, user_id, 0, product_id, rating, comment, created_at, user_name);
+    }
+
+    public Review(int review_id, int user_id, int order_id, int product_id, int rating, String comment, String created_at, String user_name) {
         this.review_id = review_id;
         this.user_id = user_id;
+        this.order_id = order_id;
         this.product_id = product_id;
         this.rating = rating;
         this.comment = comment;
@@ -25,7 +31,7 @@ public class Review {
     }
 
     public Review(String user_name, int rating, String created_at, String comment) {
-        this(0, 0, 0, rating, comment, created_at, user_name);
+        this(0, 0, 0, 0, rating, comment, created_at, user_name);
     }
 
     public int getReview_id() {
@@ -34,6 +40,10 @@ public class Review {
 
     public int getUser_id() {
         return user_id;
+    }
+
+    public int getOrder_id() {
+        return order_id;
     }
 
     public int getProduct_id() {
@@ -62,6 +72,10 @@ public class Review {
 
     public int getUserId() {
         return user_id;
+    }
+
+    public int getOrderId() {
+        return order_id;
     }
 
     public int getProductId() {

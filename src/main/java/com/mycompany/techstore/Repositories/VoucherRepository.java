@@ -165,21 +165,15 @@ public class VoucherRepository {
         return false;
     }
 
-    public Voucher getVoucherById(int id) {
+    
 
-        String sql = "SELECT * FROM bs_Vouchers WHERE voucher_id=?";
-
-        try (
-                Connection con = new DbClass().getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
-
-            ps.setInt(1, id);
-
+    public Voucher getById(int voucherId) {
+        String sql = "SELECT * FROM bs_Vouchers WHERE voucher_id = ?";
+        try (Connection con = new DbClass().getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, voucherId);
             ResultSet rs = ps.executeQuery();
-
             if (rs.next()) {
-
                 Voucher v = new Voucher();
-
                 v.setVoucherId(rs.getInt("voucher_id"));
                 v.setCode(rs.getString("code"));
                 v.setDiscountPercent(rs.getDouble("discount_percent"));
@@ -328,4 +322,5 @@ public class VoucherRepository {
         return list;
 
     }
+
 }

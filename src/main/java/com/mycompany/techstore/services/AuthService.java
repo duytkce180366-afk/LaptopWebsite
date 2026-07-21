@@ -3,23 +3,24 @@ package com.mycompany.techstore.services;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
-import java.security.spec.InvalidKeySpecException;
 
+import com.mycompany.techstore.Exceptions.AuthException;
 import com.mycompany.techstore.Models.Objects.User;
 import com.mycompany.techstore.Repositories.AuthRepository;
-import com.mycompany.techstore.Exceptions.AuthException;
 
 public class AuthService {
 
     // Allow case-insensitive email local-part/domain validation
     private final String emailFormat = "(?i)^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$";
-    
+    private final String nameFormat = "^[\\p{L}\\s\\-\\u0027. ]+$";
+
     private final AuthRepository authRepo;
-    
+
     private static final String PBKDF2_ALGORITHM = "PBKDF2WithHmacSHA256";
     private static final int PBKDF2_ITERATIONS = 65536;
     private static final int DERIVED_KEY_LENGTH = 256; // bits
@@ -51,7 +52,7 @@ public class AuthService {
             throw new NoSuchAlgorithmException("Failed to generate password hash", ex);
         }
     }
-    
+
     // Verify Password
     private boolean VerifyPassword(String password, String stored) throws NoSuchAlgorithmException {
         if (stored == null) {
@@ -90,21 +91,19 @@ public class AuthService {
      */
     // Sign in with email and password
     public User GetUserSignIn(String email, String password) throws AuthException, NoSuchAlgorithmException {
-        User user;
-
         if (!email.matches(this.emailFormat)) {
             throw new AuthException(-1, "Email is not in correct format");
         }
 
-        user = this.authRepo.GetUserOIDCSignIn(email);
+        User user = this.authRepo.GetUserOIDCSignIn(email);
 
         if (user == null) {
-            throw new AuthException(-1, "User not found");
+            throw new AuthException(-1, "Invalid credential");
         }
 
         String stored = user.getPassword();
         if (stored == null) {
-            throw new AuthException(-1, "User does not have a password set");
+            throw new AuthException(-1, "Invalid credential");
         }
 
         boolean verified = false;
@@ -143,6 +142,10 @@ public class AuthService {
             throw new AuthException(-1, "Email is not in correct format");
         }
 
+        if (!name.matches((this.nameFormat))) {
+            throw new AuthException(-1, "Name is not in correct format");
+        }
+
         if (this.authRepo.IsEmailExists(email)) {
             throw new AuthException(-1, "Email already exists");
         }
@@ -169,6 +172,10 @@ public class AuthService {
             throw new AuthException(-1, "Email is not in correct format");
         }
 
+        if (!name.matches((this.nameFormat))) {
+            throw new AuthException(-1, "Name is not in correct format");
+        }
+
         User user = this.authRepo.GetUserOIDCSignIn(email);
         if (user != null) {
             return user;
@@ -182,7 +189,7 @@ public class AuthService {
 
         return created;
     }
-    
+
     public boolean VerifyEmail(String email) throws AuthException {
         return this.authRepo.VerifiedUser(email);
     }
@@ -191,13 +198,13 @@ public class AuthService {
     public User GetUserByEmail(String email) {
         return this.authRepo.GetUserOIDCSignIn(email);
     }
-    
+
     // Reset password
     public boolean UpdateUserPassword(String email, String newPassword) throws NoSuchAlgorithmException, AuthException {
         if (!email.matches(this.emailFormat)) {
             throw new AuthException(-1, "Email is not in correct format");
         }
-        
+
         String pwdHash = this.HashPassword(newPassword);
         return this.authRepo.UpdatePassword(email, pwdHash);
     }
