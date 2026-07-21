@@ -50,7 +50,7 @@ public class VoucherService {
     }
 
     public Voucher getVoucherById(int id) {
-        return repo.getVoucherById(id);
+        return repo.getById(id);
     }
 
     public boolean updateVoucher(Voucher voucher) {
