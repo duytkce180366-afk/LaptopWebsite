@@ -140,16 +140,7 @@ public class AdminController extends HttpServlet {
 
                 String status = request.getParameter("status");
 
-                productService.createProduct(
-                        categoryId,
-                        brandId,
-                        sku,
-                        productName,
-                        description,
-                        price,
-                        stock,
-                        thumbnail,
-                        status);
+                productService.createProduct(categoryId,brandId,sku,productName,description,price,stock,thumbnail,status);
 
                 response.sendRedirect(request.getContextPath()
                         + "/admin?target=product");
@@ -176,17 +167,7 @@ public class AdminController extends HttpServlet {
 
                 String status = request.getParameter("status");
 
-                productService.updateProduct(
-                        productId,
-                        categoryId,
-                        brandId,
-                        sku,
-                        productName,
-                        description,
-                        price,
-                        stock,
-                        thumbnail,
-                        status);
+                productService.updateProduct(productId,categoryId,brandId,sku,productName,description,price,stock,thumbnail,status);
 
                 response.sendRedirect(request.getContextPath()
                         + "/admin?target=product");
