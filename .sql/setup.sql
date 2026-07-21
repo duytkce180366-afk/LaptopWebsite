@@ -60,6 +60,7 @@ BEGIN
 
     INSERT INTO dbo.bs_Roles ([role_name])
         VALUES ('Admin'),
+				('Staff'),
                 ('User'),
                 ('Guest');
 END
