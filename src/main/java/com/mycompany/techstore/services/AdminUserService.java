@@ -22,13 +22,13 @@ public class AdminUserService {
 
   public PageResult<AdminUser> findAllForActor(
       String actorRole, String q, int role, String status, int page) throws SQLException {
-    if ("Staff".equals(actorRole)) role = repository.findRoleId("Customer");
+    if ("Staff".equals(actorRole)) role = repository.findRoleId("User");
     return findAll(q, role, status, page);
   }
 
   public List<LookupOption> rolesForActor(String actorRole) throws SQLException {
     if (!"Staff".equals(actorRole)) return roles();
-    return roles().stream().filter(role -> "Customer".equals(role.getName())).toList();
+    return roles().stream().filter(role -> "User".equals(role.getName())).toList();
   }
 
   public AdminUser findById(int id) throws SQLException {
@@ -63,7 +63,7 @@ public class AdminUserService {
       throws SQLException {
     AdminUser selected = repository.findById(id);
     if (selected == null) throw new BackOfficeValidationException("User not found.");
-    if ("Staff".equals(actorRole) && !"Customer".equals(selected.getRoleName()))
+    if ("Staff".equals(actorRole) && !"User".equals(selected.getRoleName()))
       throw new BackOfficeValidationException("Staff can only block or unblock customer accounts.");
     setStatus(id, status, actorId);
   }
@@ -99,7 +99,7 @@ public class AdminUserService {
   private void validateStaff(String name, String email, String phone) {
     if (name == null || name.trim().length() < 2)
       throw new BackOfficeValidationException("Staff name is required.");
-    if (email == null || !email.trim().matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"))
+    if (!isValidEmail(email))
       throw new BackOfficeValidationException("A valid email is required.");
     if (phone != null && !phone.isBlank() && !phone.trim().matches("[0-9+ .()-]{8,20}"))
       throw new BackOfficeValidationException("Invalid phone number.");
@@ -107,5 +107,22 @@ public class AdminUserService {
 
   private String clean(String value) {
     return value == null ? "" : value.trim();
+  }
+
+  static boolean isValidEmail(String value) {
+    if (value == null) return false;
+    String email = value.trim();
+    if (email.isEmpty() || email.length() > 254) return false;
+
+    int at = email.indexOf('@');
+    if (at <= 0 || at != email.lastIndexOf('@') || at == email.length() - 1) return false;
+
+    int dot = email.indexOf('.', at + 1);
+    if (dot <= at + 1 || dot == email.length() - 1) return false;
+
+    for (int i = 0; i < email.length(); i++) {
+      if (Character.isWhitespace(email.charAt(i))) return false;
+    }
+    return true;
   }
 }

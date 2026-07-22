@@ -60,7 +60,7 @@ BEGIN
 
     INSERT INTO dbo.bs_Roles ([role_name])
         VALUES ('Admin'),
-                ('Customer'),
+                ('User'),
                 ('Staff'),
                 ('Guest');
 END
@@ -2210,7 +2210,7 @@ SET NOCOUNT ON;
 SET ANSI_NULLS ON;
 SET QUOTED_IDENTIFIER ON;
 
-DECLARE @CustomerRoleId INT=(SELECT role_id FROM dbo.bs_Roles WHERE role_name=N'Customer');
+DECLARE @CustomerRoleId INT=(SELECT role_id FROM dbo.bs_Roles WHERE role_name=N'User');
 DECLARE @StaffRoleId INT=(SELECT role_id FROM dbo.bs_Roles WHERE role_name=N'Staff');
 IF @CustomerRoleId IS NULL
     THROW 50001, 'Run admin_management_migration.sql before admin_demo_data.sql.', 1;
@@ -2293,16 +2293,16 @@ GO
 
 
 /* Admin management migration. Safe to run more than once. */
-IF EXISTS (SELECT 1 FROM dbo.bs_Roles WHERE role_name=N'User')
-   AND NOT EXISTS (SELECT 1 FROM dbo.bs_Roles WHERE role_name=N'Customer')
-    UPDATE dbo.bs_Roles SET role_name=N'Customer' WHERE role_name=N'User';
+IF EXISTS (SELECT 1 FROM dbo.bs_Roles WHERE role_name=N'Customer')
+   AND NOT EXISTS (SELECT 1 FROM dbo.bs_Roles WHERE role_name=N'User')
+    UPDATE dbo.bs_Roles SET role_name=N'User' WHERE role_name=N'Customer';
 GO
-IF EXISTS (SELECT 1 FROM dbo.bs_Roles WHERE role_name=N'User')
-   AND EXISTS (SELECT 1 FROM dbo.bs_Roles WHERE role_name=N'Customer')
+IF EXISTS (SELECT 1 FROM dbo.bs_Roles WHERE role_name=N'Customer')
+   AND EXISTS (SELECT 1 FROM dbo.bs_Roles WHERE role_name=N'User')
 BEGIN
-    DECLARE @CustomerRoleId INT=(SELECT role_id FROM dbo.bs_Roles WHERE role_name=N'Customer');
-    UPDATE dbo.bs_user SET role_id=@CustomerRoleId WHERE role_id=(SELECT role_id FROM dbo.bs_Roles WHERE role_name=N'User');
-    DELETE FROM dbo.bs_Roles WHERE role_name=N'User';
+    DECLARE @UserRoleId INT=(SELECT role_id FROM dbo.bs_Roles WHERE role_name=N'User');
+    UPDATE dbo.bs_user SET role_id=@UserRoleId WHERE role_id=(SELECT role_id FROM dbo.bs_Roles WHERE role_name=N'Customer');
+    DELETE FROM dbo.bs_Roles WHERE role_name=N'Customer';
 END
 GO
 IF NOT EXISTS (SELECT 1 FROM dbo.bs_Roles WHERE role_name=N'Staff')
