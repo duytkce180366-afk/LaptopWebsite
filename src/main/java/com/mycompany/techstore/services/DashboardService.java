@@ -7,7 +7,14 @@ import java.time.LocalDate;
 import java.util.*;
 
 public class DashboardService {
-    private final DashboardRepository repository=new DashboardRepository();
-    public DashboardStats load(LocalDate from,LocalDate to)throws SQLException{return repository.load(from,to);}
-    public List<Map<String,Object>> report(String type,LocalDate from,LocalDate to)throws SQLException{return repository.report(type,from,to);}
+  private final DashboardRepository repository = new DashboardRepository();
+
+  public DashboardStats load(LocalDate from, LocalDate to) throws SQLException {
+    return repository.load(from, to);
+  }
+
+  public List<Map<String, Object>> report(String type, LocalDate from, LocalDate to)
+      throws SQLException {
+    return repository.report(type, from, to);
+  }
 }
