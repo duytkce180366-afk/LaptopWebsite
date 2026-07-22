@@ -1,4 +1,5 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="pageTitle" value="Manage Orders" />
 <%@ include file="_start.jsp" %>
 
@@ -83,7 +84,7 @@
                         <br>
                         <small><c:out value="${o.email}" /></small>
                     </td>
-                    <td>${o.createdAt}</td>
+                    <td><fmt:formatDate value="${o.createdAt}" pattern="dd/MM/yyyy HH:mm:ss" /></td>
                     <td>
                         <c:out value="${o.paymentMethod}" />
                         &middot;

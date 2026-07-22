@@ -178,6 +178,9 @@
     <div class="nav-links">
         <a href="<%= request.getContextPath()%>/home#home">Home</a>
         <a href="<%= request.getContextPath()%>/home#products">Products</a>
+        <% if (Boolean.TRUE.equals(request.getAttribute("isBackOfficeAccount"))) {%>
+        <a href="<%= request.getContextPath()%>/admin/dashboard">Back to Dashboard</a>
+        <% } %>
         <a href="${pageContext.request.contextPath}/cart"
            class="cart-btn">
             <i class="fa-solid fa-cart-shopping"></i>

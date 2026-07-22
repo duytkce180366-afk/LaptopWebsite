@@ -2,6 +2,7 @@ package com.mycompany.techstore.Repositories;
 
 import com.mycompany.techstore.Models.Objects.*;
 import com.mycompany.techstore.resources.DbClass;
+import com.mycompany.techstore.utils.VietnamTime;
 import java.sql.*;
 import java.util.*;
 
@@ -31,7 +32,7 @@ public class AdminReviewRepository {
     private AdminReview map(ResultSet rs)throws SQLException{
         AdminReview r=new AdminReview();r.setReviewId(rs.getInt("review_id"));r.setUserId(rs.getInt("user_id"));r.setProductId(rs.getInt("product_id"));
         r.setRating(rs.getInt("rating"));r.setUserName(rs.getString("full_name"));r.setUserEmail(rs.getString("email"));r.setProductName(rs.getString("product_name"));
-        r.setComment(rs.getString("comment"));r.setStatus(rs.getString("status"));r.setCreatedAt(rs.getTimestamp("created_at"));r.setModeratedAt(rs.getTimestamp("moderated_at"));return r;
+        r.setComment(rs.getString("comment"));r.setStatus(rs.getString("status"));r.setCreatedAt(VietnamTime.fromUtc(rs.getTimestamp("created_at")));r.setModeratedAt(VietnamTime.fromUtc(rs.getTimestamp("moderated_at")));return r;
     }
     private String clean(String v){return v==null?"":v.trim();}
 }

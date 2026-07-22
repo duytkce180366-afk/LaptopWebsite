@@ -1,4 +1,5 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="pageTitle" value="Inventory Receipts" />
 <%@ include file="_start.jsp" %>
 
@@ -107,7 +108,7 @@
         <tbody>
             <c:forEach var="r" items="${receipts}">
                 <tr>
-                    <td>${r.createdAt}</td>
+                    <td><fmt:formatDate value="${r.createdAt}" pattern="dd/MM/yyyy HH:mm:ss" /></td>
                     <td><c:out value="${r.sku}" /></td>
                     <td><c:out value="${r.productName}" /></td>
                     <td>+${r.quantity}</td>

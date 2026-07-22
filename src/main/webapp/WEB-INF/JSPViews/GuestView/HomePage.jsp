@@ -179,6 +179,15 @@
         <main class="app-shell" id="app">
             <%@include file="/WEB-INF/JSPViews/global/nav.jsp" %>
                         <%
+                            String storeNotice = (String) session.getAttribute("storeNotice");
+                            if (storeNotice != null) {
+                                session.removeAttribute("storeNotice");
+                        %>
+                        <div class="alert alert-info" role="status">
+                            <%= Jsoup.clean(storeNotice, Safelist.basic())%>
+                        </div>
+                        <% }%>
+                        <%
                             String error = request.getParameter("error");
                             if (error != null) {
                         %>

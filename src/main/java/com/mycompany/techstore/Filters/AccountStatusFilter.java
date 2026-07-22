@@ -2,6 +2,7 @@ package com.mycompany.techstore.Filters;
 
 import com.mycompany.techstore.Models.Objects.User;
 import com.mycompany.techstore.Repositories.UserRepository;
+import com.mycompany.techstore.services.BackOfficeAuthorizationPolicy;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -53,6 +54,9 @@ public class AccountStatusFilter implements Filter {
 
             // Refresh role, verification and profile data so admin changes take effect immediately.
             session.setAttribute("loggedUser", currentUser);
+            String currentRole = userRepository.findRoleName(currentUser.getUser_id());
+            request.setAttribute("isBackOfficeAccount",
+                    BackOfficeAuthorizationPolicy.isBackOfficeRole(currentRole));
             chain.doFilter(request, response);
         } catch (SQLException exception) {
             throw new ServletException("Unable to verify the current account status.", exception);

@@ -1,4 +1,5 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="pageTitle" value="Manage Reviews" />
 <%@ include file="_start.jsp" %>
 
@@ -77,7 +78,7 @@
                     <td>
                         ${r.rating}/5
                         <br>
-                        <small>${r.createdAt}</small>
+                        <small><fmt:formatDate value="${r.createdAt}" pattern="dd/MM/yyyy HH:mm:ss" /></small>
                     </td>
 
                     <td>

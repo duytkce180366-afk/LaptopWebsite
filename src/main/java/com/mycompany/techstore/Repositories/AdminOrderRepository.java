@@ -2,6 +2,7 @@ package com.mycompany.techstore.Repositories;
 
 import com.mycompany.techstore.Models.Objects.*;
 import com.mycompany.techstore.resources.DbClass;
+import com.mycompany.techstore.utils.VietnamTime;
 import com.mycompany.techstore.services.OrderStatusPolicy;
 import java.sql.*;
 import java.time.LocalDate;
@@ -73,7 +74,7 @@ public class AdminOrderRepository {
         o.setPhone(rs.getString("phone"));o.setAddressInfo(rs.getString("address_info"));o.setPaymentMethod(rs.getString("payment_method"));String payment=rs.getString("payment_status");
         o.setPaymentStatus(payment==null?("COD".equals(o.getPaymentMethod())?"COD":"Pending"):payment);o.setOrderStatus(rs.getString("order_status"));o.setNote(rs.getString("note"));
         o.setTotalAmount(rs.getBigDecimal("total_amount"));o.setShippingFee(rs.getBigDecimal("shipping_fee"));o.setDiscountAmount(rs.getBigDecimal("discount_amount"));
-        o.setCreatedAt(rs.getTimestamp("created_at"));o.setUpdatedAt(rs.getTimestamp("updated_at"));return o;
+        o.setCreatedAt(VietnamTime.fromUtc(rs.getTimestamp("created_at")));o.setUpdatedAt(VietnamTime.fromUtc(rs.getTimestamp("updated_at")));return o;
     }
     private void setDate(PreparedStatement ps,int index,LocalDate value)throws SQLException{if(value==null)ps.setNull(index,Types.DATE);else ps.setDate(index,java.sql.Date.valueOf(value));}
     private String clean(String value){return value==null?"":value.trim();}

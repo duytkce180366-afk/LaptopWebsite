@@ -1,4 +1,5 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="pageTitle" value="Order #${order.orderId}" />
 <%@ include file="_start.jsp" %>
 
@@ -44,7 +45,7 @@
             </span>
         </p>
 
-        <p>Created: ${order.createdAt}</p>
+        <p>Created: <fmt:formatDate value="${order.createdAt}" pattern="dd/MM/yyyy HH:mm:ss" /></p>
         <p>Note: <c:out value="${order.note}" /></p>
     </section>
 </div>

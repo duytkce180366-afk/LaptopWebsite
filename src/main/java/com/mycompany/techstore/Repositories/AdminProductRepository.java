@@ -2,6 +2,7 @@ package com.mycompany.techstore.Repositories;
 
 import com.mycompany.techstore.Models.Objects.*;
 import com.mycompany.techstore.resources.DbClass;
+import com.mycompany.techstore.utils.VietnamTime;
 import java.sql.*;
 import java.util.*;
 
@@ -74,7 +75,7 @@ public class AdminProductRepository {
     public List<StockReceipt> recentReceipts()throws SQLException{
         String sql="SELECT TOP 50 r.receipt_id,r.product_id,p.sku,p.product_name,r.quantity,r.previous_stock,r.resulting_stock,r.note,u.full_name admin_name,r.created_at FROM dbo.bs_StockReceipts r JOIN dbo.bs_Products p ON p.product_id=r.product_id JOIN dbo.bs_user u ON u.user_id=r.admin_id ORDER BY r.created_at DESC,r.receipt_id DESC";
         List<StockReceipt> out=new ArrayList<>();try(Connection con=new DbClass().getConnection();PreparedStatement ps=con.prepareStatement(sql);ResultSet rs=ps.executeQuery()){
-            while(rs.next()){StockReceipt r=new StockReceipt();r.setReceiptId(rs.getLong("receipt_id"));r.setProductId(rs.getInt("product_id"));r.setSku(rs.getString("sku"));r.setProductName(rs.getString("product_name"));r.setQuantity(rs.getInt("quantity"));r.setPreviousStock(rs.getInt("previous_stock"));r.setResultingStock(rs.getInt("resulting_stock"));r.setNote(rs.getString("note"));r.setAdminName(rs.getString("admin_name"));r.setCreatedAt(rs.getTimestamp("created_at"));out.add(r);}}
+            while(rs.next()){StockReceipt r=new StockReceipt();r.setReceiptId(rs.getLong("receipt_id"));r.setProductId(rs.getInt("product_id"));r.setSku(rs.getString("sku"));r.setProductName(rs.getString("product_name"));r.setQuantity(rs.getInt("quantity"));r.setPreviousStock(rs.getInt("previous_stock"));r.setResultingStock(rs.getInt("resulting_stock"));r.setNote(rs.getString("note"));r.setAdminName(rs.getString("admin_name"));r.setCreatedAt(VietnamTime.fromUtc(rs.getTimestamp("created_at")));out.add(r);}}
         return out;
     }
     private void bindCreate(PreparedStatement ps,AdminProduct p)throws SQLException{
@@ -102,7 +103,7 @@ public class AdminProductRepository {
         AdminProduct p=new AdminProduct();p.setProductId(rs.getInt("product_id"));p.setCategoryId(rs.getInt("category_id"));p.setBrandId(rs.getInt("brand_id"));
         p.setCategoryName(rs.getString("category_name"));p.setBrandName(rs.getString("brand_name"));p.setSku(rs.getString("sku"));p.setProductName(rs.getString("product_name"));
         p.setDescription(rs.getString("description"));p.setPrice(rs.getBigDecimal("price"));p.setStock(rs.getInt("stock"));p.setThumbnail(rs.getString("thumbnail"));
-        p.setStatus(canonicalStatus(rs.getString("status")));p.setCreatedAt(rs.getTimestamp("created_at"));p.setUpdatedAt(rs.getTimestamp("updated_at"));return p;
+        p.setStatus(canonicalStatus(rs.getString("status")));p.setCreatedAt(VietnamTime.fromUtc(rs.getTimestamp("created_at")));p.setUpdatedAt(VietnamTime.fromUtc(rs.getTimestamp("updated_at")));return p;
     }
     private String canonicalStatus(String value){
         if(value==null)return "";

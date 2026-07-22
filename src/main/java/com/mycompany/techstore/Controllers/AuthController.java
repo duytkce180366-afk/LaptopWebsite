@@ -19,7 +19,9 @@ import java.util.logging.Logger;
 
 import com.mycompany.techstore.Exceptions.AuthException;
 import com.mycompany.techstore.Models.Objects.User;
+import com.mycompany.techstore.Repositories.UserRepository;
 import com.mycompany.techstore.services.AuthService;
+import com.mycompany.techstore.services.BackOfficeAuthorizationPolicy;
 import com.mycompany.techstore.services.EmailService;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
@@ -71,6 +73,7 @@ public class AuthController extends HttpServlet {
     // Auth Service handler
     private transient final AuthService authService;
     private transient final EmailService emailService;
+    private transient final UserRepository userRepository;
 
     // OTP Relax time between request (in second)
     private final int otpRelax = 30;
@@ -95,6 +98,7 @@ public class AuthController extends HttpServlet {
         }
 
         this.authService = new AuthService();
+        this.userRepository = new UserRepository();
 
         if (System.getenv("SMTP_HOST") == null) {
             Logger.getLogger(EmailService.class.getName()).log(Level.WARNING, "SMTP_HOST is not configured; skipping OTP email.");
@@ -112,6 +116,17 @@ public class AuthController extends HttpServlet {
     private boolean IsSignedIn(HttpServletRequest request) {
         User u = (User) request.getSession().getAttribute("loggedUser");
         return u != null;
+    }
+
+    private String GetPostLoginPath(User user) {
+        try {
+            String role = this.userRepository.findRoleName(user.getUser_id());
+            return BackOfficeAuthorizationPolicy.isBackOfficeRole(role) ? "/admin/dashboard" : "/";
+        } catch (java.sql.SQLException ex) {
+            Logger.getLogger(AuthController.class.getName()).log(Level.WARNING,
+                    "Unable to resolve the post-login destination for user " + user.getUser_id(), ex);
+            return "/";
+        }
     }
 
     private boolean LoadOidcConfiguration() {
@@ -266,7 +281,7 @@ public class AuthController extends HttpServlet {
 
                 // Sign in locally (store sanitized copy without password)
                 session.setAttribute("loggedUser", user);
-                response.sendRedirect(request.getContextPath() + (user.getRole_id() == 1 ? "/admin/dashboard" : "/"));
+                response.sendRedirect(request.getContextPath() + this.GetPostLoginPath(user));
             } catch (JOSEException | BadJOSEException | IOException | ParseException | AuthException ex) {
                 Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, ex.getLocalizedMessage(), ex);
                 String errorEx = URLEncoder.encode(ex.getMessage(), StandardCharsets.UTF_8);
@@ -294,7 +309,7 @@ public class AuthController extends HttpServlet {
                     return;
                 }
 
-                response.sendRedirect(request.getContextPath() + (user.getRole_id() == 1 ? "/admin/dashboard" : "/"));
+                response.sendRedirect(request.getContextPath() + this.GetPostLoginPath(user));
             } else {
                 response.sendRedirect(request.getContextPath() + "/auth?action=denied");
             }

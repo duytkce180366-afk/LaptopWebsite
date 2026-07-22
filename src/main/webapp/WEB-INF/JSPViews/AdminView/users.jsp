@@ -1,4 +1,5 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 
 <c:set var="pageTitle" value="${isAdmin ? 'Manage Users and Staff' : 'Manage Customers'}" />
 <%@ include file="_start.jsp" %>
@@ -78,7 +79,7 @@
                     <td>
                         <strong><c:out value="${u.fullName}" /></strong>
                         <br>
-                        <small>#${u.userId} &middot; ${u.createdAt}</small>
+                        <small>#${u.userId} &middot; <fmt:formatDate value="${u.createdAt}" pattern="dd/MM/yyyy HH:mm:ss" /></small>
                     </td>
 
                     <td>
