@@ -49,7 +49,7 @@ ORDER BY u.created_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY""";
         PreparedStatement ps =
             con.prepareStatement(
                 "SELECT role_id,role_name FROM dbo.bs_Roles WHERE role_name IN"
-                    + " ('Admin','User','Staff') ORDER BY CASE role_name WHEN 'Admin' THEN 1"
+                    + " ('Admin','Customer','Staff') ORDER BY CASE role_name WHEN 'Admin' THEN 1"
                     + " WHEN 'Staff' THEN 2 ELSE 3 END");
         ResultSet rs = ps.executeQuery()) {
       while (rs.next()) out.add(new LookupOption(rs.getInt(1), rs.getString(2)));
@@ -76,7 +76,7 @@ ORDER BY u.created_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY""";
         PreparedStatement ps =
             con.prepareStatement(
                 "SELECT 1 FROM dbo.bs_Roles WHERE role_id=? AND role_name IN"
-                    + " ('Admin','User','Staff')")) {
+                    + " ('Admin','Customer','Staff')")) {
       ps.setInt(1, roleId);
       try (ResultSet rs = ps.executeQuery()) {
         return rs.next();

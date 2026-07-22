@@ -9,6 +9,10 @@ import java.util.List;
 import java.util.Set;
 
 public class AdminUserService {
+  public static final String ROLE_ADMIN = "Admin";
+  public static final String ROLE_STAFF = "Staff";
+  public static final String ROLE_CUSTOMER = "Customer";
+
   private final AdminUserRepository repository = new AdminUserRepository();
 
   public PageResult<AdminUser> findAll(String q, int role, String status, int page)
@@ -22,13 +26,13 @@ public class AdminUserService {
 
   public PageResult<AdminUser> findAllForActor(
       String actorRole, String q, int role, String status, int page) throws SQLException {
-    if ("Staff".equals(actorRole)) role = repository.findRoleId("User");
+    if (ROLE_STAFF.equals(actorRole)) role = repository.findRoleId(ROLE_CUSTOMER);
     return findAll(q, role, status, page);
   }
 
   public List<LookupOption> rolesForActor(String actorRole) throws SQLException {
-    if (!"Staff".equals(actorRole)) return roles();
-    return roles().stream().filter(role -> "User".equals(role.getName())).toList();
+    if (!ROLE_STAFF.equals(actorRole)) return roles();
+    return roles().stream().filter(role -> ROLE_CUSTOMER.equals(role.getName())).toList();
   }
 
   public AdminUser findById(int id) throws SQLException {
@@ -50,9 +54,9 @@ public class AdminUserService {
     if (!repository.isManagedRole(roleId)) throw new BackOfficeValidationException("Invalid role.");
     AdminUser selected = repository.findById(id);
     if (selected == null) throw new BackOfficeValidationException("User not found.");
-    if ("Admin".equals(selected.getRoleName()) && repository.isLastActiveAdmin(id)) {
+    if (ROLE_ADMIN.equals(selected.getRoleName()) && repository.isLastActiveAdmin(id)) {
       for (LookupOption role : repository.roles())
-        if (role.getId() == roleId && !"Admin".equals(role.getName()))
+        if (role.getId() == roleId && !ROLE_ADMIN.equals(role.getName()))
           throw new BackOfficeValidationException(
               "The last active administrator cannot be demoted.");
     }
@@ -63,7 +67,7 @@ public class AdminUserService {
       throws SQLException {
     AdminUser selected = repository.findById(id);
     if (selected == null) throw new BackOfficeValidationException("User not found.");
-    if ("Staff".equals(actorRole) && !"User".equals(selected.getRoleName()))
+    if (ROLE_STAFF.equals(actorRole) && !ROLE_CUSTOMER.equals(selected.getRoleName()))
       throw new BackOfficeValidationException("Staff can only block or unblock customer accounts.");
     setStatus(id, status, actorId);
   }
@@ -83,7 +87,7 @@ public class AdminUserService {
       throws SQLException {
     validateStaff(name, email, phone);
     AdminUser current = repository.findById(id);
-    if (current == null || !"Staff".equals(current.getRoleName()))
+    if (current == null || !ROLE_STAFF.equals(current.getRoleName()))
       throw new BackOfficeValidationException("Staff account not found.");
     if (repository.emailExists(email, id))
       throw new BackOfficeValidationException("Email is already in use.");

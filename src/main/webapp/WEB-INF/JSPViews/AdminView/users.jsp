@@ -7,8 +7,9 @@
 <div class="admin-card">
     <form class="admin-filters" method="get">
         <div>
-            <label class="form-label">Search</label>
+            <label class="form-label" for="searchQuery">Search</label>
             <input
+                id="searchQuery"
                 class="form-control"
                 name="q"
                 value="<c:out value='${q}' />"
@@ -17,8 +18,8 @@
 
         <c:if test="${isAdmin}">
             <div>
-                <label class="form-label">Role</label>
-                <select class="form-select" name="role">
+                <label class="form-label" for="role">Role</label>
+                <select id="role" class="form-select" name="role">
                     <option value="0">All</option>
 
                     <c:forEach var="r" items="${roles}">
@@ -31,8 +32,8 @@
         </c:if>
 
         <div>
-            <label class="form-label">Status</label>
-            <select class="form-select" name="status">
+            <label class="form-label" for="status">Status</label>
+            <select id="status" class="form-select" name="status">
                 <option value="">All</option>
 
                 <c:forEach var="s" items="${['Active','Blocked','Inactive','Pending']}">
@@ -97,7 +98,8 @@
                                     <input type="hidden" name="csrfToken" value="${sessionScope.adminCsrfToken}">
                                     <input type="hidden" name="id" value="${u.userId}">
 
-                                    <select class="form-select form-select-sm" name="roleId">
+                                    <label for="roleSelect_${u.userId}" class="visually-hidden">Role</label>
+                                    <select id="roleSelect_${u.userId}" class="form-select form-select-sm" name="roleId">
                                         <c:forEach var="r" items="${roles}">
                                             <option value="${r.id}" ${u.roleId == r.id ? 'selected' : ''}>
                                                 <c:out value="${r.name}" />
@@ -123,15 +125,17 @@
 
                     <td>
                         <div class="admin-actions">
-                            <form method="post" action="${pageContext.request.contextPath}/admin/users/status">
-                                <input type="hidden" name="csrfToken" value="${sessionScope.adminCsrfToken}">
-                                <input type="hidden" name="id" value="${u.userId}">
-                                <input type="hidden" name="status" value="${u.status == 'Blocked' ? 'Active' : 'Blocked'}">
+                            <c:if test="${u.userId != sessionScope.loggedUser.user_id}">
+                                <form method="post" action="${pageContext.request.contextPath}/admin/users/status">
+                                    <input type="hidden" name="csrfToken" value="${sessionScope.adminCsrfToken}">
+                                    <input type="hidden" name="id" value="${u.userId}">
+                                    <input type="hidden" name="status" value="${u.status == 'Blocked' ? 'Active' : 'Blocked'}">
 
-                                <button class="btn btn-sm ${u.status == 'Blocked' ? 'btn-outline-success' : 'btn-outline-danger'}">
-                                    ${u.status == 'Blocked' ? 'Unblock' : 'Block'}
-                                </button>
-                            </form>
+                                    <button class="btn btn-sm ${u.status == 'Blocked' ? 'btn-outline-success' : 'btn-outline-danger'}">
+                                        ${u.status == 'Blocked' ? 'Unblock' : 'Block'}
+                                    </button>
+                                </form>
+                            </c:if>
 
                             <c:if test="${isAdmin and u.roleName == 'Staff'}">
                                 <a class="btn btn-sm btn-outline-primary"
@@ -139,15 +143,10 @@
                                     Edit
                                 </a>
 
-                                <form method="post" action="${pageContext.request.contextPath}/admin/users/delete">
-                                    <input type="hidden" name="csrfToken" value="${sessionScope.adminCsrfToken}">
-                                    <input type="hidden" name="id" value="${u.userId}">
-
-                                    <button class="btn btn-sm btn-outline-danger"
-                                            onclick="return confirm('Deactivate this staff account?')">
-                                        Delete
-                                    </button>
-                                </form>
+                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                        onclick="confirmDelete(${u.userId})">
+                                    Delete
+                                </button>
                             </c:if>
                         </div>
                     </td>
@@ -167,18 +166,60 @@
 
         <div>
             <c:if test="${result.page > 1}">
-                <a class="btn btn-sm btn-outline-secondary" href="?page=${result.page - 1}">
+                <c:url var="prevUrl" value="">
+                    <c:param name="q" value="${q}"/>
+                    <c:param name="role" value="${selectedRole}"/>
+                    <c:param name="status" value="${selectedStatus}"/>
+                    <c:param name="page" value="${result.page - 1}"/>
+                </c:url>
+                <a class="btn btn-sm btn-outline-secondary" href="<c:out value='${prevUrl}'/>">
                     Previous
                 </a>
             </c:if>
 
             <c:if test="${result.page < result.totalPages}">
-                <a class="btn btn-sm btn-outline-secondary" href="?page=${result.page + 1}">
+                <c:url var="nextUrl" value="">
+                    <c:param name="q" value="${q}"/>
+                    <c:param name="role" value="${selectedRole}"/>
+                    <c:param name="status" value="${selectedStatus}"/>
+                    <c:param name="page" value="${result.page + 1}"/>
+                </c:url>
+                <a class="btn btn-sm btn-outline-secondary" href="<c:out value='${nextUrl}'/>">
                     Next
                 </a>
             </c:if>
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Deactivation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to deactivate this staff account?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="post" action="${pageContext.request.contextPath}/admin/users/delete">
+                    <input type="hidden" name="csrfToken" value="${sessionScope.adminCsrfToken}">
+                    <input type="hidden" name="id" id="deleteUserId" value="">
+                    <button type="submit" class="btn btn-danger">Deactivate</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function confirmDelete(userId) {
+        document.getElementById('deleteUserId').value = userId;
+        var myModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+        myModal.show();
+    }
+</script>
 
 <%@ include file="_end.jsp" %>

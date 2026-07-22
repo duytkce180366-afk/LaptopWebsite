@@ -58,29 +58,46 @@ public class AdminReportController extends HttpServlet {
       throws IOException {
     res.setContentType("text/csv;charset=UTF-8");
     res.setHeader("Content-Disposition", "attachment; filename=techstore-" + type + "-report.csv");
-    if (rows.isEmpty()) {
-      res.getWriter().println("No data");
-      return;
-    }
-    List<String> headers = new ArrayList<>(rows.get(0).keySet());
-    res.getWriter().println(String.join(",", headers));
-    for (Map<String, Object> row : rows) {
-      List<String> cells = new ArrayList<>();
-      for (String h : headers) {
-        cells.add(escape(row.get(h)));
+    
+    // Write UTF-8 BOM for Excel to recognize Vietnamese characters properly
+    res.getOutputStream().write(new byte[] {(byte) 0xEF, (byte) 0xBB, (byte) 0xBF});
+
+    try (java.io.PrintWriter writer =
+        new java.io.PrintWriter(
+            new java.io.OutputStreamWriter(
+                res.getOutputStream(), java.nio.charset.StandardCharsets.UTF_8))) {
+      if (rows.isEmpty()) {
+        writer.println("No data");
+        return;
       }
-      res.getWriter().println(String.join(",", cells));
+      List<String> headers = new ArrayList<>(rows.get(0).keySet());
+      
+      // Make headers look professional (e.g. "total_amount" -> "TOTAL AMOUNT")
+      List<String> displayHeaders =
+          headers.stream().map(h -> h.replace("_", " ").toUpperCase()).toList();
+      writer.println(String.join(",", displayHeaders));
+      
+      for (Map<String, Object> row : rows) {
+        List<String> cells = new ArrayList<>();
+        for (String h : headers) {
+          cells.add(escape(row.get(h)));
+        }
+        writer.println(String.join(",", cells));
+      }
     }
   }
 
   private String escape(Object value) {
+    if (value == null) return "\"\"";
+    if (value instanceof Number) return String.valueOf(value);
+
     String v;
     if (value instanceof Timestamp timestamp) {
       v = CSV_DATE_TIME.format(timestamp.toLocalDateTime());
     } else if (value instanceof java.sql.Date date) {
       v = CSV_DATE.format(date.toLocalDate());
     } else {
-      v = value == null ? "" : String.valueOf(value);
+      v = String.valueOf(value);
     }
     return "\"" + v.replace("\"", "\"\"") + "\"";
   }

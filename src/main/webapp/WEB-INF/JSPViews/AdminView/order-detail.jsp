@@ -85,6 +85,7 @@
     </div>
 </div>
 
+<c:if test="${order.orderStatus != 'Delivered' and order.orderStatus != 'Cancelled'}">
 <div class="admin-card">
     <h2 class="h5">Update status</h2>
 
@@ -124,6 +125,7 @@
         </div>
     </form>
 </div>
+</c:if>
 
 <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/admin/orders">
     Back to orders
