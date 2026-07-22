@@ -76,8 +76,8 @@ ORDER BY r.created_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY""";
     r.setProductName(rs.getString("product_name"));
     r.setComment(rs.getString("comment"));
     r.setStatus(rs.getString("status"));
-    r.setCreatedAt(VietnamTime.fromUtc(rs.getTimestamp("created_at")));
-    r.setModeratedAt(VietnamTime.fromUtc(rs.getTimestamp("moderated_at")));
+    r.setCreatedAt(VietnamTime.fromUtcOrVietnamLocal(rs.getTimestamp("created_at")));
+    r.setModeratedAt(VietnamTime.fromUtcOrVietnamLocal(rs.getTimestamp("moderated_at")));
     return r;
   }
 

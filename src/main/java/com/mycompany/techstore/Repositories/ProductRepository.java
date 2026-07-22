@@ -285,13 +285,13 @@ ORDER BY r.created_at DESC, r.review_id DESC;
     String updateSql =
         """
         UPDATE dbo.bs_Reviews
-        SET rating = ?, comment = ?, updated_at = GETDATE()
+        SET rating = ?, comment = ?, updated_at = SYSUTCDATETIME()
         WHERE review_id = ?;
         """;
     String insertSql =
         """
 INSERT INTO dbo.bs_Reviews (user_id, order_id, product_id, rating, comment, created_at, updated_at)
-VALUES (?, ?, ?, ?, ?, GETDATE(), GETDATE());
+VALUES (?, ?, ?, ?, ?, SYSUTCDATETIME(), SYSUTCDATETIME());
 """;
 
     try (PreparedStatement existingPs = super.getConnection().prepareStatement(existingSql)) {
