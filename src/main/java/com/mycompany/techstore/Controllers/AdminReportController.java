@@ -6,12 +6,17 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @WebServlet("/admin/reports")
 public class AdminReportController extends HttpServlet {
 
+  private static final DateTimeFormatter CSV_DATE = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+  private static final DateTimeFormatter CSV_DATE_TIME =
+      DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
   private final DashboardService service = new DashboardService();
 
   @Override
@@ -69,7 +74,14 @@ public class AdminReportController extends HttpServlet {
   }
 
   private String escape(Object value) {
-    String v = value == null ? "" : String.valueOf(value);
+    String v;
+    if (value instanceof Timestamp timestamp) {
+      v = CSV_DATE_TIME.format(timestamp.toLocalDateTime());
+    } else if (value instanceof java.sql.Date date) {
+      v = CSV_DATE.format(date.toLocalDate());
+    } else {
+      v = value == null ? "" : String.valueOf(value);
+    }
     return "\"" + v.replace("\"", "\"\"") + "\"";
   }
 

@@ -3,6 +3,7 @@ package com.mycompany.techstore.Repositories;
 import com.mycompany.techstore.Models.Objects.Product;
 import com.mycompany.techstore.Models.Objects.Review;
 import com.mycompany.techstore.resources.DbClass;
+import com.mycompany.techstore.utils.VietnamTime;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -187,10 +188,8 @@ public class ProductRepository extends DbClass {
       ps.setInt(1, productId);
       try (ResultSet rs = ps.executeQuery()) {
         while (rs.next()) {
-          String reviewDate = "";
-          if (rs.getTimestamp("created_at") != null) {
-            reviewDate = rs.getTimestamp("created_at").toLocalDateTime().toLocalDate().toString();
-          }
+          String reviewDate =
+              VietnamTime.formatUtcOrVietnamLocal(rs.getTimestamp("created_at"));
 
           reviews.add(
               new Review(
@@ -228,10 +227,8 @@ ORDER BY r.created_at DESC, r.review_id DESC;
       ps.setInt(3, userId);
       try (ResultSet rs = ps.executeQuery()) {
         if (rs.next()) {
-          String reviewDate = "";
-          if (rs.getTimestamp("created_at") != null) {
-            reviewDate = rs.getTimestamp("created_at").toLocalDateTime().toLocalDate().toString();
-          }
+          String reviewDate =
+              VietnamTime.formatUtcOrVietnamLocal(rs.getTimestamp("created_at"));
 
           return new Review(
               rs.getInt("review_id"),

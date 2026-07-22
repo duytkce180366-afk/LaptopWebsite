@@ -4,6 +4,7 @@
 <%@page import="java.util.HashSet"%>
 <%@page import="java.util.Set"%>
 <%@page import="java.util.List"%>
+<%@page import="java.text.SimpleDateFormat"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
 <%
@@ -23,6 +24,9 @@
         response.sendRedirect(request.getContextPath() + "/order-history");
         return;
     }
+    String orderCreatedAt = order.getCreatedAt() == null
+            ? "-"
+            : new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(order.getCreatedAt());
 %>
 
 <!DOCTYPE html>
@@ -59,7 +63,7 @@
                     </div>
                     <div>
                         <h2>Order #<%=order.getOrderId()%></h2>
-                        <p>Placed on <%=order.getCreatedAt()%></p>
+                        <p>Placed on <%=orderCreatedAt%></p>
                     </div>
                 </div>
                 <a href="order-history" class="btn-back">← Back to Orders</a>

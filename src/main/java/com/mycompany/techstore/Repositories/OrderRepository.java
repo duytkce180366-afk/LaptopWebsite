@@ -685,7 +685,7 @@ public class OrderRepository {
         "SELECT order_id FROM bs_Orders "
             + "WHERE payment_method = 'VNPay' "
             + "AND order_status IN ('Pending', 'Payment Failed') "
-            + "AND DATEDIFF(MINUTE, created_at, GETDATE()) >= 15";
+            + "AND DATEDIFF(MINUTE, created_at, SYSUTCDATETIME()) >= 15";
 
     List<Integer> expiredIds = new ArrayList<>();
 

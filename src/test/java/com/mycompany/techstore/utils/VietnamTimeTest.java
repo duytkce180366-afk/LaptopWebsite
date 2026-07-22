@@ -22,4 +22,11 @@ class VietnamTimeTest {
 
     assertEquals(vietnamLocal, VietnamTime.fromUtcOrVietnamLocal(vietnamLocal));
   }
+
+  @Test
+  void usesTheSharedVietnameseDisplayFormat() {
+    Timestamp vietnamLocal = Timestamp.valueOf("2026-07-22 21:05:34");
+
+    assertEquals("22/07/2026 21:05:34", VietnamTime.formatUtcOrVietnamLocal(vietnamLocal));
+  }
 }

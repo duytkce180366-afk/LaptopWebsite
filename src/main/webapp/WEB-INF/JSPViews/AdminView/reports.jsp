@@ -100,7 +100,7 @@
                 <tbody>
                     <c:forEach var="r" items="${rows}">
                         <tr>
-                            <td>${r.report_date}</td>
+                            <td><fmt:formatDate value="${r.report_date}" pattern="dd/MM/yyyy" /></td>
                             <td>${r.orders}</td>
                             <td>${r.revenue}</td>
                         </tr>
