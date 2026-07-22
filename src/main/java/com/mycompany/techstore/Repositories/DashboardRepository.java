@@ -2,6 +2,7 @@ package com.mycompany.techstore.Repositories;
 
 import com.mycompany.techstore.Models.Objects.DashboardStats;
 import com.mycompany.techstore.resources.DbClass;
+import com.mycompany.techstore.utils.VietnamTime;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.time.LocalDate;
@@ -183,7 +184,15 @@ public class DashboardRepository {
     ResultSetMetaData m = rs.getMetaData();
     while (rs.next()) {
       Map<String, Object> row = new LinkedHashMap<>();
-      for (int i = 1; i <= m.getColumnCount(); i++) row.put(m.getColumnLabel(i), rs.getObject(i));
+      for (int i = 1; i <= m.getColumnCount(); i++) {
+        String label = m.getColumnLabel(i);
+        Object value = rs.getObject(i);
+        if (value instanceof Timestamp timestamp
+            && label.toLowerCase(Locale.ROOT).endsWith("_at")) {
+          value = VietnamTime.fromUtc(timestamp);
+        }
+        row.put(label, value);
+      }
       out.add(row);
     }
     return out;

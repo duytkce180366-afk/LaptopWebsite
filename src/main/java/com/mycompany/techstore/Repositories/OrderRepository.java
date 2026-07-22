@@ -2,6 +2,7 @@ package com.mycompany.techstore.Repositories;
 
 import com.mycompany.techstore.Models.Objects.Order;
 import com.mycompany.techstore.resources.DbClass;
+import com.mycompany.techstore.utils.VietnamTime;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -540,7 +541,7 @@ public class OrderRepository {
         order.setDiscountAmount(rs.getDouble("discount_amount"));
         order.setPaymentMethod(rs.getString("payment_method"));
         order.setOrderStatus(rs.getString("order_status"));
-        order.setCreatedAt(rs.getTimestamp("created_at"));
+        order.setCreatedAt(VietnamTime.fromUtc(rs.getTimestamp("created_at")));
         order.setNote(rs.getString("note"));
         order.setPhone(rs.getString("phone"));
         order.setAddressInfo(rs.getString("address_info"));
@@ -581,7 +582,7 @@ public class OrderRepository {
         row.put("discount_amount", rs.getDouble("discount_amount"));
         row.put("payment_method", rs.getString("payment_method"));
         row.put("order_status", rs.getString("order_status"));
-        row.put("created_at", rs.getTimestamp("created_at"));
+        row.put("created_at", VietnamTime.fromUtc(rs.getTimestamp("created_at")));
         list.add(row);
       }
 
