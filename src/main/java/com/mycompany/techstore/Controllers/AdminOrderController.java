@@ -1,5 +1,7 @@
 package com.mycompany.techstore.Controllers;
 
+import com.mycompany.techstore.Exceptions.BackOfficeNotFoundException;
+
 import com.mycompany.techstore.Models.Objects.*;
 import com.mycompany.techstore.services.AdminOrderService;
 import jakarta.servlet.ServletException;
@@ -20,8 +22,7 @@ public class AdminOrderController extends HttpServlet {
             if ("/detail".equals(req.getPathInfo())) {
                 AdminOrder order = service.findById(number(req, "id", 0));
                 if (order == null) {
-                    res.sendError(404);
-                    return;
+                    throw new BackOfficeNotFoundException("Order not found.");
                 }
                 req.setAttribute("order", order);
                 req.getRequestDispatcher("/WEB-INF/JSPViews/AdminView/order-detail.jsp").forward(req, res);
@@ -36,6 +37,9 @@ public class AdminOrderController extends HttpServlet {
             req.setAttribute("from", from);
             req.setAttribute("to", to);
             req.getRequestDispatcher("/WEB-INF/JSPViews/AdminView/orders.jsp").forward(req, res);
+        } catch (BackOfficeNotFoundException ex) {
+            req.getSession().setAttribute("adminError", ex.getMessage());
+            res.sendRedirect(req.getContextPath() + "/admin/orders");
         } catch (SQLException ex) {
             throw new ServletException(ex);
         }
@@ -52,6 +56,9 @@ public class AdminOrderController extends HttpServlet {
         } catch (IllegalArgumentException ex) {
             req.getSession().setAttribute("adminError", ex.getMessage());
             res.sendRedirect(req.getContextPath() + "/admin/orders/detail?id=" + id);
+        } catch (BackOfficeNotFoundException ex) {
+            req.getSession().setAttribute("adminError", ex.getMessage());
+            res.sendRedirect(req.getContextPath() + "/admin/orders");
         } catch (SQLException ex) {
             throw new ServletException(ex);
         }

@@ -100,7 +100,7 @@
                 <th>Product</th>
                 <th>Quantity</th>
                 <th>Stock change</th>
-                <th>Admin</th>
+                <th>Received by</th>
                 <th>Note</th>
             </tr>
         </thead>

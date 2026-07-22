@@ -105,9 +105,14 @@
                 <c:forEach var="r" items="${stats.lowStock}">
                     <tr>
                         <td>
-                            <a href="${pageContext.request.contextPath}/admin/products/edit?id=${r.id}">
-                                <c:out value="${r.label}" />
-                            </a>
+                            <c:choose>
+                                <c:when test="${isAdmin}">
+                                    <a href="${pageContext.request.contextPath}/admin/products/edit?id=${r.id}">
+                                        <c:out value="${r.label}" />
+                                    </a>
+                                </c:when>
+                                <c:otherwise><c:out value="${r.label}" /></c:otherwise>
+                            </c:choose>
                         </td>
                         <td class="text-end">${r.value} left</td>
                     </tr>

@@ -1,5 +1,7 @@
 package com.mycompany.techstore.Controllers;
 
+import com.mycompany.techstore.Exceptions.BackOfficeNotFoundException;
+
 import com.mycompany.techstore.Models.Objects.User;
 import com.mycompany.techstore.services.AdminUserService;
 import jakarta.servlet.ServletException;
@@ -26,8 +28,7 @@ public class AdminUserController extends HttpServlet {
             if ("/edit".equals(path)) {
                 var staff = service.findById(number(req, "id", 0));
                 if (staff == null || !"Staff".equals(staff.getRoleName())) {
-                    res.sendError(404);
-                    return;
+                    throw new BackOfficeNotFoundException("Staff account not found.");
                 }
                 req.setAttribute("staff", staff);
                 req.getRequestDispatcher("/WEB-INF/JSPViews/AdminView/staff-form.jsp").forward(req, res);
@@ -41,6 +42,9 @@ public class AdminUserController extends HttpServlet {
             req.setAttribute("selectedRole", role);
             req.setAttribute("selectedStatus", status);
             req.getRequestDispatcher("/WEB-INF/JSPViews/AdminView/users.jsp").forward(req, res);
+        } catch (BackOfficeNotFoundException ex) {
+            req.getSession().setAttribute("adminError", ex.getMessage());
+            res.sendRedirect(req.getContextPath() + "/admin/users");
         } catch (SQLException ex) {
             throw new ServletException(ex);
         }

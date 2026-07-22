@@ -1,5 +1,7 @@
 package com.mycompany.techstore.Controllers;
 
+import com.mycompany.techstore.Exceptions.BackOfficeNotFoundException;
+
 import com.mycompany.techstore.Models.Objects.*;
 import com.mycompany.techstore.services.AdminProductService;
 import jakarta.servlet.ServletException;
@@ -27,13 +29,15 @@ public class AdminProductController extends HttpServlet {
             if ("/edit".equals(path)) {
                 AdminProduct p = service.findById(intParam(req, "id", 0));
                 if (p == null) {
-                    res.sendError(404);
-                    return;
+                    throw new BackOfficeNotFoundException("Product not found.");
                 }
                 showForm(req, res, p);
                 return;
             }
             list(req, res);
+        } catch (BackOfficeNotFoundException ex) {
+            req.getSession().setAttribute("adminError", ex.getMessage());
+            res.sendRedirect(req.getContextPath() + "/admin/products");
         } catch (SQLException ex) {
             throw new ServletException(ex);
         }
@@ -65,6 +69,9 @@ public class AdminProductController extends HttpServlet {
             } catch (SQLException sql) {
                 throw new ServletException(sql);
             }
+        } catch (BackOfficeNotFoundException ex) {
+            req.getSession().setAttribute("adminError", ex.getMessage());
+            res.sendRedirect(req.getContextPath() + "/admin/products");
         } catch (SQLException ex) {
             throw new ServletException(ex);
         }
