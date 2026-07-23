@@ -3,7 +3,7 @@ package com.mycompany.techstore.Repositories;
 import com.mycompany.techstore.Models.Objects.Product;
 import com.mycompany.techstore.Models.Objects.Review;
 import com.mycompany.techstore.resources.DbClass;
-import com.mycompany.techstore.utils.VietnamTime;
+import com.mycompany.techstore.services.VietnamTime;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;

@@ -2,7 +2,7 @@ package com.mycompany.techstore.Repositories;
 
 import com.mycompany.techstore.Models.Objects.Order;
 import com.mycompany.techstore.resources.DbClass;
-import com.mycompany.techstore.utils.VietnamTime;
+import com.mycompany.techstore.services.VietnamTime;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
