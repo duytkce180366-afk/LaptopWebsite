@@ -91,11 +91,67 @@ public class AdminOrderRepository {
           ps.setInt(3, orderId);
           ps.executeUpdate();
         }
+        if ("Delivered".equals(target)) {
+          syncDeliveredPayment(con, orderId);
+        } else if ("Cancelled".equals(target)) {
+          syncCancelledPayment(con, orderId);
+        }
         audit.log(con, adminId, "STATUS_CHANGE", "ORDER", orderId, current + " -> " + target);
         con.commit();
       } catch (Exception ex) {
         con.rollback();
         throw ex;
+      }
+    }
+  }
+
+  private void syncDeliveredPayment(Connection con, int orderId) throws SQLException {
+    String checkSql = "SELECT payment_id FROM dbo.bs_Payments WHERE order_id=?";
+    boolean exists = false;
+    try (PreparedStatement ps = con.prepareStatement(checkSql)) {
+      ps.setInt(1, orderId);
+      try (ResultSet rs = ps.executeQuery()) {
+        exists = rs.next();
+      }
+    }
+    if (exists) {
+      String updateSql =
+          "UPDATE dbo.bs_Payments SET payment_status='Paid', updated_at=SYSUTCDATETIME() WHERE"
+              + " order_id=?";
+      try (PreparedStatement ps = con.prepareStatement(updateSql)) {
+        ps.setInt(1, orderId);
+        ps.executeUpdate();
+      }
+    } else {
+      String insertSql =
+          "INSERT INTO"
+              + " dbo.bs_Payments(order_id,user_id,amount,payment_method,payment_status,transaction_id,created_at,updated_at)"
+              + " SELECT"
+              + " order_id,user_id,(total_amount+shipping_fee-discount_amount),payment_method,'Paid',CONCAT('COD-',order_id),SYSUTCDATETIME(),SYSUTCDATETIME()"
+              + " FROM dbo.bs_Orders WHERE order_id=?";
+      try (PreparedStatement ps = con.prepareStatement(insertSql)) {
+        ps.setInt(1, orderId);
+        ps.executeUpdate();
+      }
+    }
+  }
+
+  private void syncCancelledPayment(Connection con, int orderId) throws SQLException {
+    String checkSql = "SELECT payment_id FROM dbo.bs_Payments WHERE order_id=?";
+    boolean exists = false;
+    try (PreparedStatement ps = con.prepareStatement(checkSql)) {
+      ps.setInt(1, orderId);
+      try (ResultSet rs = ps.executeQuery()) {
+        exists = rs.next();
+      }
+    }
+    if (exists) {
+      String updateSql =
+          "UPDATE dbo.bs_Payments SET payment_status='Cancelled', updated_at=SYSUTCDATETIME() WHERE"
+              + " order_id=? AND payment_status<>'Paid'";
+      try (PreparedStatement ps = con.prepareStatement(updateSql)) {
+        ps.setInt(1, orderId);
+        ps.executeUpdate();
       }
     }
   }
@@ -187,8 +243,18 @@ public class AdminOrderRepository {
     o.setAddressInfo(rs.getString("address_info"));
     o.setPaymentMethod(rs.getString("payment_method"));
     String payment = rs.getString("payment_status");
-    o.setPaymentStatus(payment == null ? "Pending" : payment);
-    o.setOrderStatus(rs.getString("order_status"));
+    String orderStatus = rs.getString("order_status");
+    if (payment == null) {
+      if ("Delivered".equalsIgnoreCase(orderStatus)) {
+        payment = "Paid";
+      } else if ("Cancelled".equalsIgnoreCase(orderStatus)) {
+        payment = "Cancelled";
+      } else {
+        payment = "Pending";
+      }
+    }
+    o.setPaymentStatus(payment);
+    o.setOrderStatus(orderStatus);
     o.setNote(rs.getString("note"));
     o.setTotalAmount(rs.getBigDecimal("total_amount"));
     o.setShippingFee(rs.getBigDecimal("shipping_fee"));
