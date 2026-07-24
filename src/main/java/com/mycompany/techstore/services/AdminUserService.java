@@ -33,7 +33,7 @@ public class AdminUserService {
 
   public List<LookupOption> rolesForActor(String actorRole) throws SQLException {
     if (!ROLE_STAFF.equals(actorRole)) return roles();
-    return roles().stream().filter(role -> ROLE_CUSTOMER.equals(role.getName())).toList();
+    return roles().stream().filter(role -> ROLE_CUSTOMER.equals(role.getName()) || "User".equals(role.getName())).toList();
   }
 
   public AdminUser findById(int id) throws SQLException {

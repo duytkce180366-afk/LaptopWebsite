@@ -49,8 +49,8 @@ ORDER BY u.created_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY""";
         PreparedStatement ps =
             con.prepareStatement(
                 "SELECT role_id,role_name FROM dbo.bs_Roles WHERE role_name IN"
-                    + " ('Admin','Customer','Staff') ORDER BY CASE role_name WHEN 'Admin' THEN 1"
-                    + " WHEN 'Staff' THEN 2 ELSE 3 END");
+                    + " ('Admin','Customer','User','Staff') ORDER BY CASE WHEN role_name='Admin' THEN 1"
+                    + " WHEN role_name='Staff' THEN 2 ELSE 3 END");
         ResultSet rs = ps.executeQuery()) {
       while (rs.next()) out.add(new LookupOption(rs.getInt(1), rs.getString(2)));
     }
@@ -76,7 +76,7 @@ ORDER BY u.created_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY""";
         PreparedStatement ps =
             con.prepareStatement(
                 "SELECT 1 FROM dbo.bs_Roles WHERE role_id=? AND role_name IN"
-                    + " ('Admin','Customer','Staff')")) {
+                    + " ('Admin','Customer','User','Staff')")) {
       ps.setInt(1, roleId);
       try (ResultSet rs = ps.executeQuery()) {
         return rs.next();
@@ -87,8 +87,12 @@ ORDER BY u.created_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY""";
   public int findRoleId(String roleName) throws SQLException {
     try (Connection con = new DbClass().getConnection();
         PreparedStatement ps =
-            con.prepareStatement("SELECT role_id FROM dbo.bs_Roles WHERE role_name=?")) {
+            con.prepareStatement(
+                "SELECT role_id FROM dbo.bs_Roles WHERE role_name=? OR (role_name='User' AND"
+                    + " ?='Customer') OR (role_name='Customer' AND ?='User')")) {
       ps.setString(1, roleName);
+      ps.setString(2, roleName);
+      ps.setString(3, roleName);
       try (ResultSet rs = ps.executeQuery()) {
         return rs.next() ? rs.getInt(1) : 0;
       }
