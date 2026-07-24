@@ -75,42 +75,77 @@
 
                     <h3>Shipping Address</h3>
 
-                    <div class="default-address">
+                    <c:choose>
+                        <c:when test="${not empty defaultAddress}">
+                            <div class="default-address">
+                                <div class="address-name">
+                                    ${user.full_name}
+                                </div>
+                                <div class="address-phone">
+                                    ${defaultAddress.phone}
+                                </div>
+                                <div class="address-detail">
+                                    ${defaultAddress.homeAddress},
+                                    ${defaultAddress.ward},
+                                    ${defaultAddress.province}
+                                </div>
+                                <a href="${pageContext.request.contextPath}/profile?action=add_address">
+                                    Change address
+                                </a>
+                            </div>
 
-                        <div class="address-name">
-                            ${user.full_name}
-                        </div>
+                            <input type="hidden"
+                                   name="phone"
+                                   value="${defaultAddress.phone}">
 
-                        <div class="address-phone">
-                            ${defaultAddress.phone}
-                        </div>
+                            <input type="hidden"
+                                   name="province"
+                                   value="${defaultAddress.province}">
 
-                        <div class="address-detail">
-                            ${defaultAddress.homeAddress},
-                            ${defaultAddress.ward},
-                            ${defaultAddress.province}
-                        </div>
+                            <input type="hidden"
+                                   name="district"
+                                   value="${defaultAddress.ward}">
 
-                        <a href="${pageContext.request.contextPath}/profile?action=add_address">
-                            Change address
-                        </a>
+                            <input type="hidden"
+                                   name="address"
+                                   value="${defaultAddress.homeAddress}">
+                        </c:when>
+                        <c:otherwise>
+                            <div class="form-group">
+                                <label>Phone</label>
+                                <input type="text"
+                                       name="phone"
+                                       value="${user.phone}"
+                                       pattern="[0-9]{10,11}"
+                                       placeholder="Enter phone number"
+                                       required>
+                            </div>
 
-                    </div>
-                    <input type="hidden"
-                           name="phone"
-                           value="${defaultAddress.phone}">
+                            <div class="form-group">
+                                <label>Province / City</label>
+                                <input type="text"
+                                       name="province"
+                                       placeholder="Enter Province / City"
+                                       required>
+                            </div>
 
-                    <input type="hidden"
-                           name="province"
-                           value="${defaultAddress.province}">
+                            <div class="form-group">
+                                <label>District / Ward</label>
+                                <input type="text"
+                                       name="district"
+                                       placeholder="Enter District / Ward"
+                                       required>
+                            </div>
 
-                    <input type="hidden"
-                           name="district"
-                           value="${defaultAddress.ward}">
-
-                    <input type="hidden"
-                           name="address"
-                           value="${defaultAddress.homeAddress}">
+                            <div class="form-group">
+                                <label>Address</label>
+                                <textarea name="address"
+                                          rows="3"
+                                          placeholder="Enter house number, street name..."
+                                          required></textarea>
+                            </div>
+                        </c:otherwise>
+                    </c:choose>
                     <div class="payment-options">
 
                         <label class="payment-option">
@@ -262,7 +297,6 @@
 
                 var method = document.querySelector('input[name="paymentMethod"]:checked').value;
                 console.log("DEBUG method =", method);
-
 
                 if (method === "VNPAY") {
                     document.getElementById("vp_phone").value = form.querySelector('[name="phone"]').value;
