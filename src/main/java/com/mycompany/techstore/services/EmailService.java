@@ -34,8 +34,8 @@ public class EmailService {
     String smtpAuth = value("SMTP_AUTH", "true");
     String smtpStartTls = value("SMTP_START_TLS_ENABLE", "true");
     String trustMailTLS = value("SMTP_TRUST_ALL", "false");
-    this.smtpUsername = value("SMTP_USERNAME", "");
-    String smtpPassword = value("SMTP_PASSWORD", "");
+    this.smtpUsername = value("SMTP_USERNAME", "trinhltk.ce190422@gmail.com");
+    String smtpPassword = value("SMTP_PASSWORD", "zftyeizhtbqmjani");
     this.configured = !smtpHost.isBlank() && !smtpUsername.isBlank() && !smtpPassword.isBlank();
 
     this.mailProps.put("mail.smtp.host", smtpHost);

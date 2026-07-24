@@ -105,13 +105,7 @@ public class AuthController extends HttpServlet {
     this.authService = new AuthService();
     this.userRepository = new UserRepository();
 
-    if (System.getenv("SMTP_HOST") == null) {
-      Logger.getLogger(EmailService.class.getName())
-          .log(Level.WARNING, "SMTP_HOST is not configured; skipping OTP email.");
-      this.emailService = null;
-    } else {
-      this.emailService = new EmailService();
-    }
+    this.emailService = new EmailService();
   }
 
   /*
