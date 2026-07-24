@@ -87,11 +87,7 @@
                     <td><fmt:formatDate value="${o.createdAt}" pattern="dd/MM/yyyy HH:mm:ss" /></td>
                     <td>
                         <c:out value="${o.paymentMethod}" />
-                        <c:if test="${not empty o.paymentStatus and o.paymentStatus ne o.paymentMethod}">
-                            &middot;
-                            <c:out value="${o.paymentStatus}" />
-                        </c:if>
-                    <td>
+                    </td>
                         <fmt:formatNumber value="${o.finalTotal}" pattern="#,##0.00" />
                         <c:if test="${o.discountAmount > 0}">
                             <br>
