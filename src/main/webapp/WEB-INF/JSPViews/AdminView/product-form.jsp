@@ -145,107 +145,120 @@
         document.getElementById('specs').appendChild(d);
     }
 
+    function isLaptopCategory() {
+        const categorySelect = document.querySelector('select[name="categoryId"]');
+        if (!categorySelect || categorySelect.selectedIndex < 0) return false;
+        const text = (categorySelect.options[categorySelect.selectedIndex]?.text || '').toLowerCase().trim();
+        return text.includes('laptop');
+    }
+
     function removeSpec(btn) {
         const row = btn.parentElement;
         const keyInput = row.querySelector('input[name="specKey"]');
-        const categorySelect = document.querySelector('select[name="categoryId"]');
-        const catName = categorySelect.options[categorySelect.selectedIndex]?.text.trim().toLowerCase() || '';
-        const isLaptop = catName === 'laptops' || catName === 'laptop';
+        const requiredKeys = ['cpu', 'ram', 'storage', 'gpu', 'display', 'battery', 'os'];
         
-        if (isLaptop && keyInput) {
-            const requiredKeys = ['cpu', 'ram', 'storage', 'gpu', 'display', 'battery', 'os'];
+        if (keyInput) {
             const keyVal = keyInput.value.trim().toLowerCase();
-            
-            if (requiredKeys.includes(keyVal)) {
-                alert("The specification '" + keyVal + "' is strictly required for Laptops and cannot be removed.");
-                return;
+            if (isLaptopCategory() && requiredKeys.includes(keyVal)) {
+                alert("Thông số '" + keyVal + "' là BẮT BUỘC cho Laptop và KHÔNG THỂ XÓA!");
+                return false;
             }
         }
         
         row.remove();
+        return false;
     }
 
     function updateSpecRows() {
-        const categorySelect = document.querySelector('select[name="categoryId"]');
-        if (!categorySelect) return;
-        const catName = categorySelect.options[categorySelect.selectedIndex]?.text.trim().toLowerCase() || '';
-        const isLaptop = catName === 'laptops' || catName === 'laptop';
+        const isLaptop = isLaptopCategory();
         const requiredKeys = ['cpu', 'ram', 'storage', 'gpu', 'display', 'battery', 'os'];
 
         document.querySelectorAll('.spec-row').forEach(row => {
             const keyInput = row.querySelector('input[name="specKey"]');
             const btn = row.querySelector('button');
-            if (!keyInput || !btn) return;
+            if (!keyInput) return;
 
-            if (isLaptop && requiredKeys.includes(keyInput.value.trim().toLowerCase())) {
+            const keyVal = keyInput.value.trim().toLowerCase();
+            const isReq = isLaptop && requiredKeys.includes(keyVal);
+
+            if (isReq) {
                 keyInput.readOnly = true;
-                btn.style.display = 'none';
+                keyInput.setAttribute('readonly', 'readonly');
                 keyInput.style.backgroundColor = '#e9ecef';
+                keyInput.style.cursor = 'not-allowed';
+                if (btn) {
+                    btn.style.setProperty('display', 'none', 'important');
+                    btn.disabled = true;
+                }
             } else {
                 keyInput.readOnly = false;
-                btn.style.display = '';
+                keyInput.removeAttribute('readonly');
                 keyInput.style.backgroundColor = '';
+                keyInput.style.cursor = '';
+                if (btn) {
+                    btn.style.display = '';
+                    btn.disabled = false;
+                }
             }
         });
     }
 
-    // Run immediately on initial load
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', updateSpecRows);
-    } else {
-        updateSpecRows();
-    }
+    // Run immediately on initial load & polling safeguard
+    updateSpecRows();
+    document.addEventListener('DOMContentLoaded', updateSpecRows);
+    window.addEventListener('load', updateSpecRows);
+    setInterval(updateSpecRows, 300);
 
     // Auto-add missing keys when Laptops is selected
-    document.querySelector('select[name="categoryId"]').addEventListener('change', function() {
-        const catName = this.options[this.selectedIndex]?.text.trim().toLowerCase() || '';
-        const isLaptop = catName === 'laptops' || catName === 'laptop';
-        if (isLaptop) {
-            const requiredKeys = ['cpu', 'ram', 'storage', 'gpu', 'display', 'battery', 'os'];
-            const currentKeys = Array.from(document.querySelectorAll('input[name="specKey"]')).map(i => i.value.trim().toLowerCase());
-            
-            requiredKeys.forEach(req => {
-                if (!currentKeys.includes(req)) {
-                    const d = document.createElement('div');
-                    d.className = 'spec-row';
-                    d.innerHTML =
-                        '<input class="form-control" name="specKey" value="' + req + '">' +
-                        '<input class="form-control" name="specValue" placeholder="Value">' +
-                        '<button class="btn btn-outline-danger" type="button" onclick="removeSpec(this)">&times;</button>';
-                    document.getElementById('specs').appendChild(d);
-                }
-            });
-        }
-        updateSpecRows();
-    });
+    const catSel = document.querySelector('select[name="categoryId"]');
+    if (catSel) {
+        catSel.addEventListener('change', function() {
+            if (isLaptopCategory()) {
+                const requiredKeys = ['cpu', 'ram', 'storage', 'gpu', 'display', 'battery', 'os'];
+                const currentKeys = Array.from(document.querySelectorAll('input[name="specKey"]')).map(i => i.value.trim().toLowerCase());
+                
+                requiredKeys.forEach(req => {
+                    if (!currentKeys.includes(req)) {
+                        const d = document.createElement('div');
+                        d.className = 'spec-row';
+                        d.innerHTML =
+                            '<input class="form-control" name="specKey" value="' + req + '">' +
+                            '<input class="form-control" name="specValue" placeholder="Value">' +
+                            '<button class="btn btn-outline-danger" type="button" onclick="removeSpec(this)">&times;</button>';
+                        document.getElementById('specs').appendChild(d);
+                    }
+                });
+            }
+            updateSpecRows();
+        });
+    }
 
     // Intercept form submission to prevent saving invalid laptops
-    document.querySelector('form').addEventListener('submit', function(e) {
-        const categorySelect = document.querySelector('select[name="categoryId"]');
-        const catName = categorySelect.options[categorySelect.selectedIndex]?.text.trim().toLowerCase() || '';
-        const isLaptop = catName === 'laptops' || catName === 'laptop';
-        
-        if (isLaptop) {
-            const requiredKeys = ['cpu', 'ram', 'storage', 'gpu', 'display', 'battery', 'os'];
-            const currentKeys = Array.from(document.querySelectorAll('input[name="specKey"]')).map(i => i.value.trim().toLowerCase());
-            
-            for (const req of requiredKeys) {
-                if (!currentKeys.includes(req)) {
-                    e.preventDefault();
-                    alert("Missing required specification: '" + req + "'. Laptops must have this key.");
-                    const d = document.createElement('div');
-                    d.className = 'spec-row';
-                    d.innerHTML =
-                        '<input class="form-control" name="specKey" value="' + req + '">' +
-                        '<input class="form-control" name="specValue" placeholder="Value">' +
-                        '<button class="btn btn-outline-danger" type="button" onclick="removeSpec(this)">&times;</button>';
-                    document.getElementById('specs').appendChild(d);
-                    updateSpecRows();
-                    return;
+    const mainForm = document.querySelector('form');
+    if (mainForm) {
+        mainForm.addEventListener('submit', function(e) {
+            if (isLaptopCategory()) {
+                const requiredKeys = ['cpu', 'ram', 'storage', 'gpu', 'display', 'battery', 'os'];
+                const currentKeys = Array.from(document.querySelectorAll('input[name="specKey"]')).map(i => i.value.trim().toLowerCase());
+                
+                for (const req of requiredKeys) {
+                    if (!currentKeys.includes(req)) {
+                        e.preventDefault();
+                        alert("Thiếu thông số bắt buộc: '" + req + "'. Sản phẩm Laptop phải có thuộc tính này.");
+                        const d = document.createElement('div');
+                        d.className = 'spec-row';
+                        d.innerHTML =
+                            '<input class="form-control" name="specKey" value="' + req + '">' +
+                            '<input class="form-control" name="specValue" placeholder="Value">' +
+                            '<button class="btn btn-outline-danger" type="button" onclick="removeSpec(this)">&times;</button>';
+                        document.getElementById('specs').appendChild(d);
+                        updateSpecRows();
+                        return;
+                    }
                 }
             }
-        }
-    });
+        });
+    }
 </script>
 
 <%@ include file="_end.jsp" %>
