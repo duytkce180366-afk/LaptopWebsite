@@ -439,11 +439,15 @@
                                         <span><%= html(product.getBadge())%></span>
                                     </div>
                                     <h3><%= html(product.getName())%></h3>
-                                    <div class="product-price-row">
-                                        <strong><%= formatPrice(product.getPrice())%></strong>
-                                        <small><%= product.getStock() > 0 ? product.getStock() + " in stock" : "Out of stock"%></small>
-                                    </div>
-                                    <a class="buy-button" href="<%= contextPath%>/product?id=<%= product.getId()%>">BUY NOW</a>
+                                     <div class="product-price-row">
+                                         <strong><%= formatPrice(product.getPrice())%></strong>
+                                         <small style="<%= product.getStock() <= 0 ? "color: #dc2626; font-weight: 600;" : "" %>"><%= product.getStock() > 0 ? product.getStock() + " in stock" : "Out of stock"%></small>
+                                     </div>
+                                     <% if (product.getStock() <= 0) { %>
+                                         <span class="buy-button" style="background-color: #9ca3af; cursor: not-allowed; text-align: center; display: inline-block; width: 100%;">OUT OF STOCK</span>
+                                     <% } else { %>
+                                         <a class="buy-button" href="<%= contextPath%>/product?id=<%= product.getId()%>">BUY NOW</a>
+                                     <% } %>
                                 </div>
                             </article>
                             <% } %>

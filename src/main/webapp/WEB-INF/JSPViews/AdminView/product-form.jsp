@@ -170,7 +170,9 @@
 
     function updateSpecRows() {
         const categorySelect = document.querySelector('select[name="categoryId"]');
-        const isLaptop = categorySelect.options[categorySelect.selectedIndex]?.text.trim().toLowerCase() === 'laptops';
+        if (!categorySelect) return;
+        const catName = categorySelect.options[categorySelect.selectedIndex]?.text.trim().toLowerCase() || '';
+        const isLaptop = catName === 'laptops' || catName === 'laptop';
         const requiredKeys = ['cpu', 'ram', 'storage', 'gpu', 'display', 'battery', 'os'];
 
         document.querySelectorAll('.spec-row').forEach(row => {
@@ -181,7 +183,7 @@
             if (isLaptop && requiredKeys.includes(keyInput.value.trim().toLowerCase())) {
                 keyInput.readOnly = true;
                 btn.style.display = 'none';
-                keyInput.style.backgroundColor = '#f3f4f6'; // slightly grayed out to indicate it's fixed
+                keyInput.style.backgroundColor = '#f3f4f6';
             } else {
                 keyInput.readOnly = false;
                 btn.style.display = '';
@@ -190,8 +192,12 @@
         });
     }
 
-    // Run on initial load
-    document.addEventListener('DOMContentLoaded', updateSpecRows);
+    // Run immediately on initial load
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', updateSpecRows);
+    } else {
+        updateSpecRows();
+    }
 
     // Auto-add missing keys when Laptops is selected
     document.querySelector('select[name="categoryId"]').addEventListener('change', function() {

@@ -73,7 +73,7 @@ public class ProductRepository extends DbClass {
         INNER JOIN dbo.bs_Categories c ON c.category_id = p.category_id
         INNER JOIN dbo.bs_Brands b ON b.brand_id = p.brand_id
         WHERE (? IS NULL OR p.product_id = ?)
-          AND (p.status IS NULL OR LOWER(p.status) = 'active')
+          AND (p.status IS NULL OR LOWER(p.status) IN ('active', 'out of stock'))
         ORDER BY p.product_id;
         """;
 

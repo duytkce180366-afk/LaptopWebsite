@@ -104,10 +104,11 @@
                                 <input type="number"
                                        name="quantity"
                                        value="1"
-                                       min="1"/>
+                                       min="1"
+                                       <%= product.getStock() <= 0 ? "disabled" : "" %>/>
 
-                                <button type="submit">
-                                    Add To Cart
+                                <button type="submit" <%= product.getStock() <= 0 ? "disabled style='background-color:#9ca3af;cursor:not-allowed;border-color:#9ca3af;'" : "" %>>
+                                    <%= product.getStock() <= 0 ? "Out of Stock" : "Add To Cart" %>
                                 </button>
                                 <c:if test="${not empty sessionScope.cartError}">
                                     <div class="alert-stock">
