@@ -125,9 +125,9 @@ public class AdminOrderRepository {
     } else {
       String insertSql =
           "INSERT INTO"
-              + " dbo.bs_Payments(order_id,user_id,amount,payment_method,payment_status,transaction_id,created_at,updated_at)"
+              + " dbo.bs_Payments(order_id,payment_method,payment_status,transaction_no,paid_at,created_at,updated_at)"
               + " SELECT"
-              + " order_id,user_id,(total_amount+shipping_fee-discount_amount),payment_method,'Paid',CONCAT('COD-',order_id),SYSUTCDATETIME(),SYSUTCDATETIME()"
+              + " order_id,payment_method,'Paid',CONCAT('COD-',order_id),SYSUTCDATETIME(),SYSUTCDATETIME(),SYSUTCDATETIME()"
               + " FROM dbo.bs_Orders WHERE order_id=?";
       try (PreparedStatement ps = con.prepareStatement(insertSql)) {
         ps.setInt(1, orderId);

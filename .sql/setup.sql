@@ -2387,8 +2387,8 @@ UPDATE dbo.bs_Products SET status = N'Active' WHERE stock > 0 AND status = N'Out
 UPDATE dbo.bs_Products SET status = N'Out of Stock' WHERE stock <= 0 AND status = N'Active';
 
 /* Sync COD payment statuses with order statuses */
-INSERT INTO dbo.bs_Payments (order_id, user_id, amount, payment_method, payment_status, transaction_id, created_at, updated_at)
-SELECT o.order_id, o.user_id, (o.total_amount + o.shipping_fee - o.discount_amount), o.payment_method, N'Paid', N'COD-' + CAST(o.order_id AS VARCHAR), SYSUTCDATETIME(), SYSUTCDATETIME()
+INSERT INTO dbo.bs_Payments (order_id, payment_method, payment_status, transaction_no, paid_at, created_at, updated_at)
+SELECT o.order_id, o.payment_method, N'Paid', N'COD-' + CAST(o.order_id AS VARCHAR), SYSUTCDATETIME(), SYSUTCDATETIME(), SYSUTCDATETIME()
 FROM dbo.bs_Orders o
 LEFT JOIN dbo.bs_Payments py ON py.order_id = o.order_id
 WHERE o.order_status = N'Delivered' AND py.payment_id IS NULL;
