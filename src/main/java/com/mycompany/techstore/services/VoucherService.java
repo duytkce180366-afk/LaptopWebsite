@@ -73,4 +73,8 @@ public class VoucherService {
                 discountPercent,
                 expiredDate);
     }
+
+    public void updateExpiredVoucher() {
+        repo.updateExpiredVoucher();
+    }
 }

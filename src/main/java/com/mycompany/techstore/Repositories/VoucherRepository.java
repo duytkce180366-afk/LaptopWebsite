@@ -165,8 +165,6 @@ public class VoucherRepository {
         return false;
     }
 
-    
-
     public Voucher getById(int voucherId) {
         String sql = "SELECT * FROM bs_Vouchers WHERE voucher_id = ?";
         try (Connection con = new DbClass().getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
@@ -323,4 +321,20 @@ public class VoucherRepository {
 
     }
 
+    public void updateExpiredVoucher() {
+
+        String sql = """
+        UPDATE bs_Vouchers
+        SET status='Expired'
+        WHERE expired_date < CAST(GETDATE() AS DATE)
+        AND status='Active'
+        """;
+
+        try (
+                Connection con = new DbClass().getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

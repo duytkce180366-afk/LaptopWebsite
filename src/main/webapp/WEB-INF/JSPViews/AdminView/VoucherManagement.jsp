@@ -78,12 +78,11 @@
                     Voucher Management
                 </h2>
 
-                <a href="${pageContext.request.contextPath}/admin/voucher?action=create"
-                   class="btn btn-success btn-add">
-
+                <button class="btn btn-success btn-add"
+                        data-bs-toggle="modal"
+                        data-bs-target="#createVoucherModal">
                     + Add Voucher
-
-                </a>
+                </button>
 
             </div>
 
@@ -219,6 +218,11 @@
                                 <td>
 
                                     <c:choose>
+                                        <c:when test="${v.status=='Expired'}">
+                                            <span class="badge bg-warning text-dark">
+                                                Expired
+                                            </span>
+                                        </c:when>
 
                                         <c:when test="${v.status=='Active'}">
 
@@ -248,12 +252,22 @@
 
                                 <td>
 
-                                    <a href="${pageContext.request.contextPath}/admin/voucher?action=edit&id=${v.voucherId}"
-                                       class="btn btn-warning btn-sm">
+                                    <button
+                                        class="btn btn-warning btn-sm editBtn"
+
+                                        data-id="${v.voucherId}"
+                                        data-code="${v.code}"
+                                        data-discount="${v.discountPercent}"
+                                        data-quantity="${v.quantity}"
+                                        data-expired="${v.expiredDate}"
+                                        data-status="${v.status}"
+
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#editVoucherModal">
 
                                         Edit
 
-                                    </a>
+                                    </button>
 
                                     <a href="${pageContext.request.contextPath}/admin/voucher?action=delete&id=${v.voucherId}"
                                        class="btn btn-danger btn-sm"
@@ -291,7 +305,171 @@
             </div>
 
         </div>
+        <div class="modal fade"
+             id="editVoucherModal"
+             tabindex="-1">
 
+            <div class="modal-dialog">
+
+                <div class="modal-content">
+
+                    <div class="modal-header bg-warning">
+
+                        <h5 class="modal-title">
+                            Edit Voucher
+                        </h5>
+
+                        <button class="btn-close"
+                                data-bs-dismiss="modal">
+                        </button>
+
+                    </div>
+
+                    <form action="${pageContext.request.contextPath}/admin/voucher"
+                          method="post">
+
+                        <div class="modal-body">
+
+                            <input type="hidden"
+                                   name="action"
+                                   value="update">
+
+                            <input type="hidden"
+                                   id="editVoucherId"
+                                   name="voucherId">
+
+                            <div class="mb-3">
+
+                                <label>Voucher Code</label>
+
+                                <input
+                                    class="form-control"
+                                    id="editCode"
+                                    type="text"
+                                    name="code"
+                                    required>
+
+                            </div>
+
+                            <div class="mb-3">
+
+                                <label>Discount (%)</label>
+
+                                <input
+                                    class="form-control"
+                                    id="editDiscount"
+                                    type="number"
+                                    name="discountPercent"
+                                    min="1"
+                                    max="100"
+                                    required>
+
+                            </div>
+
+                            <div class="mb-3">
+
+                                <label>Quantity</label>
+
+                                <input
+                                    class="form-control"
+                                    id="editQuantity"
+                                    type="number"
+                                    name="quantity"
+                                    min="1"
+                                    required>
+
+                            </div>
+
+                            <div class="mb-3">
+
+                                <label>Expired Date</label>
+
+                                <input
+                                    class="form-control"
+                                    id="editExpired"
+                                    type="date"
+                                    name="expiredDate"
+                                    required>
+
+                            </div>
+
+                            <div class="mb-3">
+
+                                <label>Status</label>
+
+                                <select
+                                    class="form-select"
+                                    id="editStatus"
+                                    name="status">
+
+                                    <option value="Active">
+                                        Active
+                                    </option>
+
+                                    <option value="Inactive">
+                                        Inactive
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+                        </div>
+
+                        <div class="modal-footer">
+
+                            <button class="btn btn-secondary"
+                                    data-bs-dismiss="modal"
+                                    type="button">
+
+                                Cancel
+
+                            </button>
+
+                            <button class="btn btn-warning"
+                                    type="submit">
+
+                                Update
+
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <script>
+            document.querySelectorAll(".editBtn").forEach(function (btn) {
+
+                btn.addEventListener("click", function () {
+
+                    document.getElementById("editVoucherId").value =
+                            this.dataset.id;
+
+                    document.getElementById("editCode").value =
+                            this.dataset.code;
+
+                    document.getElementById("editDiscount").value =
+                            this.dataset.discount;
+
+                    document.getElementById("editQuantity").value =
+                            this.dataset.quantity;
+
+                    document.getElementById("editExpired").value =
+                            this.dataset.expired.substring(0, 10);
+
+                    document.getElementById("editStatus").value =
+                            this.dataset.status;
+
+                });
+
+            });
+        </script>
     </body>
 
 </html>

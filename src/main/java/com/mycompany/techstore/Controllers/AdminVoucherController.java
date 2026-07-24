@@ -119,6 +119,7 @@ public class AdminVoucherController extends HttpServlet {
                         return;
                     }
                 }
+                service.updateExpiredVoucher();
                 List<Voucher> list;
 
                 if (keyword.isEmpty()
