@@ -297,7 +297,7 @@ BEGIN
         updated_at        DATETIME2(0) NULL,
         CONSTRAINT UQ_bs_Payments_order UNIQUE (order_id),
         CONSTRAINT CK_bs_Payments_payment_method CHECK (payment_method IN ('COD', 'VNPay', 'MoMo', 'Bank Transfer', 'Other')),
-        CONSTRAINT CK_bs_Payments_payment_status CHECK (payment_status IN ('Pending', 'Paid', 'Failed', 'Refunded'))
+        CONSTRAINT CK_bs_Payments_payment_status CHECK (payment_status IN ('Pending', 'Paid', 'Failed', 'Refunded', 'Cancelled'))
     );
 END
 GO
