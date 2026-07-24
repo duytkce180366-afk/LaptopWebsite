@@ -14,7 +14,8 @@ public class AdminOrder {
       paymentMethod,
       paymentStatus,
       orderStatus,
-      note;
+      note,
+      voucherCode;
   private BigDecimal totalAmount, shippingFee, discountAmount;
   private Timestamp createdAt, updatedAt;
   private List<OrderDetail> details = new ArrayList<>();
@@ -149,5 +150,13 @@ public class AdminOrder {
 
   public void setDetails(List<OrderDetail> v) {
     details = v;
+  }
+
+  public String getVoucherCode() {
+    return voucherCode;
+  }
+
+  public void setVoucherCode(String v) {
+    voucherCode = v;
   }
 }

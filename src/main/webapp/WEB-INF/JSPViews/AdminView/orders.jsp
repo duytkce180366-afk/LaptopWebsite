@@ -91,8 +91,18 @@
                             &middot;
                             <c:out value="${o.paymentStatus}" />
                         </c:if>
+                    <td>
+                        <fmt:formatNumber value="${o.finalTotal}" pattern="#,##0.00" />
+                        <c:if test="${o.discountAmount > 0}">
+                            <br>
+                            <small class="text-success" style="font-size: 0.8rem;">
+                                Discount: -<fmt:formatNumber value="${o.discountAmount}" pattern="#,##0.00" />
+                                <c:if test="${not empty o.voucherCode}">
+                                    (<c:out value="${o.voucherCode}" />)
+                                </c:if>
+                            </small>
+                        </c:if>
                     </td>
-                    <td><fmt:formatNumber value="${o.finalTotal}" pattern="#,##0.00" /></td>
                     <td>
                         <span class="status-pill status-${o.orderStatus}">
                             <c:out value="${o.orderStatus}" />

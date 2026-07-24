@@ -85,7 +85,10 @@
             <div>Shipping: <fmt:formatNumber value="${order.shippingFee}" pattern="#,##0.00" /></div>
         </c:if>
         <c:if test="${order.discountAmount > 0}">
-            <div>Discount: -<fmt:formatNumber value="${order.discountAmount}" pattern="#,##0.00" /></div>
+            <div>
+                Discount<c:if test="${not empty order.voucherCode}"> (<c:out value="${order.voucherCode}" />)</c:if>:
+                -<fmt:formatNumber value="${order.discountAmount}" pattern="#,##0.00" />
+            </div>
         </c:if>
         <strong class="fs-5">Total: <fmt:formatNumber value="${order.finalTotal}" pattern="#,##0.00" /></strong>
     </div>

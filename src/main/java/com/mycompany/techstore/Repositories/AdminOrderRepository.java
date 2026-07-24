@@ -16,9 +16,10 @@ public class AdminOrderRepository {
       throws SQLException {
     String sql =
         """
-        SELECT o.*,u.full_name,u.email,py.payment_status,COUNT(*) OVER() total_rows
+        SELECT o.*,u.full_name,u.email,py.payment_status,v.code AS voucher_code,COUNT(*) OVER() total_rows
         FROM dbo.bs_Orders o JOIN dbo.bs_user u ON u.user_id=o.user_id
         LEFT JOIN dbo.bs_Payments py ON py.order_id=o.order_id
+        LEFT JOIN dbo.bs_Vouchers v ON v.voucher_id=o.voucher_id
         WHERE (?='' OR CONVERT(varchar(20),o.order_id)=? OR u.full_name LIKE ? OR u.email LIKE ?)
           AND (?='' OR o.order_status=?) AND (?='' OR o.payment_method=?)
           AND (? IS NULL OR o.created_at>=?) AND (? IS NULL OR o.created_at<DATEADD(day,1,?))
@@ -55,8 +56,9 @@ public class AdminOrderRepository {
 
   public AdminOrder findById(int id) throws SQLException {
     String sql =
-        "SELECT o.*,u.full_name,u.email,py.payment_status FROM dbo.bs_Orders o JOIN dbo.bs_user u"
-            + " ON u.user_id=o.user_id LEFT JOIN dbo.bs_Payments py ON py.order_id=o.order_id WHERE"
+        "SELECT o.*,u.full_name,u.email,py.payment_status,v.code AS voucher_code FROM dbo.bs_Orders o JOIN dbo.bs_user u"
+            + " ON u.user_id=o.user_id LEFT JOIN dbo.bs_Payments py ON py.order_id=o.order_id"
+            + " LEFT JOIN dbo.bs_Vouchers v ON v.voucher_id=o.voucher_id WHERE"
             + " o.order_id=?";
     try (Connection con = new DbClass().getConnection();
         PreparedStatement ps = con.prepareStatement(sql)) {
@@ -191,6 +193,7 @@ public class AdminOrderRepository {
     o.setTotalAmount(rs.getBigDecimal("total_amount"));
     o.setShippingFee(rs.getBigDecimal("shipping_fee"));
     o.setDiscountAmount(rs.getBigDecimal("discount_amount"));
+    o.setVoucherCode(rs.getString("voucher_code"));
     o.setCreatedAt(VietnamTime.fromUtc(rs.getTimestamp("created_at")));
     o.setUpdatedAt(VietnamTime.fromUtc(rs.getTimestamp("updated_at")));
     return o;
