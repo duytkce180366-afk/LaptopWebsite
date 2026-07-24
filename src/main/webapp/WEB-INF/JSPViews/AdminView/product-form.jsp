@@ -147,20 +147,17 @@
 
     function removeSpec(btn) {
         const row = btn.parentElement;
-        // With updateSpecRows(), required rows won't have a visible delete button anyway.
-        // We keep this as a fallback safety.
         const keyInput = row.querySelector('input[name="specKey"]');
         const categorySelect = document.querySelector('select[name="categoryId"]');
-        const isLaptop = categorySelect.options[categorySelect.selectedIndex]?.text.trim().toLowerCase() === 'laptops';
+        const catName = categorySelect.options[categorySelect.selectedIndex]?.text.trim().toLowerCase() || '';
+        const isLaptop = catName === 'laptops' || catName === 'laptop';
         
         if (isLaptop && keyInput) {
             const requiredKeys = ['cpu', 'ram', 'storage', 'gpu', 'display', 'battery', 'os'];
             const keyVal = keyInput.value.trim().toLowerCase();
             
             if (requiredKeys.includes(keyVal)) {
-                window.showConfirm("The specification '" + keyVal + "' is strictly required for Laptops and cannot be removed. Do you want to clear its value instead?", function() {
-                    row.querySelector('input[name="specValue"]').value = '';
-                });
+                alert("The specification '" + keyVal + "' is strictly required for Laptops and cannot be removed.");
                 return;
             }
         }
@@ -183,7 +180,7 @@
             if (isLaptop && requiredKeys.includes(keyInput.value.trim().toLowerCase())) {
                 keyInput.readOnly = true;
                 btn.style.display = 'none';
-                keyInput.style.backgroundColor = '#f3f4f6';
+                keyInput.style.backgroundColor = '#e9ecef';
             } else {
                 keyInput.readOnly = false;
                 btn.style.display = '';
@@ -201,7 +198,8 @@
 
     // Auto-add missing keys when Laptops is selected
     document.querySelector('select[name="categoryId"]').addEventListener('change', function() {
-        const isLaptop = this.options[this.selectedIndex]?.text.trim().toLowerCase() === 'laptops';
+        const catName = this.options[this.selectedIndex]?.text.trim().toLowerCase() || '';
+        const isLaptop = catName === 'laptops' || catName === 'laptop';
         if (isLaptop) {
             const requiredKeys = ['cpu', 'ram', 'storage', 'gpu', 'display', 'battery', 'os'];
             const currentKeys = Array.from(document.querySelectorAll('input[name="specKey"]')).map(i => i.value.trim().toLowerCase());
@@ -224,7 +222,8 @@
     // Intercept form submission to prevent saving invalid laptops
     document.querySelector('form').addEventListener('submit', function(e) {
         const categorySelect = document.querySelector('select[name="categoryId"]');
-        const isLaptop = categorySelect.options[categorySelect.selectedIndex]?.text.trim().toLowerCase() === 'laptops';
+        const catName = categorySelect.options[categorySelect.selectedIndex]?.text.trim().toLowerCase() || '';
+        const isLaptop = catName === 'laptops' || catName === 'laptop';
         
         if (isLaptop) {
             const requiredKeys = ['cpu', 'ram', 'storage', 'gpu', 'display', 'battery', 'os'];
@@ -233,16 +232,15 @@
             for (const req of requiredKeys) {
                 if (!currentKeys.includes(req)) {
                     e.preventDefault();
-                    window.showConfirm("Missing required specification: '" + req + "'. Laptops must have this key. Click Confirm to auto-add it back.", function() {
-                        const d = document.createElement('div');
-                        d.className = 'spec-row';
-                        d.innerHTML =
-                            '<input class="form-control" name="specKey" value="' + req + '">' +
-                            '<input class="form-control" name="specValue" placeholder="Value">' +
-                            '<button class="btn btn-outline-danger" type="button" onclick="removeSpec(this)">&times;</button>';
-                        document.getElementById('specs').appendChild(d);
-                        updateSpecRows();
-                    });
+                    alert("Missing required specification: '" + req + "'. Laptops must have this key.");
+                    const d = document.createElement('div');
+                    d.className = 'spec-row';
+                    d.innerHTML =
+                        '<input class="form-control" name="specKey" value="' + req + '">' +
+                        '<input class="form-control" name="specValue" placeholder="Value">' +
+                        '<button class="btn btn-outline-danger" type="button" onclick="removeSpec(this)">&times;</button>';
+                    document.getElementById('specs').appendChild(d);
+                    updateSpecRows();
                     return;
                 }
             }
