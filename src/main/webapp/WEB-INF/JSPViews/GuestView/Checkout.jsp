@@ -123,18 +123,20 @@
 
                             <div class="form-group">
                                 <label>Province / City</label>
-                                <input type="text"
-                                       name="province"
-                                       placeholder="Enter Province / City"
-                                       required>
+                                <select id="province"
+                                        name="province"
+                                        required>
+                                    <option value="">Select Province / City</option>
+                                </select>
                             </div>
 
                             <div class="form-group">
                                 <label>District / Ward</label>
-                                <input type="text"
-                                       name="district"
-                                       placeholder="Enter District / Ward"
-                                       required>
+                                <select id="district"
+                                        name="district"
+                                        required>
+                                    <option value="">Select District / Ward</option>
+                                </select>
                             </div>
 
                             <div class="form-group">
@@ -248,6 +250,50 @@
         <%@include file="/WEB-INF/JSPViews/global/footer.jsp" %>
 
         <script>
+            var provinceEl = document.getElementById("province");
+            var districtEl = document.getElementById("district");
+
+            if (provinceEl && districtEl) {
+                fetch("https://provinces.open-api.vn/api/p/")
+                    .then(function (res) { return res.json(); })
+                    .then(function (data) {
+                        provinceEl.innerHTML = '<option value="">Select Province / City</option>';
+                        data.forEach(function (p) {
+                            var opt = document.createElement("option");
+                            opt.value = p.name;
+                            opt.setAttribute("data-code", p.code);
+                            opt.textContent = p.name;
+                            provinceEl.appendChild(opt);
+                        });
+                    })
+                    .catch(function (err) {
+                        console.error("Failed to load provinces:", err);
+                    });
+
+                provinceEl.addEventListener("change", function () {
+                    var selectedOpt = provinceEl.options[provinceEl.selectedIndex];
+                    var code = selectedOpt ? selectedOpt.getAttribute("data-code") : null;
+                    districtEl.innerHTML = '<option value="">Select District / Ward</option>';
+                    if (!code) return;
+
+                    fetch("https://provinces.open-api.vn/api/p/" + code + "?depth=2")
+                        .then(function (res) { return res.json(); })
+                        .then(function (data) {
+                            if (data && data.districts) {
+                                data.districts.forEach(function (d) {
+                                    var opt = document.createElement("option");
+                                    opt.value = d.name;
+                                    opt.textContent = d.name;
+                                    districtEl.appendChild(opt);
+                                });
+                            }
+                        })
+                        .catch(function (err) {
+                            console.error("Failed to load districts:", err);
+                        });
+                });
+            }
+
             var currentFinalAmount = ${restoredFinalTotal};
 
             document.getElementById("applyVoucherBtn").addEventListener("click", function () {
@@ -255,7 +301,6 @@
                 var errorBox = document.getElementById("voucherErrorBox");
                 var errorText = document.getElementById("voucherErrorText");
 
-                // Hide any previous error before trying again
                 errorBox.style.display = "none";
 
                 fetch("${pageContext.request.contextPath}/apply-voucher", {
