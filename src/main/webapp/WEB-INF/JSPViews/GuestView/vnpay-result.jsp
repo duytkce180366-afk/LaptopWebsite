@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Kết quả thanh toán - TechStore</title>
+    <title>Payment Result - TechStore</title>
     <%@include file="/WEB-INF/JSPViews/global/header.jsp" %>
     <style>
         body { background:#f3f4f6; font-family:'Segoe UI',system-ui,sans-serif; margin:0; }
@@ -52,20 +52,20 @@
 
     <% if ("success".equals(status)) { %>
         <div class="result-icon">✅</div>
-        <h2 class="result-title" style="color:#166534;">Thanh toán thành công!</h2>
-        <p class="result-sub">Đơn hàng của bạn đã được đặt. Cảm ơn bạn đã mua hàng tại TechStore.</p>
-        <a href="<%= request.getContextPath()%>/order-history" class="btn-home">Xem đơn hàng</a>
-        <a href="<%= request.getContextPath()%>/home" class="btn-orders">Về trang chủ</a>
+        <h2 class="result-title" style="color:#166534;">Payment successful!</h2>
+        <p class="result-sub">Your order has been placed. Thank you for shopping at TechStore.</p>
+        <a href="<%= request.getContextPath()%>/order-history" class="btn-home">View orders</a>
+        <a href="<%= request.getContextPath()%>/home" class="btn-orders">Back to home</a>
     <% } else if ("failed".equals(status)) { %>
         <div class="result-icon">❌</div>
-        <h2 class="result-title" style="color:#991b1b;">Thanh toán thất bại</h2>
-        <p class="result-sub">Giao dịch không thành công (mã: <%= request.getAttribute("vnpayCode")%>). Vui lòng thử lại.</p>
-        <a href="<%= request.getContextPath()%>/home" class="btn-home">Về trang chủ</a>
+        <h2 class="result-title" style="color:#991b1b;">Payment failed</h2>
+        <p class="result-sub">The transaction was unsuccessful (code: <%= request.getAttribute("vnpayCode")%>). Please try again.</p>
+        <a href="<%= request.getContextPath()%>/home" class="btn-home">Back to home</a>
     <% } else { %>
         <div class="result-icon">⚠️</div>
-        <h2 class="result-title" style="color:#92400e;">Có lỗi xảy ra</h2>
-        <p class="result-sub">Không thể xác minh giao dịch. Vui lòng liên hệ hỗ trợ.</p>
-        <a href="<%= request.getContextPath()%>/home" class="btn-home">Về trang chủ</a>
+        <h2 class="result-title" style="color:#92400e;">Something went wrong</h2>
+        <p class="result-sub">The transaction could not be verified. Please contact support.</p>
+        <a href="<%= request.getContextPath()%>/home" class="btn-home">Back to home</a>
     <% } %>
 </div>
 

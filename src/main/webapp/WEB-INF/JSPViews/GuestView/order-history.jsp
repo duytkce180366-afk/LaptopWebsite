@@ -113,9 +113,7 @@
                                     String dateStr = "-";
                                     if (o.getCreatedAt() != null) {
                                         java.text.SimpleDateFormat sdf
-                                                = new java.text.SimpleDateFormat("MMM dd, yyyy HH:mm");
-
-                                        sdf.setTimeZone(java.util.TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
+                                                = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 
                                         dateStr = sdf.format(o.getCreatedAt());
                                     }

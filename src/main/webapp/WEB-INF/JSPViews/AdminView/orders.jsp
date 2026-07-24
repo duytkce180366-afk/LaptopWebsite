@@ -1,0 +1,144 @@
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<c:set var="pageTitle" value="Manage Orders" />
+<%@ include file="_start.jsp" %>
+
+<div class="admin-card">
+    <form class="admin-filters" method="get">
+        <div>
+            <label class="form-label">Search</label>
+            <input
+                class="form-control"
+                name="q"
+                value="<c:out value='${q}' />"
+                placeholder="ID, customer, email">
+        </div>
+
+        <div>
+            <label class="form-label">Status</label>
+            <select class="form-select" name="status">
+                <option value="">All</option>
+
+                <c:forEach var="s" items="${['Pending','Confirmed','Shipping','Delivered','Cancelled','Payment Failed']}">
+                    <option ${selectedStatus == s ? 'selected' : ''}>
+                        <c:out value="${s}" />
+                    </option>
+                </c:forEach>
+            </select>
+        </div>
+
+        <div>
+            <label class="form-label">Payment</label>
+            <select class="form-select" name="payment">
+                <option value="">All</option>
+
+                <c:forEach var="s" items="${['COD','VNPay']}">
+                    <option ${selectedPayment == s ? 'selected' : ''}>
+                        <c:out value="${s}" />
+                    </option>
+                </c:forEach>
+            </select>
+        </div>
+
+        <div>
+            <label class="form-label">From</label>
+            <input class="form-control" type="date" name="from" value="${from}">
+        </div>
+
+        <div>
+            <label class="form-label">To</label>
+            <input class="form-control" type="date" name="to" value="${to}">
+        </div>
+
+        <div class="admin-actions">
+            <button class="btn btn-primary">Filter</button>
+            <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/admin/orders">
+                Reset
+            </a>
+        </div>
+    </form>
+</div>
+
+<div class="admin-card">
+    <strong>${result.totalItems} orders</strong>
+
+    <table class="admin-table mt-3">
+        <thead>
+            <tr>
+                <th>Order</th>
+                <th>Customer</th>
+                <th>Created</th>
+                <th>Payment</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th></th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <c:forEach var="o" items="${result.items}">
+                <tr>
+                    <td>#${o.orderId}</td>
+                    <td>
+                        <strong><c:out value="${o.customerName}" /></strong>
+                        <br>
+                        <small><c:out value="${o.email}" /></small>
+                    </td>
+                    <td><fmt:formatDate value="${o.createdAt}" pattern="dd/MM/yyyy HH:mm:ss" /></td>
+                    <td>
+                        <c:out value="${o.paymentMethod}" />
+                    </td>
+                    <td>
+                        <fmt:formatNumber value="${o.finalTotal}" pattern="#,##0.00" />
+                        <c:if test="${o.discountAmount > 0}">
+                            <br>
+                            <small class="text-success" style="font-size: 0.8rem;">
+                                Discount: -<fmt:formatNumber value="${o.discountAmount}" pattern="#,##0.00" />
+                                <c:if test="${not empty o.voucherCode}">
+                                    (<c:out value="${o.voucherCode}" />)
+                                </c:if>
+                            </small>
+                        </c:if>
+                    </td>
+                    <td>
+                        <span class="status-pill status-${o.orderStatus}">
+                            <c:out value="${o.orderStatus}" />
+                        </span>
+                    </td>
+                    <td>
+                        <a class="btn btn-sm btn-outline-primary"
+                           href="${pageContext.request.contextPath}/admin/orders/detail?id=${o.orderId}">
+                            Details
+                        </a>
+                    </td>
+                </tr>
+            </c:forEach>
+
+            <c:if test="${empty result.items}">
+                <tr>
+                    <td colspan="7" class="empty-state">No orders found.</td>
+                </tr>
+            </c:if>
+        </tbody>
+    </table>
+
+    <div class="pagination-row">
+        <span>Page ${result.page} / ${result.totalPages}</span>
+
+        <div>
+            <c:if test="${result.page > 1}">
+                <a class="btn btn-sm btn-outline-secondary" href="?page=${result.page - 1}">
+                    Previous
+                </a>
+            </c:if>
+
+            <c:if test="${result.page < result.totalPages}">
+                <a class="btn btn-sm btn-outline-secondary" href="?page=${result.page + 1}">
+                    Next
+                </a>
+            </c:if>
+        </div>
+    </div>
+</div>
+
+<%@ include file="_end.jsp" %>

@@ -75,42 +75,79 @@
 
                     <h3>Shipping Address</h3>
 
-                    <div class="default-address">
+                    <c:choose>
+                        <c:when test="${not empty defaultAddress}">
+                            <div class="default-address">
+                                <div class="address-name">
+                                    ${user.full_name}
+                                </div>
+                                <div class="address-phone">
+                                    ${defaultAddress.phone}
+                                </div>
+                                <div class="address-detail">
+                                    ${defaultAddress.homeAddress},
+                                    ${defaultAddress.ward},
+                                    ${defaultAddress.province}
+                                </div>
+                                <a href="${pageContext.request.contextPath}/profile?action=add_address">
+                                    Change address
+                                </a>
+                            </div>
 
-                        <div class="address-name">
-                            ${user.full_name}
-                        </div>
+                            <input type="hidden"
+                                   name="phone"
+                                   value="${defaultAddress.phone}">
 
-                        <div class="address-phone">
-                            ${defaultAddress.phone}
-                        </div>
+                            <input type="hidden"
+                                   name="province"
+                                   value="${defaultAddress.province}">
 
-                        <div class="address-detail">
-                            ${defaultAddress.homeAddress},
-                            ${defaultAddress.ward},
-                            ${defaultAddress.province}
-                        </div>
+                            <input type="hidden"
+                                   name="district"
+                                   value="${defaultAddress.ward}">
 
-                        <a href="${pageContext.request.contextPath}/profile?action=add_address">
-                            Change address
-                        </a>
+                            <input type="hidden"
+                                   name="address"
+                                   value="${defaultAddress.homeAddress}">
+                        </c:when>
+                        <c:otherwise>
+                            <div class="form-group">
+                                <label>Phone</label>
+                                <input type="text"
+                                       name="phone"
+                                       value="${user.phone}"
+                                       pattern="[0-9]{10,11}"
+                                       placeholder="Enter phone number"
+                                       required>
+                            </div>
 
-                    </div>
-                    <input type="hidden"
-                           name="phone"
-                           value="${defaultAddress.phone}">
+                            <div class="form-group">
+                                <label>Province / City</label>
+                                <select id="province"
+                                        name="province"
+                                        required>
+                                    <option value="">Select Province / City</option>
+                                </select>
+                            </div>
 
-                    <input type="hidden"
-                           name="province"
-                           value="${defaultAddress.province}">
+                            <div class="form-group">
+                                <label>District / Ward</label>
+                                <select id="district"
+                                        name="district"
+                                        required>
+                                    <option value="">Select District / Ward</option>
+                                </select>
+                            </div>
 
-                    <input type="hidden"
-                           name="district"
-                           value="${defaultAddress.ward}">
-
-                    <input type="hidden"
-                           name="address"
-                           value="${defaultAddress.homeAddress}">
+                            <div class="form-group">
+                                <label>Address</label>
+                                <textarea name="address"
+                                          rows="3"
+                                          placeholder="Enter house number, street name..."
+                                          required></textarea>
+                            </div>
+                        </c:otherwise>
+                    </c:choose>
                     <div class="payment-options">
 
                         <label class="payment-option">
@@ -213,6 +250,50 @@
         <%@include file="/WEB-INF/JSPViews/global/footer.jsp" %>
 
         <script>
+            var provinceEl = document.getElementById("province");
+            var districtEl = document.getElementById("district");
+
+            if (provinceEl && districtEl) {
+                fetch("https://provinces.open-api.vn/api/p/")
+                    .then(function (res) { return res.json(); })
+                    .then(function (data) {
+                        provinceEl.innerHTML = '<option value="">Select Province / City</option>';
+                        data.forEach(function (p) {
+                            var opt = document.createElement("option");
+                            opt.value = p.name;
+                            opt.setAttribute("data-code", p.code);
+                            opt.textContent = p.name;
+                            provinceEl.appendChild(opt);
+                        });
+                    })
+                    .catch(function (err) {
+                        console.error("Failed to load provinces:", err);
+                    });
+
+                provinceEl.addEventListener("change", function () {
+                    var selectedOpt = provinceEl.options[provinceEl.selectedIndex];
+                    var code = selectedOpt ? selectedOpt.getAttribute("data-code") : null;
+                    districtEl.innerHTML = '<option value="">Select District / Ward</option>';
+                    if (!code) return;
+
+                    fetch("https://provinces.open-api.vn/api/p/" + code + "?depth=2")
+                        .then(function (res) { return res.json(); })
+                        .then(function (data) {
+                            if (data && data.districts) {
+                                data.districts.forEach(function (d) {
+                                    var opt = document.createElement("option");
+                                    opt.value = d.name;
+                                    opt.textContent = d.name;
+                                    districtEl.appendChild(opt);
+                                });
+                            }
+                        })
+                        .catch(function (err) {
+                            console.error("Failed to load districts:", err);
+                        });
+                });
+            }
+
             var currentFinalAmount = ${restoredFinalTotal};
 
             document.getElementById("applyVoucherBtn").addEventListener("click", function () {
@@ -220,7 +301,6 @@
                 var errorBox = document.getElementById("voucherErrorBox");
                 var errorText = document.getElementById("voucherErrorText");
 
-                // Hide any previous error before trying again
                 errorBox.style.display = "none";
 
                 fetch("${pageContext.request.contextPath}/apply-voucher", {
@@ -262,7 +342,6 @@
 
                 var method = document.querySelector('input[name="paymentMethod"]:checked').value;
                 console.log("DEBUG method =", method);
-
 
                 if (method === "VNPAY") {
                     document.getElementById("vp_phone").value = form.querySelector('[name="phone"]').value;

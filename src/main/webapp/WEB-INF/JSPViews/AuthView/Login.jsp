@@ -22,7 +22,22 @@
                         <div class="alert alert-danger" role="alert">
                             Error: <%= Jsoup.clean(error, Safelist.basic())%>
                         </div>
-                        <% }%>
+                        <% }
+                            String reason = request.getParameter("reason");
+                            if ("blocked".equals(reason)) {
+                        %>
+                        <div class="alert alert-warning" role="alert">
+                            Your account has been blocked. Please contact TechStore support for assistance.
+                        </div>
+                        <%  } else if ("disabled".equals(reason)) { %>
+                        <div class="alert alert-warning" role="alert">
+                            Your account is no longer active. Please contact TechStore support for assistance.
+                        </div>
+                        <%  } else if ("invalid".equals(reason)) { %>
+                        <div class="alert alert-danger" role="alert">
+                            The email or password is incorrect.
+                        </div>
+                        <% } %>
                         <form method="post" action="<%= ctx%>/auth?action=signin">
                             <div class="mb-3">
                                 <label class="form-label">Email</label>
