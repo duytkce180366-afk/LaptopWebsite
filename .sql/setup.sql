@@ -61,6 +61,7 @@ BEGIN
     INSERT INTO dbo.bs_Roles ([role_name])
         VALUES ('Admin'),
                 ('User'),
+                ('Staff'),
                 ('Guest');
 END
 GO
@@ -253,8 +254,8 @@ BEGIN
         discount_amount    DECIMAL(18,2) NOT NULL CONSTRAINT DF_bs_Orders_discount_amount DEFAULT (0),
         payment_method     NVARCHAR(30) NOT NULL,
         order_status       NVARCHAR(20) NOT NULL CONSTRAINT DF_bs_Orders_order_status DEFAULT ('Pending'),
-        phone              NVARCHAR(40) NOT NULL, 
         note               NVARCHAR(500) NULL,
+        phone              NVARCHAR(20) NULL,
         address_info       NVARCHAR(1000) NOT NULL,
         created_at         DATETIME2(0) NOT NULL CONSTRAINT DF_bs_Orders_created_at DEFAULT SYSUTCDATETIME(),
         updated_at         DATETIME2(0) NULL,
@@ -314,10 +315,46 @@ BEGIN
         product_id     INT NOT NULL,
         rating         INT NOT NULL,
         comment        NVARCHAR(1000) NULL,
+        status         NVARCHAR(20) NOT NULL CONSTRAINT DF_bs_Reviews_status DEFAULT ('Visible'),
+        moderated_by   INT NULL,
+        moderated_at   DATETIME2(0) NULL,
         created_at     DATETIME2(0) NOT NULL CONSTRAINT DF_bs_Reviews_created_at DEFAULT SYSUTCDATETIME(),
         updated_at     DATETIME2(0) NULL,
         CONSTRAINT UQ_bs_Reviews_user_order_product UNIQUE (user_id, order_id, product_id),
-        CONSTRAINT CK_bs_Reviews_rating CHECK (rating BETWEEN 1 AND 5)
+        CONSTRAINT CK_bs_Reviews_rating CHECK (rating BETWEEN 1 AND 5),
+        CONSTRAINT CK_bs_Reviews_status CHECK (status IN ('Visible', 'Hidden'))
+    );
+END
+GO
+
+IF OBJECT_ID(N'dbo.bs_AdminAuditLogs', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.bs_AdminAuditLogs (
+        audit_id       BIGINT IDENTITY(1,1) NOT NULL CONSTRAINT PK_bs_AdminAuditLogs PRIMARY KEY,
+        admin_id       INT NOT NULL,
+        action         NVARCHAR(80) NOT NULL,
+        entity_type    NVARCHAR(80) NOT NULL,
+        entity_id      NVARCHAR(80) NULL,
+        details        NVARCHAR(1000) NULL,
+        created_at     DATETIME2(0) NOT NULL CONSTRAINT DF_bs_AdminAuditLogs_created_at DEFAULT SYSUTCDATETIME()
+    );
+END
+GO
+
+IF OBJECT_ID(N'dbo.bs_StockReceipts', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.bs_StockReceipts (
+        receipt_id    BIGINT IDENTITY(1,1) NOT NULL CONSTRAINT PK_bs_StockReceipts PRIMARY KEY,
+        product_id    INT NOT NULL,
+        quantity      INT NOT NULL,
+        previous_stock INT NOT NULL,
+        resulting_stock INT NOT NULL,
+        note          NVARCHAR(500) NULL,
+        admin_id      INT NOT NULL,
+        created_at    DATETIME2(0) NOT NULL CONSTRAINT DF_bs_StockReceipts_created_at DEFAULT SYSUTCDATETIME(),
+        CONSTRAINT CK_bs_StockReceipts_quantity CHECK (quantity > 0),
+        CONSTRAINT FK_bs_StockReceipts_product FOREIGN KEY (product_id) REFERENCES dbo.bs_Products(product_id),
+        CONSTRAINT FK_bs_StockReceipts_admin FOREIGN KEY (admin_id) REFERENCES dbo.bs_user(user_id)
     );
 END
 GO
@@ -423,10 +460,28 @@ IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = N'FK_bs_Reviews_bs_us
     FOREIGN KEY (user_id) REFERENCES dbo.bs_user(user_id) ON DELETE CASCADE;
 GO
 
+IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = N'FK_bs_Reviews_bs_Orders')
+    ALTER TABLE dbo.bs_Reviews
+    ADD CONSTRAINT FK_bs_Reviews_bs_Orders
+    FOREIGN KEY (order_id) REFERENCES dbo.bs_Orders(order_id);
+GO
+
 IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = N'FK_bs_Reviews_bs_Products')
     ALTER TABLE dbo.bs_Reviews
     ADD CONSTRAINT FK_bs_Reviews_bs_Products
     FOREIGN KEY (product_id) REFERENCES dbo.bs_Products(product_id) ON DELETE CASCADE;
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = N'FK_bs_Reviews_moderated_by')
+    ALTER TABLE dbo.bs_Reviews
+    ADD CONSTRAINT FK_bs_Reviews_moderated_by
+    FOREIGN KEY (moderated_by) REFERENCES dbo.bs_user(user_id);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = N'FK_bs_AdminAuditLogs_user')
+    ALTER TABLE dbo.bs_AdminAuditLogs
+    ADD CONSTRAINT FK_bs_AdminAuditLogs_user
+    FOREIGN KEY (admin_id) REFERENCES dbo.bs_user(user_id);
 GO
 
 /* =========================
@@ -443,6 +498,18 @@ GO
 
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_bs_OrderDetails_order' AND object_id = OBJECT_ID(N'dbo.bs_OrderDetails'))
     CREATE INDEX IX_bs_OrderDetails_order ON dbo.bs_OrderDetails(order_id);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_bs_Orders_status_created' AND object_id = OBJECT_ID(N'dbo.bs_Orders'))
+    CREATE INDEX IX_bs_Orders_status_created ON dbo.bs_Orders(order_status, created_at DESC);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_bs_Reviews_status_created' AND object_id = OBJECT_ID(N'dbo.bs_Reviews'))
+    CREATE INDEX IX_bs_Reviews_status_created ON dbo.bs_Reviews(status, created_at DESC);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_bs_AdminAuditLogs_created_at' AND object_id = OBJECT_ID(N'dbo.bs_AdminAuditLogs'))
+    CREATE INDEX IX_bs_AdminAuditLogs_created_at ON dbo.bs_AdminAuditLogs(created_at DESC);
 GO
 
 PRINT 'LaptopWebsiteDB schema created successfully.';
@@ -580,10 +647,10 @@ MERGE dbo.bs_Categories AS target
 USING @Categories AS source
     ON target.category_name = source.category_name
 WHEN MATCHED THEN
-    UPDATE SET description = source.description, status = 'active', updated_at = SYSDATETIME()
+    UPDATE SET description = source.description, status = 'Active', updated_at = SYSDATETIME()
 WHEN NOT MATCHED THEN
     INSERT (category_name, description, status, created_at, updated_at)
-    VALUES (source.category_name, source.description, 'active', SYSDATETIME(), SYSDATETIME());
+    VALUES (source.category_name, source.description, 'Active', SYSDATETIME(), SYSDATETIME());
 
 DECLARE @Brands TABLE (brand_name NVARCHAR(120) NOT NULL);
 INSERT INTO @Brands (brand_name) VALUES
@@ -708,7 +775,14 @@ INSERT INTO @Products (category_name, brand_name, sku, product_name, description
 
 MERGE dbo.bs_Products AS target
 USING (
-    SELECT c.category_id, b.brand_id, p.sku, p.product_name, p.description, p.price, p.stock, p.thumbnail, p.status
+    SELECT c.category_id, b.brand_id, p.sku, p.product_name, p.description, p.price, p.stock, p.thumbnail,
+           CASE LOWER(p.status)
+               WHEN 'active' THEN N'Active'
+               WHEN 'out of stock' THEN N'Out of Stock'
+               WHEN 'hidden' THEN N'Hidden'
+               WHEN 'inactive' THEN N'Inactive'
+               ELSE p.status
+           END AS status
     FROM @Products p
     INNER JOIN dbo.bs_Categories c ON c.category_name = p.category_name
     INNER JOIN dbo.bs_Brands b ON b.brand_name = p.brand_name
@@ -1276,7 +1350,9 @@ USING (
     INNER JOIN dbo.bs_user u ON u.user_id = r.user_id
     INNER JOIN dbo.bs_Products p ON p.sku = r.sku
 ) AS source
-    ON target.user_id = source.user_id AND target.order_id = source.order_id AND target.product_id = source.product_id
+    ON target.user_id = source.user_id
+   AND (target.order_id = source.order_id OR (target.order_id IS NULL AND source.order_id IS NULL))
+   AND target.product_id = source.product_id
 WHEN MATCHED THEN
     UPDATE SET rating = source.rating, updated_at = SYSUTCDATETIME()
 WHEN NOT MATCHED THEN
@@ -2127,3 +2203,207 @@ INNER JOIN dbo.bs_CategoryFilters cf ON cf.category_id = c.category_id AND cf.fi
 
 COMMIT TRANSACTION;
 
+GO
+
+/* Idempotent demo accounts and orders for the admin dashboard/report screens. */
+SET NOCOUNT ON;
+SET ANSI_NULLS ON;
+SET QUOTED_IDENTIFIER ON;
+
+DECLARE @CustomerRoleId INT=(SELECT role_id FROM dbo.bs_Roles WHERE role_name=N'User');
+DECLARE @StaffRoleId INT=(SELECT role_id FROM dbo.bs_Roles WHERE role_name=N'Staff');
+IF @CustomerRoleId IS NULL
+    THROW 50001, 'Run admin_management_migration.sql before admin_demo_data.sql.', 1;
+
+DECLARE @PasswordHash NVARCHAR(255)=N'pbkdf2$65536$4u0S7QtsuN6xRdP/ibP+NQ==$AZzekFD608x0d6OS0AZUAIPyhysmAz+xjH8kPgtBkpY=';
+IF NOT EXISTS(SELECT 1 FROM dbo.bs_user WHERE email=N'staff.demo@example.com')
+    INSERT INTO dbo.bs_user(role_id,full_name,email,phone,password,isverified,status,created_at,updated_at)
+    VALUES(@StaffRoleId,N'Demo Staff',N'staff.demo@example.com',N'0902000001',@PasswordHash,1,N'Active',SYSUTCDATETIME(),SYSUTCDATETIME());
+ELSE
+    UPDATE dbo.bs_user SET role_id=@StaffRoleId,full_name=N'Demo Staff',status=N'Active',isverified=1,updated_at=SYSUTCDATETIME() WHERE email=N'staff.demo@example.com';
+
+DECLARE @Customers TABLE(email NVARCHAR(255),full_name NVARCHAR(150),phone NVARCHAR(20));
+INSERT INTO @Customers VALUES
+    (N'customer.demo1@example.com',N'Demo Customer One',N'0901000001'),
+    (N'customer.demo2@example.com',N'Demo Customer Two',N'0901000002'),
+    (N'customer.demo3@example.com',N'Demo Customer Three',N'0901000003');
+
+MERGE dbo.bs_user AS target
+USING @Customers AS source ON target.email=source.email
+WHEN MATCHED THEN UPDATE SET
+    role_id=@CustomerRoleId,full_name=source.full_name,phone=source.phone,
+    isverified=1,status=N'Active',updated_at=SYSUTCDATETIME()
+WHEN NOT MATCHED THEN
+    INSERT(role_id,full_name,email,phone,password,isverified,status,created_at,updated_at)
+    VALUES(@CustomerRoleId,source.full_name,source.email,source.phone,@PasswordHash,1,N'Active',SYSUTCDATETIME(),SYSUTCDATETIME());
+
+IF NOT EXISTS(SELECT 1 FROM dbo.bs_StockReceipts WHERE note=N'DEMO-STOCK-001')
+BEGIN
+    DECLARE @DemoProductId INT=(SELECT product_id FROM dbo.bs_Products WHERE sku=N'LAPTOPS-0001');
+    DECLARE @DemoAdminId INT=(SELECT user_id FROM dbo.bs_user WHERE email=N'administrator@example.com');
+    DECLARE @PreviousStock INT=(SELECT stock FROM dbo.bs_Products WHERE product_id=@DemoProductId);
+    UPDATE dbo.bs_Products SET stock=stock+10,status=CASE WHEN status=N'Out of Stock' THEN N'Active' ELSE status END,updated_at=SYSUTCDATETIME() WHERE product_id=@DemoProductId;
+    INSERT INTO dbo.bs_StockReceipts(product_id,quantity,previous_stock,resulting_stock,note,admin_id)
+    VALUES(@DemoProductId,10,@PreviousStock,@PreviousStock+10,N'DEMO-STOCK-001',@DemoAdminId);
+END
+
+DECLARE @DemoOrders TABLE(
+    code NVARCHAR(50),email NVARCHAR(255),sku NVARCHAR(80),quantity INT,
+    order_status NVARCHAR(20),payment_method NVARCHAR(30),days_ago INT
+);
+INSERT INTO @DemoOrders VALUES
+    (N'DEMO-ORDER-001',N'customer.demo1@example.com',N'LAPTOPS-0001',1,N'Pending',N'COD',1),
+    (N'DEMO-ORDER-002',N'customer.demo2@example.com',N'MOUSE-0006',2,N'Confirmed',N'COD',3),
+    (N'DEMO-ORDER-003',N'customer.demo3@example.com',N'KEYBOARDS-0011',1,N'Shipping',N'VNPay',7),
+    (N'DEMO-ORDER-004',N'customer.demo1@example.com',N'MONITORS-0016',2,N'Delivered',N'VNPay',14),
+    (N'DEMO-ORDER-005',N'customer.demo2@example.com',N'SSD-0021',1,N'Cancelled',N'COD',25),
+    (N'DEMO-ORDER-006',N'customer.demo3@example.com',N'RAM-0026',2,N'Payment Failed',N'VNPay',40);
+
+INSERT INTO dbo.bs_Orders(
+    user_id,voucher_id,total_amount,shipping_fee,discount_amount,payment_method,
+    order_status,phone,note,address_info,created_at,updated_at
+)
+SELECT u.user_id,NULL,p.price*d.quantity,0,0,d.payment_method,d.order_status,u.phone,d.code,
+       N'123 Demo Street, Ho Chi Minh City',DATEADD(day,-d.days_ago,SYSUTCDATETIME()),SYSUTCDATETIME()
+FROM @DemoOrders d
+JOIN dbo.bs_user u ON u.email=d.email
+JOIN dbo.bs_Products p ON p.sku=d.sku
+WHERE NOT EXISTS(SELECT 1 FROM dbo.bs_Orders o WHERE o.note=d.code);
+
+UPDATE dbo.bs_Orders SET shipping_fee=0 WHERE shipping_fee>0;
+
+INSERT INTO dbo.bs_OrderDetails(order_id,product_id,quantity,unit_price,created_at)
+SELECT o.order_id,p.product_id,d.quantity,p.price,o.created_at
+FROM @DemoOrders d
+JOIN dbo.bs_Orders o ON o.note=d.code
+JOIN dbo.bs_Products p ON p.sku=d.sku
+WHERE NOT EXISTS(SELECT 1 FROM dbo.bs_OrderDetails od WHERE od.order_id=o.order_id);
+
+INSERT INTO dbo.bs_Payments(order_id,payment_method,payment_status,transaction_no,paid_at,created_at,updated_at)
+SELECT o.order_id,d.payment_method,
+       CASE d.order_status WHEN N'Delivered' THEN N'Paid' WHEN N'Cancelled' THEN N'Refunded'
+            WHEN N'Payment Failed' THEN N'Failed' ELSE N'Pending' END,
+       CASE WHEN d.payment_method=N'COD' THEN NULL ELSE N'DEMO-'+RIGHT(d.code,3) END,
+       CASE WHEN d.order_status=N'Delivered' THEN o.created_at ELSE NULL END,
+       o.created_at,SYSUTCDATETIME()
+FROM @DemoOrders d
+JOIN dbo.bs_Orders o ON o.note=d.code
+WHERE NOT EXISTS(SELECT 1 FROM dbo.bs_Payments py WHERE py.order_id=o.order_id);
+
+PRINT 'Admin demo data is ready.';
+GO
+
+
+/* Admin management migration. Safe to run more than once. */
+IF EXISTS (SELECT 1 FROM dbo.bs_Roles WHERE role_name=N'Customer')
+   AND NOT EXISTS (SELECT 1 FROM dbo.bs_Roles WHERE role_name=N'User')
+    UPDATE dbo.bs_Roles SET role_name=N'User' WHERE role_name=N'Customer';
+GO
+IF EXISTS (SELECT 1 FROM dbo.bs_Roles WHERE role_name=N'Customer')
+   AND EXISTS (SELECT 1 FROM dbo.bs_Roles WHERE role_name=N'User')
+BEGIN
+    DECLARE @UserRoleId INT=(SELECT role_id FROM dbo.bs_Roles WHERE role_name=N'User');
+    UPDATE dbo.bs_user SET role_id=@UserRoleId WHERE role_id=(SELECT role_id FROM dbo.bs_Roles WHERE role_name=N'Customer');
+    DELETE FROM dbo.bs_Roles WHERE role_name=N'Customer';
+END
+GO
+IF NOT EXISTS (SELECT 1 FROM dbo.bs_Roles WHERE role_name=N'Staff')
+    INSERT INTO dbo.bs_Roles(role_name) VALUES(N'Staff');
+GO
+
+IF COL_LENGTH('dbo.bs_Orders', 'phone') IS NULL
+    ALTER TABLE dbo.bs_Orders ADD phone NVARCHAR(20) NULL;
+GO
+IF COL_LENGTH('dbo.bs_Reviews', 'status') IS NULL
+    ALTER TABLE dbo.bs_Reviews ADD status NVARCHAR(20) NOT NULL CONSTRAINT DF_bs_Reviews_status DEFAULT ('Visible');
+GO
+IF COL_LENGTH('dbo.bs_Reviews', 'moderated_by') IS NULL
+    ALTER TABLE dbo.bs_Reviews ADD moderated_by INT NULL;
+GO
+IF COL_LENGTH('dbo.bs_Reviews', 'moderated_at') IS NULL
+    ALTER TABLE dbo.bs_Reviews ADD moderated_at DATETIME2(0) NULL;
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.check_constraints WHERE name=N'CK_bs_Reviews_status')
+    ALTER TABLE dbo.bs_Reviews WITH CHECK ADD CONSTRAINT CK_bs_Reviews_status CHECK (status IN ('Visible','Hidden'));
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name=N'FK_bs_Reviews_moderated_by')
+    ALTER TABLE dbo.bs_Reviews ADD CONSTRAINT FK_bs_Reviews_moderated_by FOREIGN KEY (moderated_by) REFERENCES dbo.bs_user(user_id);
+GO
+
+IF OBJECT_ID(N'dbo.bs_AdminAuditLogs', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.bs_AdminAuditLogs (
+        audit_id BIGINT IDENTITY(1,1) NOT NULL CONSTRAINT PK_bs_AdminAuditLogs PRIMARY KEY,
+        admin_id INT NOT NULL,
+        action NVARCHAR(80) NOT NULL,
+        entity_type NVARCHAR(80) NOT NULL,
+        entity_id NVARCHAR(80) NULL,
+        details NVARCHAR(1000) NULL,
+        created_at DATETIME2(0) NOT NULL CONSTRAINT DF_bs_AdminAuditLogs_created_at DEFAULT SYSUTCDATETIME(),
+        CONSTRAINT FK_bs_AdminAuditLogs_user FOREIGN KEY (admin_id) REFERENCES dbo.bs_user(user_id)
+    );
+END
+GO
+IF OBJECT_ID(N'dbo.bs_StockReceipts', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.bs_StockReceipts (
+        receipt_id BIGINT IDENTITY(1,1) NOT NULL CONSTRAINT PK_bs_StockReceipts PRIMARY KEY,
+        product_id INT NOT NULL,
+        quantity INT NOT NULL,
+        previous_stock INT NOT NULL,
+        resulting_stock INT NOT NULL,
+        note NVARCHAR(500) NULL,
+        admin_id INT NOT NULL,
+        created_at DATETIME2(0) NOT NULL CONSTRAINT DF_bs_StockReceipts_created_at DEFAULT SYSUTCDATETIME(),
+        CONSTRAINT CK_bs_StockReceipts_quantity CHECK (quantity > 0),
+        CONSTRAINT FK_bs_StockReceipts_product FOREIGN KEY (product_id) REFERENCES dbo.bs_Products(product_id),
+        CONSTRAINT FK_bs_StockReceipts_admin FOREIGN KEY (admin_id) REFERENCES dbo.bs_user(user_id)
+    );
+END
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name=N'IX_bs_AdminAuditLogs_created_at' AND object_id=OBJECT_ID(N'dbo.bs_AdminAuditLogs'))
+    CREATE INDEX IX_bs_AdminAuditLogs_created_at ON dbo.bs_AdminAuditLogs(created_at DESC);
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name=N'IX_bs_Reviews_status_created' AND object_id=OBJECT_ID(N'dbo.bs_Reviews'))
+    CREATE INDEX IX_bs_Reviews_status_created ON dbo.bs_Reviews(status,created_at DESC);
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name=N'IX_bs_Orders_status_created' AND object_id=OBJECT_ID(N'dbo.bs_Orders'))
+    CREATE INDEX IX_bs_Orders_status_created ON dbo.bs_Orders(order_status,created_at DESC);
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name=N'IX_bs_StockReceipts_created' AND object_id=OBJECT_ID(N'dbo.bs_StockReceipts'))
+    CREATE INDEX IX_bs_StockReceipts_created ON dbo.bs_StockReceipts(created_at DESC);
+GO
+
+/* Normalize legacy status casing so text and CSS are consistent. */
+UPDATE dbo.bs_Products
+SET status = CASE LOWER(status)
+    WHEN 'active' THEN N'Active'
+    WHEN 'out of stock' THEN N'Out of Stock'
+    WHEN 'hidden' THEN N'Hidden'
+    WHEN 'inactive' THEN N'Inactive'
+    ELSE status
+END
+UPDATE dbo.bs_Products SET status = N'Active' WHERE stock > 0 AND status = N'Out of Stock';
+UPDATE dbo.bs_Products SET status = N'Out of Stock' WHERE stock <= 0 AND status = N'Active';
+
+/* Sync COD payment statuses with order statuses */
+INSERT INTO dbo.bs_Payments (order_id, payment_method, payment_status, transaction_no, paid_at, created_at, updated_at)
+SELECT o.order_id, o.payment_method, N'Paid', N'COD-' + CAST(o.order_id AS VARCHAR), SYSUTCDATETIME(), SYSUTCDATETIME(), SYSUTCDATETIME()
+FROM dbo.bs_Orders o
+LEFT JOIN dbo.bs_Payments py ON py.order_id = o.order_id
+WHERE o.order_status = N'Delivered' AND py.payment_id IS NULL;
+
+UPDATE py
+SET py.payment_status = N'Paid', py.updated_at = SYSUTCDATETIME()
+FROM dbo.bs_Payments py
+JOIN dbo.bs_Orders o ON o.order_id = py.order_id
+WHERE o.order_status = N'Delivered' AND py.payment_status = N'Pending';
+
+UPDATE py
+SET py.payment_status = N'Cancelled', py.updated_at = SYSUTCDATETIME()
+FROM dbo.bs_Payments py
+JOIN dbo.bs_Orders o ON o.order_id = py.order_id
+WHERE o.order_status = N'Cancelled' AND py.payment_status = N'Pending';
+
+PRINT 'Admin management migration completed.';
+GO

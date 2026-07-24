@@ -1,17 +1,15 @@
 package com.mycompany.techstore.services;
 
+import com.mycompany.techstore.Exceptions.AuthException;
+import com.mycompany.techstore.Models.Objects.User;
+import com.mycompany.techstore.Repositories.AuthRepository;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
-
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
-
-import com.mycompany.techstore.Exceptions.AuthException;
-import com.mycompany.techstore.Models.Objects.User;
-import com.mycompany.techstore.Repositories.AuthRepository;
 
 public class AuthService {
 
@@ -40,7 +38,8 @@ public class AuthService {
             byte[] salt = new byte[SALT_LENGTH];
             sr.nextBytes(salt);
 
-            PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt, PBKDF2_ITERATIONS, DERIVED_KEY_LENGTH);
+            PBEKeySpec spec
+                    = new PBEKeySpec(password.toCharArray(), salt, PBKDF2_ITERATIONS, DERIVED_KEY_LENGTH);
             SecretKeyFactory skf = SecretKeyFactory.getInstance(PBKDF2_ALGORITHM);
             byte[] hash = skf.generateSecret(spec).getEncoded();
 
@@ -68,7 +67,8 @@ public class AuthService {
             byte[] salt = Base64.getDecoder().decode(parts[2]);
             byte[] expectedHash = Base64.getDecoder().decode(parts[3]);
 
-            PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt, iterations, expectedHash.length * 8);
+            PBEKeySpec spec
+                    = new PBEKeySpec(password.toCharArray(), salt, iterations, expectedHash.length * 8);
             SecretKeyFactory skf = SecretKeyFactory.getInstance(PBKDF2_ALGORITHM);
             byte[] computed = skf.generateSecret(spec).getEncoded();
 
@@ -87,10 +87,11 @@ public class AuthService {
     }
 
     /*
-     * User Sign-in/Sign-up methods
+   * User Sign-in/Sign-up methods
      */
     // Sign in with email and password
-    public User GetUserSignIn(String email, String password) throws AuthException, NoSuchAlgorithmException {
+    public User GetUserSignIn(String email, String password)
+            throws AuthException, NoSuchAlgorithmException {
         if (!email.matches(this.emailFormat)) {
             throw new AuthException(-1, "Email is not in correct format");
         }
@@ -99,6 +100,9 @@ public class AuthService {
 
         if (user == null) {
             throw new AuthException(-1, "Invalid credential");
+        }
+        if (!"Active".equalsIgnoreCase(user.getStatus())) {
+            throw new AuthException(-1, "This account is blocked or inactive");
         }
 
         String stored = user.getPassword();
@@ -137,7 +141,8 @@ public class AuthService {
     }
 
     // Sign-up with email and password
-    public User CreateUserSignIn(String email, String password, String name) throws AuthException, NoSuchAlgorithmException {
+    public User CreateUserSignIn(String email, String password, String name)
+            throws AuthException, NoSuchAlgorithmException {
         if (!email.matches(this.emailFormat)) {
             throw new AuthException(-1, "Email is not in correct format");
         }
@@ -165,7 +170,7 @@ public class AuthService {
     }
 
     /*
-     * User Sign-in/Sign-up with OIDC methods
+   * User Sign-in/Sign-up with OIDC methods
      */
     public User GetOrCreateUserOIDCSignIn(String email, String name) throws AuthException {
         if (!email.matches(this.emailFormat)) {
@@ -178,6 +183,9 @@ public class AuthService {
 
         User user = this.authRepo.GetUserOIDCSignIn(email);
         if (user != null) {
+            if (!"Active".equalsIgnoreCase(user.getStatus())) {
+                throw new AuthException(-1, "This account is blocked or inactive");
+            }
             return user;
         }
 
@@ -200,7 +208,8 @@ public class AuthService {
     }
 
     // Reset password
-    public boolean UpdateUserPassword(String email, String newPassword) throws NoSuchAlgorithmException, AuthException {
+    public boolean UpdateUserPassword(String email, String newPassword)
+            throws NoSuchAlgorithmException, AuthException {
         if (!email.matches(this.emailFormat)) {
             throw new AuthException(-1, "Email is not in correct format");
         }

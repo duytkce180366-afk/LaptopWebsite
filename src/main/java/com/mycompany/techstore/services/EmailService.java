@@ -76,7 +76,6 @@ public class EmailService {
     /*
       OTP Functions
      */
-    
     public String generateOtp(int length) {
         StringBuilder otp = new StringBuilder();
         for (int i = 0; i < length; i++) {
@@ -116,6 +115,64 @@ public class EmailService {
         });
 
         return otp;
+    }
+
+    public void sendStaffCredentialsEmail(String email, String name, String rawPassword) throws MessagingException {
+        // Send the email asynchronously so callers don't block on network I/O.
+        this.emailExecutor.submit(() -> {
+            try {
+                Message message = new MimeMessage(mailSession);
+                message.setFrom(new InternetAddress(System.getenv("SMTP_USERNAME")));
+                message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(email));
+                message.setSubject("Your account status");
+                String body = """
+                              Hi %s,
+                              
+                              Your new password is %s.
+                              
+                              If you didn't request this, contact administrator as soon as possible.
+                              
+                              Best regards
+                              """.formatted(name, rawPassword);
+
+                message.setText(body);
+                Transport.send(message);
+                Logger.getLogger(EmailService.class.getName()).log(Level.INFO, "Email sent to %s".formatted(email));
+            } catch (MessagingException mex) {
+                Logger.getLogger(EmailService.class.getName()).log(Level.SEVERE, "Failed to send to email adress: " + mex.getMessage() + ", with email: " + email, mex);
+            } catch (Exception ex) {
+                Logger.getLogger(EmailService.class.getName()).log(Level.SEVERE, "Unexpected error sending to " + email, ex);
+            }
+        });
+    }
+
+    public void sendAccountBlockedEmail(String email, String name, String reason) throws MessagingException {
+        // Send the email asynchronously so callers don't block on network I/O.
+        this.emailExecutor.submit(() -> {
+            try {
+                Message message = new MimeMessage(mailSession);
+                message.setFrom(new InternetAddress(System.getenv("SMTP_USERNAME")));
+                message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(email));
+                message.setSubject("Your staff password");
+                String body = """
+                              Hi %s,
+                              
+                              Your account has been blocked (email: %s).
+                              
+                              If you didn't request this, contact administrator as soon as possible.
+                              
+                              Best regards
+                              """.formatted(name, email, reason);
+
+                message.setText(body);
+                Transport.send(message);
+                Logger.getLogger(EmailService.class.getName()).log(Level.INFO, "Email sent to %s".formatted(email));
+            } catch (MessagingException mex) {
+                Logger.getLogger(EmailService.class.getName()).log(Level.SEVERE, "Failed to send to email adress: " + mex.getMessage() + ", with email: " + email, mex);
+            } catch (Exception ex) {
+                Logger.getLogger(EmailService.class.getName()).log(Level.SEVERE, "Unexpected error sending to " + email, ex);
+            }
+        });
     }
 
     // Optional: allow graceful shutdown of executor if the application wants to
