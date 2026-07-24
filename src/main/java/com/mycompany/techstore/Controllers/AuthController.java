@@ -103,8 +103,7 @@ public class AuthController extends HttpServlet {
         this.userRepository = new UserRepository();
 
         if (System.getenv("SMTP_HOST") == null) {
-            Logger.getLogger(EmailService.class.getName())
-                    .log(Level.WARNING, "SMTP_HOST is not configured; skipping OTP email.");
+            Logger.getLogger(EmailService.class.getName()).log(Level.WARNING, "SMTP_HOST is not configured; skipping OTP email.");
             this.emailService = null;
         } else {
             this.emailService = new EmailService();
@@ -126,8 +125,7 @@ public class AuthController extends HttpServlet {
             String role = this.userRepository.findRoleName(user.getUser_id());
             return BackOfficeAuthorizationPolicy.isBackOfficeRole(role) ? "/admin/dashboard" : "/";
         } catch (java.sql.SQLException ex) {
-            Logger.getLogger(AuthController.class.getName())
-                    .log(
+            Logger.getLogger(AuthController.class.getName()).log(
                             Level.WARNING,
                             "Unable to resolve the post-login destination for user " + user.getUser_id(),
                             ex);
@@ -161,8 +159,7 @@ public class AuthController extends HttpServlet {
             }
         } catch (IOException | URISyntaxException e) {
             // Hard-coded exception handler
-            Logger.getLogger(AuthController.class.getName())
-                    .log(Level.SEVERE, "Error loading OIDC configuration: " + e.getMessage(), e);
+            Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, "Error loading OIDC configuration: " + e.getMessage(), e);
             return false;
         }
     }
@@ -218,14 +215,12 @@ public class AuthController extends HttpServlet {
         HttpSession session = request.getSession();
 
         if (session == null || state == null || !state.equals(session.getAttribute("oidc_state"))) {
-            response.sendRedirect(
-                    request.getContextPath() + "/auth?action=signin&error=Invalid+OIDC+state.");
+            response.sendRedirect(request.getContextPath() + "/auth?action=signin&error=Invalid+OIDC+state.");
             return;
         }
 
         if (code == null) {
-            response.sendRedirect(
-                    request.getContextPath() + "/auth?action=signin&error=Authorization+code+is+missing.");
+            response.sendRedirect(request.getContextPath() + "/auth?action=signin&error=Authorization+code+is+missing.");
             return;
         }
 
