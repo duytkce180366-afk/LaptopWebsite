@@ -104,10 +104,10 @@
         <div id="specs">
             <c:if test="${empty product.specifications}">
                 <c:forEach var="key" items="${['cpu','ram','storage','gpu','display','battery','os']}">
-                    <div class="spec-row">
+                    <div class="spec-row" data-initial="true">
                         <input class="form-control" name="specKey" value="${key}">
                         <input class="form-control" name="specValue" placeholder="Value">
-                        <button class="btn btn-outline-danger" type="button" onclick="removeSpec(this)">
+                        <button class="btn btn-outline-danger" type="button" onclick="removeSpec(this)" style="display: none !important;">
                             &times;
                         </button>
                     </div>
@@ -115,10 +115,10 @@
             </c:if>
 
             <c:forEach var="spec" items="${product.specifications}">
-                <div class="spec-row">
+                <div class="spec-row" data-initial="true">
                     <input class="form-control" name="specKey" value="<c:out value='${spec.key}' />">
                     <input class="form-control" name="specValue" value="<c:out value='${spec.value}' />">
-                    <button class="btn btn-outline-danger" type="button" onclick="removeSpec(this)">
+                    <button class="btn btn-outline-danger" type="button" onclick="removeSpec(this)" style="display: none !important;">
                         &times;
                     </button>
                 </div>
@@ -143,6 +143,7 @@
             '<input class="form-control" name="specValue" placeholder="Value">' +
             '<button class="btn btn-outline-danger" type="button" onclick="removeSpec(this)">&times;</button>';
         document.getElementById('specs').appendChild(d);
+        updateSpecRows();
     }
 
     function isLaptopCategory() {
@@ -180,22 +181,25 @@
 
             const keyVal = keyInput.value.trim().toLowerCase();
             const isReq = isLaptop && requiredKeys.includes(keyVal);
+            const isInitial = row.dataset.initial === 'true';
 
             if (isReq) {
                 keyInput.readOnly = true;
                 keyInput.setAttribute('readonly', 'readonly');
                 keyInput.style.backgroundColor = '#e9ecef';
                 keyInput.style.cursor = 'not-allowed';
-                if (btn) {
-                    btn.style.setProperty('display', 'none', 'important');
-                    btn.disabled = true;
-                }
             } else {
                 keyInput.readOnly = false;
                 keyInput.removeAttribute('readonly');
                 keyInput.style.backgroundColor = '';
                 keyInput.style.cursor = '';
-                if (btn) {
+            }
+
+            if (btn) {
+                if (isReq || isInitial) {
+                    btn.style.setProperty('display', 'none', 'important');
+                    btn.disabled = true;
+                } else {
                     btn.style.display = '';
                     btn.disabled = false;
                 }
