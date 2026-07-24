@@ -35,8 +35,10 @@
 
         <p>
             <strong><c:out value="${order.paymentMethod}" /></strong>
-            &middot;
-            <c:out value="${order.paymentStatus}" />
+            <c:if test="${not empty order.paymentStatus and order.paymentStatus ne order.paymentMethod}">
+                &middot;
+                <c:out value="${order.paymentStatus}" />
+            </c:if>
         </p>
 
         <p>
@@ -70,18 +72,22 @@
                     <td><c:out value="${d.sku}" /></td>
                     <td><c:out value="${d.productName}" /></td>
                     <td>${d.quantity}</td>
-                    <td>${d.unitPrice}</td>
-                    <td>${d.subtotal}</td>
+                    <td><fmt:formatNumber value="${d.unitPrice}" pattern="#,##0.00" /></td>
+                    <td><fmt:formatNumber value="${d.subtotal}" pattern="#,##0.00" /></td>
                 </tr>
             </c:forEach>
         </tbody>
     </table>
 
     <div class="text-end mt-3">
-        <div>Subtotal: ${order.totalAmount}</div>
-        <div>Shipping: ${order.shippingFee}</div>
-        <div>Discount: -${order.discountAmount}</div>
-        <strong class="fs-5">Total: ${order.finalTotal}</strong>
+        <div>Subtotal: <fmt:formatNumber value="${order.totalAmount}" pattern="#,##0.00" /></div>
+        <c:if test="${order.shippingFee > 0}">
+            <div>Shipping: <fmt:formatNumber value="${order.shippingFee}" pattern="#,##0.00" /></div>
+        </c:if>
+        <c:if test="${order.discountAmount > 0}">
+            <div>Discount: -<fmt:formatNumber value="${order.discountAmount}" pattern="#,##0.00" /></div>
+        </c:if>
+        <strong class="fs-5">Total: <fmt:formatNumber value="${order.finalTotal}" pattern="#,##0.00" /></strong>
     </div>
 </div>
 

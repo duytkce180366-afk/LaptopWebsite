@@ -185,8 +185,7 @@ public class AdminOrderRepository {
     o.setAddressInfo(rs.getString("address_info"));
     o.setPaymentMethod(rs.getString("payment_method"));
     String payment = rs.getString("payment_status");
-    o.setPaymentStatus(
-        payment == null ? ("COD".equals(o.getPaymentMethod()) ? "COD" : "Pending") : payment);
+    o.setPaymentStatus(payment == null ? "Pending" : payment);
     o.setOrderStatus(rs.getString("order_status"));
     o.setNote(rs.getString("note"));
     o.setTotalAmount(rs.getBigDecimal("total_amount"));

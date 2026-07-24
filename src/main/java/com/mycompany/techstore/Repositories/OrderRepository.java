@@ -236,10 +236,14 @@ public class OrderRepository {
 
     // Deduct stock for each item
     for (int[] item : items) {
-      String stockSql = "UPDATE bs_Products SET stock = stock - ? WHERE product_id=?";
+      String stockSql =
+          "UPDATE bs_Products SET stock = stock - ?,"
+              + " status = CASE WHEN stock - ? <= 0 THEN 'Out of Stock' ELSE status END"
+              + " WHERE product_id=?";
       PreparedStatement psStock = conn.prepareStatement(stockSql);
       psStock.setInt(1, item[1]);
-      psStock.setInt(2, item[0]);
+      psStock.setInt(2, item[1]);
+      psStock.setInt(3, item[0]);
       psStock.executeUpdate();
     }
 
@@ -370,7 +374,10 @@ public class OrderRepository {
           int productId = rsItems.getInt("product_id");
           int quantity = rsItems.getInt("quantity");
 
-          String stockSql = "UPDATE bs_Products SET stock = stock + ? WHERE product_id=?";
+          String stockSql =
+              "UPDATE bs_Products SET stock = stock + ?,"
+                  + " status = CASE WHEN status = 'Out of Stock' THEN 'Active' ELSE status END"
+                  + " WHERE product_id=?";
           PreparedStatement psStock = conn.prepareStatement(stockSql);
           psStock.setInt(1, quantity);
           psStock.setInt(2, productId);

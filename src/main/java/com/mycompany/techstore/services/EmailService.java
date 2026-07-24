@@ -29,7 +29,7 @@ public class EmailService {
     this.random = new SecureRandom();
     this.mailProps = new Properties();
 
-    String smtpHost = value("SMTP_HOST", "");
+    String smtpHost = value("SMTP_HOST", "smtp.gmail.com");
     String smtpPort = value("SMTP_PORT", "587");
     String smtpAuth = value("SMTP_AUTH", "true");
     String smtpStartTls = value("SMTP_START_TLS_ENABLE", "true");
@@ -170,6 +170,40 @@ public class EmailService {
           } catch (Exception ex) {
             Logger.getLogger(EmailService.class.getName())
                 .log(Level.SEVERE, "Failed to send account notification to " + email, ex);
+          }
+        });
+    return true;
+  }
+
+  public boolean sendStaffCredentialsEmail(String email, String fullName, String password) {
+    if (!configured) {
+      Logger.getLogger(EmailService.class.getName())
+          .log(Level.WARNING, "Staff credentials notification was not sent because SMTP is not configured.");
+      return false;
+    }
+    this.emailExecutor.submit(
+        () -> {
+          try {
+            Message message = new MimeMessage(mailSession);
+            message.setFrom(new InternetAddress(smtpUsername));
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(email));
+            message.setSubject("TechStore - Your Staff Account Credentials");
+            message.setText(
+                "Hi "
+                    + (fullName == null || fullName.isBlank() ? "Staff Member" : fullName)
+                    + ",\n\n"
+                    + "Your Staff account has been created for TechStore admin panel.\n\n"
+                    + "Account Details:\n"
+                    + "- Email: " + email + "\n"
+                    + "- Temporary Password: " + password + "\n\n"
+                    + "Please log in and update your password as soon as possible.\n\n"
+                    + "Best regards,\nTechStore Management");
+            Transport.send(message);
+            Logger.getLogger(EmailService.class.getName())
+                .log(Level.INFO, "Staff credentials sent to %s".formatted(email));
+          } catch (Exception ex) {
+            Logger.getLogger(EmailService.class.getName())
+                .log(Level.SEVERE, "Failed to send staff credentials to " + email, ex);
           }
         });
     return true;

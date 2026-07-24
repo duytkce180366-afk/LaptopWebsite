@@ -79,6 +79,7 @@ public class AdminProductService {
     if (repository.skuExists(p.getSku(), p.getProductId()))
       throw new BackOfficeValidationException("SKU already exists.");
     if (p.getStock() == 0 && "Active".equals(p.getStatus())) p.setStatus("Out of Stock");
+    if (p.getStock() > 0 && "Out of Stock".equals(p.getStatus())) p.setStatus("Active");
     if (isLaptop(p.getCategoryId()))
       for (String key : LAPTOP_SPECS) {
         if (clean(p.getSpecifications().get(key)).isEmpty())

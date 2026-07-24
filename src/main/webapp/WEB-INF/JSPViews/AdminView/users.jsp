@@ -94,12 +94,12 @@
                     <td>
                         <c:choose>
                             <c:when test="${isAdmin}">
-                                <form method="post" action="${pageContext.request.contextPath}/admin/users/role" class="admin-actions">
+                                <form method="post" action="${pageContext.request.contextPath}/admin/users/role" style="display: flex; align-items: center; gap: 6px; flex-wrap: nowrap;">
                                     <input type="hidden" name="csrfToken" value="${sessionScope.adminCsrfToken}">
                                     <input type="hidden" name="id" value="${u.userId}">
 
                                     <label for="roleSelect_${u.userId}" class="visually-hidden">Role</label>
-                                    <select id="roleSelect_${u.userId}" class="form-select form-select-sm" name="roleId">
+                                    <select id="roleSelect_${u.userId}" class="form-select form-select-sm" name="roleId" style="width: auto; min-width: 105px;">
                                         <c:forEach var="r" items="${roles}">
                                             <option value="${r.id}" ${u.roleId == r.id ? 'selected' : ''}>
                                                 <c:out value="${r.name}" />
@@ -107,7 +107,7 @@
                                         </c:forEach>
                                     </select>
 
-                                    <button class="btn btn-sm btn-outline-primary">Save</button>
+                                    <button class="btn btn-sm btn-outline-primary" style="white-space: nowrap;">Save</button>
                                 </form>
                             </c:when>
 

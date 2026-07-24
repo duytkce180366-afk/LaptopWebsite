@@ -179,10 +179,12 @@
                             <td><%=String.format("%,.0f", order.getTotalAmount())%> đ</td>
                         </tr>
 
+                        <% if (order.getShippingFee() > 0) { %>
                         <tr>
                             <td>Shipping Fee</td>
                             <td><%=String.format("%,.0f", order.getShippingFee())%> đ</td>
                         </tr>
+                        <% } %>
 
                         <% if (order.getDiscountAmount() > 0) {%>
                         <tr>

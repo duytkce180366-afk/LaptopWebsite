@@ -14,6 +14,7 @@ public class AdminUserService {
   public static final String ROLE_CUSTOMER = "Customer";
 
   private final AdminUserRepository repository = new AdminUserRepository();
+  private final EmailService emailService = new EmailService();
 
   public PageResult<AdminUser> findAll(String q, int role, String status, int page)
       throws SQLException {
@@ -81,6 +82,7 @@ public class AdminUserService {
       throw new BackOfficeValidationException("Email is already in use.");
     repository.createStaff(
         name.trim(), email.trim(), clean(phone), PasswordUtil.hashPassword(password), adminId);
+    emailService.sendStaffCredentialsEmail(email.trim(), name.trim(), password);
   }
 
   public void updateStaff(int id, String name, String email, String phone, int adminId)

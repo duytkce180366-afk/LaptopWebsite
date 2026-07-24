@@ -20,10 +20,7 @@ public class DashboardRepository {
           number(
               con,
               "SELECT COUNT(*) FROM dbo.bs_user u JOIN dbo.bs_Roles r ON r.role_id=u.role_id WHERE"
-                  + " r.role_name='User'"
-                  + range("u.created_at"),
-              from,
-              to));
+                  + " r.role_name IN ('User', 'Customer')"));
       s.setReviews(
           number(
               con,

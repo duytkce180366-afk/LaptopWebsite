@@ -2263,12 +2263,14 @@ INSERT INTO dbo.bs_Orders(
     user_id,voucher_id,total_amount,shipping_fee,discount_amount,payment_method,
     order_status,phone,note,address_info,created_at,updated_at
 )
-SELECT u.user_id,NULL,p.price*d.quantity,30000,0,d.payment_method,d.order_status,u.phone,d.code,
+SELECT u.user_id,NULL,p.price*d.quantity,0,0,d.payment_method,d.order_status,u.phone,d.code,
        N'123 Demo Street, Ho Chi Minh City',DATEADD(day,-d.days_ago,SYSUTCDATETIME()),SYSUTCDATETIME()
 FROM @DemoOrders d
 JOIN dbo.bs_user u ON u.email=d.email
 JOIN dbo.bs_Products p ON p.sku=d.sku
 WHERE NOT EXISTS(SELECT 1 FROM dbo.bs_Orders o WHERE o.note=d.code);
+
+UPDATE dbo.bs_Orders SET shipping_fee=0 WHERE shipping_fee>0;
 
 INSERT INTO dbo.bs_OrderDetails(order_id,product_id,quantity,unit_price,created_at)
 SELECT o.order_id,p.product_id,d.quantity,p.price,o.created_at
@@ -2381,7 +2383,7 @@ SET status = CASE LOWER(status)
     WHEN 'inactive' THEN N'Inactive'
     ELSE status
 END
-WHERE status COLLATE Latin1_General_100_BIN2 NOT IN (N'Active',N'Out of Stock',N'Hidden',N'Inactive');
-GO
+UPDATE dbo.bs_Products SET status = N'Active' WHERE stock > 0 AND status = N'Out of Stock';
+UPDATE dbo.bs_Products SET status = N'Out of Stock' WHERE stock <= 0 AND status = N'Active';
 PRINT 'Admin management migration completed.';
 GO

@@ -16,8 +16,11 @@
 
                 <div class="admin-actions" style="grid-column: span 3;">
                     <button class="btn btn-primary">Apply period</button>
-                    <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/admin/dashboard">
+                    <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/admin/dashboard?period=30">
                         Last 30 days
+                    </a>
+                    <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/admin/dashboard">
+                        All time
                     </a>
                     <a class="btn btn-outline-success"
                         href="${pageContext.request.contextPath}/admin/reports?from=${from}&to=${to}">

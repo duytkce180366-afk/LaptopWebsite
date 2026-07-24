@@ -16,17 +16,17 @@ public class AdminDashboardController extends HttpServlet {
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse res)
       throws ServletException, IOException {
-    LocalDate to = date(req, "to");
-    if (to == null) {
-      to = LocalDate.now();
-    }
+    String period = req.getParameter("period");
     LocalDate from = date(req, "from");
-    if (from == null) {
+    LocalDate to = date(req, "to");
+
+    if ("30".equals(period)) {
+      to = LocalDate.now();
       from = to.minusDays(29);
-    }
-    if (from.isAfter(to)) {
+    } else if (from != null && to != null && from.isAfter(to)) {
       req.setAttribute("error", "From date must not be after To date.");
-      from = to.minusDays(29);
+      from = null;
+      to = null;
     }
     try {
       req.setAttribute("stats", service.load(from, to));
