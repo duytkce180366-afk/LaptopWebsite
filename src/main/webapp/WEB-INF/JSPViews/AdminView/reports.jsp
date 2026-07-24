@@ -130,8 +130,7 @@
         <div class="empty-state">No data for the selected period.</div>
     </c:if>
 </div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.11.0/html2pdf.bundle.min.js" integrity="sha512-M10iqGQJQF76yMMZt370BhElG5CZrzIe0NNRtKtgAAsTOyiVRPa6BqXgajPrMXPSVh9GIdoPuijaGxXAnS96nQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script>
 function downloadPDF() {
     var filters = document.querySelector('.admin-filters');
