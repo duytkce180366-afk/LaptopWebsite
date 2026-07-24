@@ -186,16 +186,14 @@
                         </tr>
                         <% } %>
 
-                        <% if (order.getDiscountAmount() > 0) {%>
                         <tr>
                             <td>
-                                Voucher ( <%=order.getVoucherCode()%> )
+                                Discount<%=order.getVoucherCode() != null && !order.getVoucherCode().trim().isEmpty() ? " (" + order.getVoucherCode() + ")" : ""%>
                             </td>
                             <td style="color:#dc2626;">
                                 -<%=String.format("%,.0f", order.getDiscountAmount())%> đ
                             </td>
                         </tr>
-                        <% }%>
 
                         <tr class="total-row">
                             <td><strong>Total</strong></td>
