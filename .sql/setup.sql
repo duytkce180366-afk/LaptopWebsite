@@ -2254,7 +2254,7 @@ DECLARE @DemoOrders TABLE(
 INSERT INTO @DemoOrders VALUES
     (N'DEMO-ORDER-001',N'customer.demo1@example.com',N'LAPTOPS-0001',1,N'Pending',N'COD',1),
     (N'DEMO-ORDER-002',N'customer.demo2@example.com',N'MOUSE-0006',2,N'Confirmed',N'COD',3),
-    (N'DEMO-ORDER-003',N'customer.demo3@example.com',N'KEYBOARDS-0011',1,N'Shipping',N'Bank Transfer',7),
+    (N'DEMO-ORDER-003',N'customer.demo3@example.com',N'KEYBOARDS-0011',1,N'Shipping',N'VNPay',7),
     (N'DEMO-ORDER-004',N'customer.demo1@example.com',N'MONITORS-0016',2,N'Delivered',N'VNPay',14),
     (N'DEMO-ORDER-005',N'customer.demo2@example.com',N'SSD-0021',1,N'Cancelled',N'COD',25),
     (N'DEMO-ORDER-006',N'customer.demo3@example.com',N'RAM-0026',2,N'Payment Failed',N'VNPay',40);

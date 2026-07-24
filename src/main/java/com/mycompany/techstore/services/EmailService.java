@@ -209,6 +209,43 @@ public class EmailService {
     return true;
   }
 
+  public boolean sendAccountBlockedEmail(String email, String fullName, String reason) {
+    if (!configured) {
+      Logger.getLogger(EmailService.class.getName())
+          .log(Level.WARNING, "Account blocked notification was not sent because SMTP is not configured.");
+      return false;
+    }
+    String blockReason = (reason == null || reason.isBlank())
+        ? "Violation of TechStore terms of service."
+        : reason.trim();
+
+    this.emailExecutor.submit(
+        () -> {
+          try {
+            Message message = new MimeMessage(mailSession);
+            message.setFrom(new InternetAddress(smtpUsername));
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(email));
+            message.setSubject("TechStore - Your Account Has Been Blocked");
+            message.setText(
+                "Hi "
+                    + (fullName == null || fullName.isBlank() ? "Customer" : fullName)
+                    + ",\n\n"
+                    + "Your TechStore account has been suspended by the administration.\n\n"
+                    + "Reason for suspension:\n"
+                    + "- " + blockReason + "\n\n"
+                    + "If you believe this was done in error or would like to request unblocking, please contact TechStore support.\n\n"
+                    + "Best regards,\nTechStore Support Team");
+            Transport.send(message);
+            Logger.getLogger(EmailService.class.getName())
+                .log(Level.INFO, "Account block email sent to %s".formatted(email));
+          } catch (Exception ex) {
+            Logger.getLogger(EmailService.class.getName())
+                .log(Level.SEVERE, "Failed to send account block email to " + email, ex);
+          }
+        });
+    return true;
+  }
+
   private static String value(String name, String fallback) {
     String value = System.getenv(name);
     return value == null || value.isBlank() ? fallback : value.trim();

@@ -1,5 +1,6 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 
 <c:set var="pageTitle" value="${isAdmin ? 'Manage Users and Staff' : 'Manage Customers'}" />
 <%@ include file="_start.jsp" %>
@@ -126,15 +127,22 @@
                     <td>
                         <div class="admin-actions">
                             <c:if test="${u.userId != sessionScope.loggedUser.user_id}">
-                                <form method="post" action="${pageContext.request.contextPath}/admin/users/status">
-                                    <input type="hidden" name="csrfToken" value="${sessionScope.adminCsrfToken}">
-                                    <input type="hidden" name="id" value="${u.userId}">
-                                    <input type="hidden" name="status" value="${u.status == 'Blocked' ? 'Active' : 'Blocked'}">
-
-                                    <button class="btn btn-sm ${u.status == 'Blocked' ? 'btn-outline-success' : 'btn-outline-danger'}">
-                                        ${u.status == 'Blocked' ? 'Unblock' : 'Block'}
-                                    </button>
-                                </form>
+                                <c:choose>
+                                    <c:when test="${u.status == 'Blocked'}">
+                                        <form method="post" action="${pageContext.request.contextPath}/admin/users/status">
+                                            <input type="hidden" name="csrfToken" value="${sessionScope.adminCsrfToken}">
+                                            <input type="hidden" name="id" value="${u.userId}">
+                                            <input type="hidden" name="status" value="Active">
+                                            <button class="btn btn-sm btn-outline-success">Unblock</button>
+                                        </form>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                                onclick="openBlockModal(${u.userId}, '<c:out value="${fn:escapeXml(u.fullName)}"/>')">
+                                            Block
+                                        </button>
+                                    </c:otherwise>
+                                </c:choose>
                             </c:if>
 
                             <c:if test="${isAdmin and u.roleName == 'Staff'}">
@@ -214,11 +222,48 @@
     </div>
 </div>
 
+<div class="modal fade" id="blockConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Block User Account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="${pageContext.request.contextPath}/admin/users/status">
+                <div class="modal-body">
+                    <input type="hidden" name="csrfToken" value="${sessionScope.adminCsrfToken}">
+                    <input type="hidden" name="id" id="blockUserId" value="">
+                    <input type="hidden" name="status" value="Blocked">
+
+                    <p>You are about to block user: <strong id="blockUserName"></strong></p>
+                    <div class="mb-3">
+                        <label for="blockReasonInput" class="form-label">Reason for Blocking <span class="text-danger">*</span></label>
+                        <textarea class="form-control" name="reason" id="blockReasonInput" rows="3"
+                                  placeholder="Enter the reason why this account is being blocked (will be sent to the user via email)..." required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Block & Send Email</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
     function confirmDelete(userId) {
         document.getElementById('deleteUserId').value = userId;
         var myModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
         myModal.show();
+    }
+
+    function openBlockModal(userId, userName) {
+        document.getElementById('blockUserId').value = userId;
+        document.getElementById('blockUserName').innerText = userName;
+        document.getElementById('blockReasonInput').value = '';
+        var blockModal = new bootstrap.Modal(document.getElementById('blockConfirmModal'));
+        blockModal.show();
     }
 </script>
 

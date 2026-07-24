@@ -73,7 +73,8 @@ public class AdminUserController extends HttpServlet {
       } else if ("/delete".equals(path)) {
         service.deleteStaff(id, admin.getUser_id());
       } else {
-        service.setStatusForActor(id, text(req, "status"), admin.getUser_id(), actorRole);
+        service.setStatusForActor(
+            id, text(req, "status"), admin.getUser_id(), actorRole, text(req, "reason"));
       }
       req.getSession().setAttribute("adminMessage", "User account was updated.");
     } catch (IllegalArgumentException ex) {

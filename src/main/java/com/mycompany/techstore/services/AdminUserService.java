@@ -66,11 +66,20 @@ public class AdminUserService {
 
   public void setStatusForActor(int id, String status, int actorId, String actorRole)
       throws SQLException {
+    setStatusForActor(id, status, actorId, actorRole, null);
+  }
+
+  public void setStatusForActor(int id, String status, int actorId, String actorRole, String reason)
+      throws SQLException {
     AdminUser selected = repository.findById(id);
     if (selected == null) throw new BackOfficeValidationException("User not found.");
     if (ROLE_STAFF.equals(actorRole) && !ROLE_CUSTOMER.equals(selected.getRoleName()))
       throw new BackOfficeValidationException("Staff can only block or unblock customer accounts.");
     setStatus(id, status, actorId);
+
+    if ("Blocked".equals(status)) {
+      emailService.sendAccountBlockedEmail(selected.getEmail(), selected.getFullName(), reason);
+    }
   }
 
   public void createStaff(String name, String email, String phone, String password, int adminId)

@@ -32,7 +32,7 @@
             <select class="form-select" name="payment">
                 <option value="">All</option>
 
-                <c:forEach var="s" items="${['COD','VNPay','MoMo','Bank Transfer']}">
+                <c:forEach var="s" items="${['COD','VNPay']}">
                     <option ${selectedPayment == s ? 'selected' : ''}>
                         <c:out value="${s}" />
                     </option>
@@ -88,6 +88,7 @@
                     <td>
                         <c:out value="${o.paymentMethod}" />
                     </td>
+                    <td>
                         <fmt:formatNumber value="${o.finalTotal}" pattern="#,##0.00" />
                         <c:if test="${o.discountAmount > 0}">
                             <br>
