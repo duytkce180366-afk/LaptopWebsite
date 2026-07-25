@@ -307,10 +307,13 @@ public class AdminVoucherController extends HttpServlet {
                 request.setAttribute("error",
                         "Expired date must be greater than today.");
 
-                request.setAttribute("voucher", voucher);
+                request.setAttribute("voucherList", service.getAllVoucher());
+
+                request.setAttribute("editVoucher", voucher);
+                request.setAttribute("showEditModal", true);
 
                 request.getRequestDispatcher(
-                        "/WEB-INF/JSPViews/AdminView/EditVoucher.jsp")
+                        "/WEB-INF/JSPViews/AdminView/VoucherManagement.jsp")
                         .forward(request, response);
 
                 return;

@@ -1,8 +1,6 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
-<%@ taglib prefix="c"
-           uri="http://java.sun.com/jsp/jstl/core"%>
-
+<%@ include file="_start.jsp" %>
 <!DOCTYPE html>
 <html>
 
@@ -95,7 +93,9 @@
                     <input type="hidden"
                            name="action"
                            value="list">
-
+                    <input type="hidden"
+                           name="csrfToken"
+                           value="${sessionScope.adminCsrfToken}">
                     <div class="col-md-3">
 
                         <input type="text"
@@ -271,9 +271,9 @@
 
                                     <a href="${pageContext.request.contextPath}/admin/voucher?action=delete&id=${v.voucherId}"
                                        class="btn btn-danger btn-sm"
-                                       onclick="return confirm('Delete this voucher?')">
+                                       onclick="return confirm('De-Active this voucher?')">
 
-                                        Delete
+                                        De-Active
 
                                     </a>
 
@@ -333,7 +333,9 @@
                             <input type="hidden"
                                    name="action"
                                    value="update">
-
+                            <input type="hidden"
+                                   name="csrfToken"
+                                   value="${sessionScope.adminCsrfToken}">
                             <input type="hidden"
                                    id="editVoucherId"
                                    name="voucherId">
@@ -389,6 +391,7 @@
                                     id="editExpired"
                                     type="date"
                                     name="expiredDate"
+                                    min="<%= java.time.LocalDate.now().plusDays(1)%>"
                                     required>
 
                             </div>
@@ -470,6 +473,140 @@
 
             });
         </script>
+        <div class="modal fade"
+             id="createVoucherModal"
+             tabindex="-1">
+
+            <div class="modal-dialog">
+
+                <div class="modal-content">
+
+                    <div class="modal-header bg-success text-white">
+
+                        <h5 class="modal-title">
+                            Create Voucher
+                        </h5>
+
+                        <button class="btn-close"
+                                data-bs-dismiss="modal">
+                        </button>
+
+                    </div>
+
+                    <form action="${pageContext.request.contextPath}/admin/voucher"
+                          method="post">
+
+                        <div class="modal-body">
+                            <input type="hidden"
+                                   name="csrfToken"
+                                   value="${sessionScope.adminCsrfToken}">
+
+                            <input type="hidden"
+                                   name="action"
+                                   value="create">
+
+                            <div class="mb-3">
+
+                                <label>Voucher Code</label>
+
+                                <input
+                                    class="form-control"
+                                    type="text"
+                                    name="code"
+                                    maxlength="20"
+                                    required>
+
+                            </div>
+
+                            <div class="mb-3">
+
+                                <label>Discount (%)</label>
+
+                                <input
+                                    class="form-control"
+                                    type="number"
+                                    name="discountPercent"
+                                    min="1"
+                                    max="100"
+                                    required>
+
+                            </div>
+
+                            <div class="mb-3">
+
+                                <label>Quantity</label>
+
+                                <input
+                                    class="form-control"
+                                    type="number"
+                                    name="quantity"
+                                    min="1"
+                                    required>
+
+                            </div>
+
+                            <div class="mb-3">
+
+                                <label>Expired Date</label>
+
+                                <input
+                                    class="form-control"
+                                    type="date"
+                                    name="expiredDate"
+                                    min="<%= java.time.LocalDate.now().plusDays(1)%>"
+                                    required>
+
+                            </div>
+
+                            <div class="mb-3">
+
+                                <label>Status</label>
+
+                                <select
+                                    class="form-select"
+                                    name="status">
+
+                                    <option value="Active">
+                                        Active
+                                    </option>
+
+                                    <option value="Inactive">
+                                        Inactive
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+                        </div>
+
+                        <div class="modal-footer">
+
+                            <button class="btn btn-secondary"
+                                    data-bs-dismiss="modal"
+                                    type="button">
+
+                                Cancel
+
+                            </button>
+
+                            <button class="btn btn-success"
+                                    type="submit">
+
+                                Save Voucher
+
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
     </body>
 
 </html>
+<%@ include file="_end.jsp" %>

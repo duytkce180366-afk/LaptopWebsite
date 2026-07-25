@@ -31,6 +31,7 @@
                 <a href="${pageContext.request.contextPath}/admin/users">Users</a>
                 <a href="${pageContext.request.contextPath}/admin/reviews">Reviews</a>
                 <a href="${pageContext.request.contextPath}/admin/reports">Reports</a>
+                <a href="${pageContext.request.contextPath}/admin/voucher">Voucher</a>
             </nav>
 
             <div class="sidebar-bottom">
