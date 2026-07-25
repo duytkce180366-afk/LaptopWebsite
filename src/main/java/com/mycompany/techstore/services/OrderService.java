@@ -36,7 +36,8 @@ public class OrderService {
     public boolean confirmPaymentSuccess(int orderId) {
         return repo.confirmPaymentSuccess(orderId);
     }
+
     public Map<String, Object> retryToCheckout(int orderId, int userId) {
-    return repo.retryToCheckout(orderId, userId);
-}
+        return repo.retryToCheckout(orderId, userId);
+    }
 }

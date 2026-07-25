@@ -132,38 +132,46 @@
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.11.0/html2pdf.bundle.min.js" integrity="sha512-M10iqGQJQF76yMMZt370BhElG5CZrzIe0NNRtKtgAAsTOyiVRPa6BqXgajPrMXPSVh9GIdoPuijaGxXAnS96nQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script>
-function downloadPDF() {
-    var filters = document.querySelector('.admin-filters');
-    var userProfile = document.querySelector('.admin-user');
-    var topbar = document.querySelector('.admin-topbar');
-    var pdfHeader = document.getElementById('pdf-header');
-    
-    // Temporarily hide elements we don't want in the PDF
-    if (filters) filters.style.display = 'none';
-    if (userProfile) userProfile.style.display = 'none';
-    if (topbar) topbar.style.display = 'none'; // Hide generic admin topbar
-    
-    // Show formal report header
-    if (pdfHeader) pdfHeader.style.display = 'block';
-    
-    var element = document.querySelector('.admin-main');
-    
-    var opt = {
-      margin:       0.5,
-      filename:     'techstore-report.pdf',
-      image:        { type: 'jpeg', quality: 1 },
-      html2canvas:  { scale: 2, useCORS: true },
-      jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' }
-    };
-    
-    html2pdf().set(opt).from(element).save().then(function() {
-        // Restore elements
-        if (filters) filters.style.display = '';
-        if (userProfile) userProfile.style.display = '';
-        if (topbar) topbar.style.display = '';
-        if (pdfHeader) pdfHeader.style.display = 'none';
-    });
-}
+                function downloadPDF() {
+                    var filters = document.querySelector('.admin-filters');
+                    var userProfile = document.querySelector('.admin-user');
+                    var topbar = document.querySelector('.admin-topbar');
+                    var pdfHeader = document.getElementById('pdf-header');
+
+                    // Temporarily hide elements we don't want in the PDF
+                    if (filters)
+                        filters.style.display = 'none';
+                    if (userProfile)
+                        userProfile.style.display = 'none';
+                    if (topbar)
+                        topbar.style.display = 'none'; // Hide generic admin topbar
+
+                    // Show formal report header
+                    if (pdfHeader)
+                        pdfHeader.style.display = 'block';
+
+                    var element = document.querySelector('.admin-main');
+
+                    var opt = {
+                        margin: 0.5,
+                        filename: 'techstore-report.pdf',
+                        image: {type: 'jpeg', quality: 1},
+                        html2canvas: {scale: 2, useCORS: true},
+                        jsPDF: {unit: 'in', format: 'a4', orientation: 'landscape'}
+                    };
+
+                    html2pdf().set(opt).from(element).save().then(function () {
+                        // Restore elements
+                        if (filters)
+                            filters.style.display = '';
+                        if (userProfile)
+                            userProfile.style.display = '';
+                        if (topbar)
+                            topbar.style.display = '';
+                        if (pdfHeader)
+                            pdfHeader.style.display = 'none';
+                    });
+                }
 </script>
 
 <%@ include file="_end.jsp" %>

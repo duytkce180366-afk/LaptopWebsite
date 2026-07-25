@@ -95,7 +95,7 @@ public class CheckoutController extends HttpServlet {
         request.setAttribute(
                 "defaultAddress",
                 defaultAddress);
-        
+
         request.setAttribute(
                 "cartTotalFormatted",
                 vn.format(total));

@@ -178,23 +178,22 @@
     <body id="top">
         <main class="app-shell" id="app">
             <%@include file="/WEB-INF/JSPViews/global/nav.jsp" %>
-                        <%
-                            String storeNotice = (String) session.getAttribute("storeNotice");
-                            if (storeNotice != null) {
-                                session.removeAttribute("storeNotice");
-                        %>
-                        <div class="alert alert-info" role="status">
-                            <%= Jsoup.clean(storeNotice, Safelist.basic())%>
-                        </div>
-                        <% }%>
-                        <%
-                            String error = request.getParameter("error");
-                            if (error != null) {
-                        %>
-                        <div class="alert alert-danger" role="alert">
-                            Error: <%= Jsoup.clean(error, Safelist.basic())%>
-                        </div>
-                        <% }%>
+            <%                String storeNotice = (String) session.getAttribute("storeNotice");
+                if (storeNotice != null) {
+                    session.removeAttribute("storeNotice");
+            %>
+            <div class="alert alert-info" role="status">
+                <%= Jsoup.clean(storeNotice, Safelist.basic())%>
+            </div>
+            <% }%>
+            <%
+                String error = request.getParameter("error");
+                if (error != null) {
+            %>
+            <div class="alert alert-danger" role="alert">
+                Error: <%= Jsoup.clean(error, Safelist.basic())%>
+            </div>
+            <% }%>
             <section class="storefront-hero" id="home" aria-label="Promotions">
                 <div id="bannerCarousel" class="carousel slide hero-carousel" data-bs-ride="carousel">
                     <div class="carousel-inner">
@@ -439,15 +438,15 @@
                                         <span><%= html(product.getBadge())%></span>
                                     </div>
                                     <h3><%= html(product.getName())%></h3>
-                                     <div class="product-price-row">
-                                         <strong><%= formatPrice(product.getPrice())%></strong>
-                                         <small style="<%= product.getStock() <= 0 ? "color: #dc2626; font-weight: 600;" : "" %>"><%= product.getStock() > 0 ? product.getStock() + " in stock" : "Out of stock"%></small>
-                                     </div>
-                                     <% if (product.getStock() <= 0) { %>
-                                         <span class="buy-button" style="background-color: #9ca3af; cursor: not-allowed; text-align: center; display: inline-block; width: 100%;">OUT OF STOCK</span>
-                                     <% } else { %>
-                                         <a class="buy-button" href="<%= contextPath%>/product?id=<%= product.getId()%>">BUY NOW</a>
-                                     <% } %>
+                                    <div class="product-price-row">
+                                        <strong><%= formatPrice(product.getPrice())%></strong>
+                                        <small style="<%= product.getStock() <= 0 ? "color: #dc2626; font-weight: 600;" : ""%>"><%= product.getStock() > 0 ? product.getStock() + " in stock" : "Out of stock"%></small>
+                                    </div>
+                                    <% if (product.getStock() <= 0) { %>
+                                    <span class="buy-button" style="background-color: #9ca3af; cursor: not-allowed; text-align: center; display: inline-block; width: 100%;">OUT OF STOCK</span>
+                                    <% } else {%>
+                                    <a class="buy-button" href="<%= contextPath%>/product?id=<%= product.getId()%>">BUY NOW</a>
+                                    <% } %>
                                 </div>
                             </article>
                             <% } %>

@@ -41,10 +41,10 @@ public class VNPayController extends HttpServlet {
         }
 
         // Sanitize inputs to prevent XSS
-        String phone    = sanitize(request.getParameter("phone"));
+        String phone = sanitize(request.getParameter("phone"));
         String province = sanitize(request.getParameter("province"));
         String district = sanitize(request.getParameter("district"));
-        String address  = sanitize(request.getParameter("address"));
+        String address = sanitize(request.getParameter("address"));
 
         // Validate required fields
         if (isBlank(address) || isBlank(district) || isBlank(province)) {
@@ -64,12 +64,14 @@ public class VNPayController extends HttpServlet {
         double discountAmount = 0;
 
         String voucherIdStr = request.getParameter("voucherId");
-        String discountStr  = request.getParameter("discountAmount");
+        String discountStr = request.getParameter("discountAmount");
 
         if (!isBlank(voucherIdStr)) {
             try {
                 int parsed = Integer.parseInt(voucherIdStr);
-                if (parsed > 0) voucherId = parsed;
+                if (parsed > 0) {
+                    voucherId = parsed;
+                }
             } catch (NumberFormatException e) {
                 logger.log(Level.WARNING, "Invalid voucherId: {0}", voucherIdStr);
             }
@@ -78,7 +80,9 @@ public class VNPayController extends HttpServlet {
         if (!isBlank(discountStr)) {
             try {
                 double parsed = Double.parseDouble(discountStr);
-                if (parsed >= 0) discountAmount = parsed;
+                if (parsed >= 0) {
+                    discountAmount = parsed;
+                }
             } catch (NumberFormatException e) {
                 logger.log(Level.WARNING, "Invalid discountAmount: {0}", discountStr);
             }
@@ -149,7 +153,9 @@ public class VNPayController extends HttpServlet {
         for (String fieldName : fieldNames) {
             String value = fields.get(fieldName);
             if (value != null && !value.isEmpty()) {
-                if (hashData.length() > 0) hashData.append("&");
+                if (hashData.length() > 0) {
+                    hashData.append("&");
+                }
                 hashData.append(fieldName).append("=")
                         .append(URLEncoder.encode(value, StandardCharsets.US_ASCII));
             }
@@ -250,24 +256,24 @@ public class VNPayController extends HttpServlet {
         String createDate = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
 
         Map<String, String> vnpParams = new HashMap<>();
-        vnpParams.put("vnp_Version",    VNPayConfig.VERSION);
-        vnpParams.put("vnp_Command",    VNPayConfig.COMMAND);
-        vnpParams.put("vnp_TmnCode",    VNPayConfig.TMN_CODE);
-        vnpParams.put("vnp_Amount",     String.valueOf(Math.round(totalAmount * 100)));
-        vnpParams.put("vnp_CurrCode",   VNPayConfig.CURRENCY);
-        vnpParams.put("vnp_TxnRef",     txnRef);
-        vnpParams.put("vnp_OrderInfo",  "Thanh toan don hang " + orderId);
-        vnpParams.put("vnp_OrderType",  VNPayConfig.ORDER_TYPE);
-        vnpParams.put("vnp_Locale",     VNPayConfig.LOCALE);
-        vnpParams.put("vnp_ReturnUrl",  VNPayConfig.RETURN_URL);
-        vnpParams.put("vnp_IpAddr",     ipAddr);
+        vnpParams.put("vnp_Version", VNPayConfig.VERSION);
+        vnpParams.put("vnp_Command", VNPayConfig.COMMAND);
+        vnpParams.put("vnp_TmnCode", VNPayConfig.TMN_CODE);
+        vnpParams.put("vnp_Amount", String.valueOf(Math.round(totalAmount * 100)));
+        vnpParams.put("vnp_CurrCode", VNPayConfig.CURRENCY);
+        vnpParams.put("vnp_TxnRef", txnRef);
+        vnpParams.put("vnp_OrderInfo", "Thanh toan don hang " + orderId);
+        vnpParams.put("vnp_OrderType", VNPayConfig.ORDER_TYPE);
+        vnpParams.put("vnp_Locale", VNPayConfig.LOCALE);
+        vnpParams.put("vnp_ReturnUrl", VNPayConfig.RETURN_URL);
+        vnpParams.put("vnp_IpAddr", ipAddr);
         vnpParams.put("vnp_CreateDate", createDate);
 
         List<String> fieldNames = new ArrayList<>(vnpParams.keySet());
         Collections.sort(fieldNames);
 
         StringBuilder hashData = new StringBuilder();
-        StringBuilder query    = new StringBuilder();
+        StringBuilder query = new StringBuilder();
 
         for (String fieldName : fieldNames) {
             String value = vnpParams.get(fieldName);
@@ -279,8 +285,8 @@ public class VNPayController extends HttpServlet {
                 hashData.append(fieldName).append("=")
                         .append(URLEncoder.encode(value, StandardCharsets.US_ASCII));
                 query.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII))
-                     .append("=")
-                     .append(URLEncoder.encode(value, StandardCharsets.US_ASCII));
+                        .append("=")
+                        .append(URLEncoder.encode(value, StandardCharsets.US_ASCII));
             }
         }
 
@@ -306,7 +312,9 @@ public class VNPayController extends HttpServlet {
     }
 
     private String sanitize(String value) {
-        if (value == null) return "";
+        if (value == null) {
+            return "";
+        }
         return Jsoup.clean(value, Safelist.none());
     }
 

@@ -579,29 +579,28 @@ public class OrderRepository {
         return false;
     }
 
-public void autoCancelExpiredVnpayOrders() {
-    String selectSql = "SELECT order_id FROM bs_Orders "
-            + "WHERE payment_method = 'VNPay' "
-            + "AND order_status = 'Payment Failed' "
-            + "AND DATEDIFF(MINUTE, created_at, SYSUTCDATETIME()) >= 15";
+    public void autoCancelExpiredVnpayOrders() {
+        String selectSql = "SELECT order_id FROM bs_Orders "
+                + "WHERE payment_method = 'VNPay' "
+                + "AND order_status = 'Payment Failed' "
+                + "AND DATEDIFF(MINUTE, created_at, SYSUTCDATETIME()) >= 15";
 
-    List<Integer> expiredIds = new ArrayList<>();
+        List<Integer> expiredIds = new ArrayList<>();
 
-    try (Connection conn = new DbClass().getConnection();
-         PreparedStatement ps = conn.prepareStatement(selectSql);
-         ResultSet rs = ps.executeQuery()) {
-        while (rs.next()) {
-            expiredIds.add(rs.getInt("order_id"));
+        try (Connection conn = new DbClass().getConnection(); PreparedStatement ps = conn.prepareStatement(selectSql); ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                expiredIds.add(rs.getInt("order_id"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
         }
-    } catch (Exception e) {
-        e.printStackTrace();
-        return;
+
+        for (int orderId : expiredIds) {
+            cancelOrder(orderId, "Payment session expired (15 minutes)");
+        }
     }
 
-    for (int orderId : expiredIds) {
-        cancelOrder(orderId, "Payment session expired (15 minutes)");
-    }
-}
     public Map<String, Object> retryToCheckout(int orderId, int userId) {
 
         Connection conn = null;

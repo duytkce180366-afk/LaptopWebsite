@@ -11,7 +11,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import com.mycompany.techstore.services.CartService;
 import jakarta.servlet.http.HttpSession;
 
-
 @WebServlet("/cart/delete")
 public class DeleteCartController extends HttpServlet {
 

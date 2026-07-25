@@ -3,88 +3,89 @@ package com.mycompany.techstore.Models.Objects;
 import java.sql.Timestamp;
 
 public class AdminUser {
-  private int userId, roleId;
-  private String roleName, fullName, email, phone, status;
-  private boolean verified;
-  private Timestamp createdAt, updatedAt;
 
-  public int getUserId() {
-    return userId;
-  }
+    private int userId, roleId;
+    private String roleName, fullName, email, phone, status;
+    private boolean verified;
+    private Timestamp createdAt, updatedAt;
 
-  public void setUserId(int v) {
-    userId = v;
-  }
+    public int getUserId() {
+        return userId;
+    }
 
-  public int getRoleId() {
-    return roleId;
-  }
+    public void setUserId(int v) {
+        userId = v;
+    }
 
-  public void setRoleId(int v) {
-    roleId = v;
-  }
+    public int getRoleId() {
+        return roleId;
+    }
 
-  public String getRoleName() {
-    return roleName;
-  }
+    public void setRoleId(int v) {
+        roleId = v;
+    }
 
-  public void setRoleName(String v) {
-    roleName = v;
-  }
+    public String getRoleName() {
+        return roleName;
+    }
 
-  public String getFullName() {
-    return fullName;
-  }
+    public void setRoleName(String v) {
+        roleName = v;
+    }
 
-  public void setFullName(String v) {
-    fullName = v;
-  }
+    public String getFullName() {
+        return fullName;
+    }
 
-  public String getEmail() {
-    return email;
-  }
+    public void setFullName(String v) {
+        fullName = v;
+    }
 
-  public void setEmail(String v) {
-    email = v;
-  }
+    public String getEmail() {
+        return email;
+    }
 
-  public String getPhone() {
-    return phone;
-  }
+    public void setEmail(String v) {
+        email = v;
+    }
 
-  public void setPhone(String v) {
-    phone = v;
-  }
+    public String getPhone() {
+        return phone;
+    }
 
-  public String getStatus() {
-    return status;
-  }
+    public void setPhone(String v) {
+        phone = v;
+    }
 
-  public void setStatus(String v) {
-    status = v;
-  }
+    public String getStatus() {
+        return status;
+    }
 
-  public boolean isVerified() {
-    return verified;
-  }
+    public void setStatus(String v) {
+        status = v;
+    }
 
-  public void setVerified(boolean v) {
-    verified = v;
-  }
+    public boolean isVerified() {
+        return verified;
+    }
 
-  public Timestamp getCreatedAt() {
-    return createdAt;
-  }
+    public void setVerified(boolean v) {
+        verified = v;
+    }
 
-  public void setCreatedAt(Timestamp v) {
-    createdAt = v;
-  }
+    public Timestamp getCreatedAt() {
+        return createdAt;
+    }
 
-  public Timestamp getUpdatedAt() {
-    return updatedAt;
-  }
+    public void setCreatedAt(Timestamp v) {
+        createdAt = v;
+    }
 
-  public void setUpdatedAt(Timestamp v) {
-    updatedAt = v;
-  }
+    public Timestamp getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Timestamp v) {
+        updatedAt = v;
+    }
 }

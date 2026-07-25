@@ -1,6 +1,7 @@
 package com.mycompany.techstore.Models.Objects;
 
 public class PriceRange {
+
     private String label;
     private long min;
     private long max;

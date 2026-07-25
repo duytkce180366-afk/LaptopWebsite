@@ -75,7 +75,7 @@ public class AdminOrderRepository {
         }
     }
 
-public void changeStatus(int orderId, String target, String note, int adminId)
+    public void changeStatus(int orderId, String target, String note, int adminId)
             throws SQLException {
         try (Connection con = new DbClass().getConnection()) {
             con.setAutoCommit(false);
@@ -112,9 +112,6 @@ public void changeStatus(int orderId, String target, String note, int adminId)
         }
     }
 
-    
-
-   
     private void syncDeliveredPayment(Connection con, int orderId) throws SQLException {
         String checkSql = "SELECT payment_id FROM dbo.bs_Payments WHERE order_id=?";
         boolean exists = false;
@@ -291,5 +288,4 @@ public void changeStatus(int orderId, String target, String note, int adminId)
         return value == null ? "" : value.trim();
     }
 
-    
 }

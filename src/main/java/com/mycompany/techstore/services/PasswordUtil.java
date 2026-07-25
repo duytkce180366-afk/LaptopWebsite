@@ -15,7 +15,8 @@ public final class PasswordUtil {
     private static final int DERIVED_KEY_LENGTH = 256; // bits
     private static final int SALT_LENGTH = 16; // bytes
 
-    private PasswordUtil() {}
+    private PasswordUtil() {
+    }
 
     public static String hashPassword(String password) throws NoSuchAlgorithmException {
         try {
@@ -37,11 +38,15 @@ public final class PasswordUtil {
     }
 
     public static boolean verifyPassword(String password, String stored) throws NoSuchAlgorithmException {
-        if (stored == null) return false;
+        if (stored == null) {
+            return false;
+        }
 
         try {
             String[] parts = stored.split("\\$");
-            if (parts.length != 4) return false;
+            if (parts.length != 4) {
+                return false;
+            }
             int iterations = Integer.parseInt(parts[1]);
             byte[] salt = Base64.getDecoder().decode(parts[2]);
             byte[] expectedHash = Base64.getDecoder().decode(parts[3]);
@@ -51,7 +56,9 @@ public final class PasswordUtil {
             byte[] computed = skf.generateSecret(spec).getEncoded();
 
             // constant time comparison
-            if (computed.length != expectedHash.length) return false;
+            if (computed.length != expectedHash.length) {
+                return false;
+            }
             int result = 0;
             for (int i = 0; i < computed.length; i++) {
                 result |= computed[i] ^ expectedHash[i];

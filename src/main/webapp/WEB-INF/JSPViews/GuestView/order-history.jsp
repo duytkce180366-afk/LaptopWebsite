@@ -128,7 +128,7 @@
                                 <span class="order-date"><%=dateStr%></span>
                             </td>
                             <td>
-                                <% if (isPaymentFailed) { %>
+                                <% if (isPaymentFailed) {%>
                                 <a href="<%=request.getContextPath()%>/vnpay-retry?orderId=<%=o.getOrderId()%>" class="btn-retry-checkout">
                                     &#8635; Retry Payment
                                 </a>
@@ -136,7 +136,7 @@
                                         onclick="openCancelModal('<%=o.getOrderId()%>')">
                                     &#10005; Cancel
                                 </button>
-                                <% } else if (canCancel) { %>
+                                <% } else if (canCancel) {%>
                                 <button type="button" class="btn-cancel-open"
                                         onclick="openCancelModal('<%=o.getOrderId()%>')">
                                     &#10005; Cancel Order

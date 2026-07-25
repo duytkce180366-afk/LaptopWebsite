@@ -93,45 +93,45 @@
 </div>
 
 <c:if test="${order.orderStatus != 'Delivered' and order.orderStatus != 'Cancelled'}">
-<div class="admin-card">
-    <h2 class="h5">Update status</h2>
+    <div class="admin-card">
+        <h2 class="h5">Update status</h2>
 
-    <form method="post" action="${pageContext.request.contextPath}/admin/orders/status" class="row g-3">
-        <input type="hidden" name="csrfToken" value="${sessionScope.adminCsrfToken}">
-        <input type="hidden" name="id" value="${order.orderId}">
+        <form method="post" action="${pageContext.request.contextPath}/admin/orders/status" class="row g-3">
+            <input type="hidden" name="csrfToken" value="${sessionScope.adminCsrfToken}">
+            <input type="hidden" name="id" value="${order.orderId}">
 
-        <div class="col-md-4">
-            <select class="form-select" name="status" required>
-                <option value="">Select next status</option>
+            <div class="col-md-4">
+                <select class="form-select" name="status" required>
+                    <option value="">Select next status</option>
 
-                <c:if test="${order.orderStatus == 'Pending'}">
-                    <option>Confirmed</option>
-                    <option>Cancelled</option>
-                </c:if>
+                    <c:if test="${order.orderStatus == 'Pending'}">
+                        <option>Confirmed</option>
+                        <option>Cancelled</option>
+                    </c:if>
 
-                <c:if test="${order.orderStatus == 'Confirmed'}">
-                    <option>Shipping</option>
-                    <option>Cancelled</option>
-                </c:if>
+                    <c:if test="${order.orderStatus == 'Confirmed'}">
+                        <option>Shipping</option>
+                        <option>Cancelled</option>
+                    </c:if>
 
-                <c:if test="${order.orderStatus == 'Shipping'}">
-                    <option>Delivered</option>
-                </c:if>
-            </select>
-        </div>
+                    <c:if test="${order.orderStatus == 'Shipping'}">
+                        <option>Delivered</option>
+                    </c:if>
+                </select>
+            </div>
 
-        <div class="col-md-6">
-            <input
-                class="form-control"
-                name="note"
-                placeholder="Optional note / cancellation reason">
-        </div>
+            <div class="col-md-6">
+                <input
+                    class="form-control"
+                    name="note"
+                    placeholder="Optional note / cancellation reason">
+            </div>
 
-        <div class="col-md-2">
-            <button class="btn btn-primary w-100">Update</button>
-        </div>
-    </form>
-</div>
+            <div class="col-md-2">
+                <button class="btn btn-primary w-100">Update</button>
+            </div>
+        </form>
+    </div>
 </c:if>
 
 <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/admin/orders">
