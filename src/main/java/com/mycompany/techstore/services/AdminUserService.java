@@ -8,6 +8,8 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class AdminUserService {
 
@@ -16,7 +18,16 @@ public class AdminUserService {
     public static final String ROLE_CUSTOMER = "Customer";
 
     private final AdminUserRepository repository = new AdminUserRepository();
-    private final EmailService emailService = new EmailService();
+    private final EmailService emailService;
+
+    public AdminUserService() {
+        if (System.getenv("SMTP_HOST") == null) {
+            Logger.getLogger(EmailService.class.getName()).log(Level.WARNING, "SMTP_HOST is not configured; skipping admin user emails.");
+            this.emailService = null;
+        } else {
+            this.emailService = new EmailService();
+        }
+    }
 
     public PageResult<AdminUser> findAll(String q, int role, String status, int page)
             throws SQLException {
@@ -97,7 +108,7 @@ public class AdminUserService {
         }
         setStatus(id, status, actorId);
 
-        if ("Blocked".equals(status)) {
+        if ("Blocked".equals(status) && emailService != null) {
             // Send email when blocked account
             emailService.sendAccountBlockedEmail(selected.getEmail(), selected.getFullName(), reason);
         }
@@ -113,7 +124,9 @@ public class AdminUserService {
             throw new BackOfficeValidationException("Email is already in use.");
         }
         repository.createStaff(name.trim(), email.trim(), clean(phone), PasswordUtil.hashPassword(password), adminId);
-        emailService.sendStaffCredentialsEmail(email.trim(), name.trim(), password);
+        if (emailService != null) {
+            emailService.sendStaffCredentialsEmail(email.trim(), name.trim(), password);
+        }
     }
 
     public void updateStaff(int id, String name, String email, String phone, int adminId)
