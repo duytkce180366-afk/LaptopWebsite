@@ -22,7 +22,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-@WebServlet(name = "VNPayController", urlPatterns = {"/vnpay-pay", "/vnpay-return"})
+@WebServlet(name = "VNPayController", urlPatterns = {"/vnpay-pay", "/vnpay-return", "/vnpay-retry"})
 public class VNPayController extends HttpServlet {
 
     private static final Logger logger = Logger.getLogger(VNPayController.class.getName());
@@ -114,62 +114,22 @@ public class VNPayController extends HttpServlet {
         session.removeAttribute("finalTotal");
 
         double totalAmount = orderService.getOrderTotal(orderId);
-
-        // Normalize localhost IP
-        String ipAddr = request.getRemoteAddr();
-        if ("0:0:0:0:0:0:0:1".equals(ipAddr) || "::1".equals(ipAddr)) {
-            ipAddr = "127.0.0.1";
-        }
-
-        String txnRef     = String.valueOf(orderId);
-        String createDate = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
-
-        // Build VNPay params
-        Map<String, String> vnpParams = new HashMap<>();
-        vnpParams.put("vnp_Version",    VNPayConfig.VERSION);
-        vnpParams.put("vnp_Command",    VNPayConfig.COMMAND);
-        vnpParams.put("vnp_TmnCode",    VNPayConfig.TMN_CODE);
-        vnpParams.put("vnp_Amount",     String.valueOf(Math.round(totalAmount * 100)));
-        vnpParams.put("vnp_CurrCode",   VNPayConfig.CURRENCY);
-        vnpParams.put("vnp_TxnRef",     txnRef);
-        vnpParams.put("vnp_OrderInfo",  "Thanh toan don hang " + orderId);
-        vnpParams.put("vnp_OrderType",  VNPayConfig.ORDER_TYPE);
-        vnpParams.put("vnp_Locale",     VNPayConfig.LOCALE);
-        vnpParams.put("vnp_ReturnUrl",  VNPayConfig.RETURN_URL);
-        vnpParams.put("vnp_IpAddr",     ipAddr);
-        vnpParams.put("vnp_CreateDate", createDate);
-
-        List<String> fieldNames = new ArrayList<>(vnpParams.keySet());
-        Collections.sort(fieldNames);
-
-        StringBuilder hashData = new StringBuilder();
-        StringBuilder query    = new StringBuilder();
-
-        for (String fieldName : fieldNames) {
-            String value = vnpParams.get(fieldName);
-            if (value != null && !value.isEmpty()) {
-                if (hashData.length() > 0) {
-                    hashData.append("&");
-                    query.append("&");
-                }
-                hashData.append(fieldName).append("=")
-                        .append(URLEncoder.encode(value, StandardCharsets.US_ASCII));
-                query.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII))
-                     .append("=")
-                     .append(URLEncoder.encode(value, StandardCharsets.US_ASCII));
-            }
-        }
-
-        String secureHash = hmacSHA512(VNPayConfig.HASH_SECRET, hashData.toString());
-        query.append("&vnp_SecureHash=").append(secureHash);
-
-        response.sendRedirect(VNPayConfig.PAY_URL + "?" + query);
+        String redirectUrl = buildVnpayRedirectUrl(orderId, totalAmount, request);
+        response.sendRedirect(redirectUrl);
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        String path = request.getServletPath();
+
+        if ("/vnpay-retry".equals(path)) {
+            handleRetry(request, response);
+            return;
+        }
+
+        // Otherwise: this is the VNPay return/callback
         HttpSession session = request.getSession();
         String receivedHash = request.getParameter("vnp_SecureHash");
 
@@ -213,7 +173,9 @@ public class VNPayController extends HttpServlet {
 
         int orderId;
         try {
-            orderId = Integer.parseInt(txnRef);
+            // TxnRef is formatted as "orderId_timestamp" — extract the orderId part
+            String orderIdPart = txnRef.contains("_") ? txnRef.split("_")[0] : txnRef;
+            orderId = Integer.parseInt(orderIdPart);
         } catch (NumberFormatException e) {
             logger.log(Level.WARNING, "Invalid vnp_TxnRef: {0}", txnRef);
             response.sendRedirect(request.getContextPath() + "/order-history");
@@ -231,6 +193,101 @@ public class VNPayController extends HttpServlet {
         }
 
         response.sendRedirect(request.getContextPath() + "/order-history");
+    }
+
+    // Handles "Retry Payment": reuses the SAME existing order (no new order created,
+    // no cart/stock/voucher touched again). Only allowed if the order belongs to the
+    // logged-in user and its current status is 'Pending' or 'Payment Failed'.
+    private void handleRetry(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+
+        HttpSession session = request.getSession();
+        User loggedUser = (User) session.getAttribute("loggedUser");
+
+        if (loggedUser == null) {
+            response.sendRedirect(request.getContextPath() + "/auth?action=signin");
+            return;
+        }
+
+        String orderIdStr = request.getParameter("orderId");
+        if (isBlank(orderIdStr)) {
+            response.sendRedirect(request.getContextPath() + "/order-history");
+            return;
+        }
+
+        int orderId;
+        try {
+            orderId = Integer.parseInt(orderIdStr);
+        } catch (NumberFormatException e) {
+            response.sendRedirect(request.getContextPath() + "/order-history");
+            return;
+        }
+
+        OrderService orderService = new OrderService();
+
+        if (!orderService.canRetryPayment(orderId, loggedUser.getUser_id())) {
+            session.setAttribute("adminOrderMessage", "This order cannot be retried.");
+            response.sendRedirect(request.getContextPath() + "/order-history");
+            return;
+        }
+
+        double totalAmount = orderService.getOrderTotal(orderId);
+        String redirectUrl = buildVnpayRedirectUrl(orderId, totalAmount, request);
+        response.sendRedirect(redirectUrl);
+    }
+
+    // Shared VNPay redirect URL builder, used both for new orders and retried ones.
+    private String buildVnpayRedirectUrl(int orderId, double totalAmount, HttpServletRequest request) {
+
+        String ipAddr = request.getRemoteAddr();
+        if ("0:0:0:0:0:0:0:1".equals(ipAddr) || "::1".equals(ipAddr)) {
+            ipAddr = "127.0.0.1";
+        }
+
+        // Append current timestamp so TxnRef stays unique for every payment attempt,
+        // even when retrying the same order (VNPay requires TxnRef to be unique per day).
+        String txnRef = orderId + "_" + System.currentTimeMillis();
+        String createDate = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+
+        Map<String, String> vnpParams = new HashMap<>();
+        vnpParams.put("vnp_Version",    VNPayConfig.VERSION);
+        vnpParams.put("vnp_Command",    VNPayConfig.COMMAND);
+        vnpParams.put("vnp_TmnCode",    VNPayConfig.TMN_CODE);
+        vnpParams.put("vnp_Amount",     String.valueOf(Math.round(totalAmount * 100)));
+        vnpParams.put("vnp_CurrCode",   VNPayConfig.CURRENCY);
+        vnpParams.put("vnp_TxnRef",     txnRef);
+        vnpParams.put("vnp_OrderInfo",  "Thanh toan don hang " + orderId);
+        vnpParams.put("vnp_OrderType",  VNPayConfig.ORDER_TYPE);
+        vnpParams.put("vnp_Locale",     VNPayConfig.LOCALE);
+        vnpParams.put("vnp_ReturnUrl",  VNPayConfig.RETURN_URL);
+        vnpParams.put("vnp_IpAddr",     ipAddr);
+        vnpParams.put("vnp_CreateDate", createDate);
+
+        List<String> fieldNames = new ArrayList<>(vnpParams.keySet());
+        Collections.sort(fieldNames);
+
+        StringBuilder hashData = new StringBuilder();
+        StringBuilder query    = new StringBuilder();
+
+        for (String fieldName : fieldNames) {
+            String value = vnpParams.get(fieldName);
+            if (value != null && !value.isEmpty()) {
+                if (hashData.length() > 0) {
+                    hashData.append("&");
+                    query.append("&");
+                }
+                hashData.append(fieldName).append("=")
+                        .append(URLEncoder.encode(value, StandardCharsets.US_ASCII));
+                query.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII))
+                     .append("=")
+                     .append(URLEncoder.encode(value, StandardCharsets.US_ASCII));
+            }
+        }
+
+        String secureHash = hmacSHA512(VNPayConfig.HASH_SECRET, hashData.toString());
+        query.append("&vnp_SecureHash=").append(secureHash);
+
+        return VNPayConfig.PAY_URL + "?" + query;
     }
 
     private String hmacSHA512(String key, String data) {

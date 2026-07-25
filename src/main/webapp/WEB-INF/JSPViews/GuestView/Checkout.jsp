@@ -34,8 +34,7 @@
                     = (com.mycompany.techstore.Models.Objects.Voucher) session.getAttribute("voucher");
             Object restoredDiscountObj = session.getAttribute("discountAmount");
             double restoredDiscount = (restoredDiscountObj != null) ? (Double) restoredDiscountObj : 0;
-            session.removeAttribute("voucher");
-            session.removeAttribute("discountAmount");
+
             // Expose to EL so the voucher code can be pre-filled safely via c:out
             pageContext.setAttribute("restoredVoucher", restoredVoucher);
 
@@ -192,20 +191,20 @@
                         <div class="voucher-row">
                             <input type="text" id="voucherCode" placeholder="Enter voucher code"
                                    value="<c:if test="${not empty restoredVoucher}"><c:out value="${restoredVoucher.code}"/></c:if>">
-                            <button type="button" id="applyVoucherBtn" class="btn-apply">Apply</button>
+                                   <button type="button" id="applyVoucherBtn" class="btn-apply">Apply</button>
+                            </div>
+                            <div class="voucher-alert-error" id="voucherErrorBox" style="display:none;">
+                                <span class="alert-icon">⚠</span>
+                                <span class="alert-text" id="voucherErrorText"></span>
+                            </div>
                         </div>
-                        <div class="voucher-alert-error" id="voucherErrorBox" style="display:none;">
-                            <span class="alert-icon">⚠</span>
-                            <span class="alert-text" id="voucherErrorText"></span>
-                        </div>
-                    </div>
 
-                    <input type="hidden" name="voucherId"      id="hiddenVoucherId"
-       value="<%= restoredVoucher != null ? restoredVoucher.getVoucherId() : 0 %>">
-<input type="hidden" name="discountAmount" id="hiddenDiscountAmount"
-       value="<%= restoredDiscount %>">
-<input type="hidden" name="finalAmount"    id="hiddenFinalAmount"
-       value="${restoredFinalTotal}">
+                        <input type="hidden" name="voucherId"      id="hiddenVoucherId"
+                               value="<%= restoredVoucher != null ? restoredVoucher.getVoucherId() : 0%>">
+                    <input type="hidden" name="discountAmount" id="hiddenDiscountAmount"
+                           value="<%= restoredDiscount%>">
+                    <input type="hidden" name="finalAmount"    id="hiddenFinalAmount"
+                           value="${restoredFinalTotal}">
 
                     <div class="summary-footer">
                         <div class="total-row">
@@ -213,11 +212,11 @@
                             <strong>${cartTotalFormatted}</strong>
                         </div>
                         <div class="total-row">
-    <span>Discount</span>
-    <strong id="discountAmount">
-        <% if (restoredDiscount > 0) { %>- <%= String.format("%,.0f", restoredDiscount) %> đ<% } else { %>- 0 đ<% } %>
-    </strong>
-</div>
+                            <span>Discount</span>
+                            <strong id="discountAmount">
+                                <% if (restoredDiscount > 0) {%>- <%= String.format("%,.0f", restoredDiscount)%> đ<% } else { %>- 0 đ<% }%>
+                            </strong>
+                        </div>
                         <div class="total-row final-row">
                             <span>Final Total</span>
                             <strong id="finalTotal"><fmt:formatNumber value="${restoredFinalTotal}" pattern="#,###" /> đ</strong>
@@ -255,42 +254,47 @@
 
             if (provinceEl && districtEl) {
                 fetch("https://provinces.open-api.vn/api/p/")
-                    .then(function (res) { return res.json(); })
-                    .then(function (data) {
-                        provinceEl.innerHTML = '<option value="">Select Province / City</option>';
-                        data.forEach(function (p) {
-                            var opt = document.createElement("option");
-                            opt.value = p.name;
-                            opt.setAttribute("data-code", p.code);
-                            opt.textContent = p.name;
-                            provinceEl.appendChild(opt);
+                        .then(function (res) {
+                            return res.json();
+                        })
+                        .then(function (data) {
+                            provinceEl.innerHTML = '<option value="">Select Province / City</option>';
+                            data.forEach(function (p) {
+                                var opt = document.createElement("option");
+                                opt.value = p.name;
+                                opt.setAttribute("data-code", p.code);
+                                opt.textContent = p.name;
+                                provinceEl.appendChild(opt);
+                            });
+                        })
+                        .catch(function (err) {
+                            console.error("Failed to load provinces:", err);
                         });
-                    })
-                    .catch(function (err) {
-                        console.error("Failed to load provinces:", err);
-                    });
 
                 provinceEl.addEventListener("change", function () {
                     var selectedOpt = provinceEl.options[provinceEl.selectedIndex];
                     var code = selectedOpt ? selectedOpt.getAttribute("data-code") : null;
                     districtEl.innerHTML = '<option value="">Select District / Ward</option>';
-                    if (!code) return;
+                    if (!code)
+                        return;
 
                     fetch("https://provinces.open-api.vn/api/p/" + code + "?depth=2")
-                        .then(function (res) { return res.json(); })
-                        .then(function (data) {
-                            if (data && data.districts) {
-                                data.districts.forEach(function (d) {
-                                    var opt = document.createElement("option");
-                                    opt.value = d.name;
-                                    opt.textContent = d.name;
-                                    districtEl.appendChild(opt);
-                                });
-                            }
-                        })
-                        .catch(function (err) {
-                            console.error("Failed to load districts:", err);
-                        });
+                            .then(function (res) {
+                                return res.json();
+                            })
+                            .then(function (data) {
+                                if (data && data.districts) {
+                                    data.districts.forEach(function (d) {
+                                        var opt = document.createElement("option");
+                                        opt.value = d.name;
+                                        opt.textContent = d.name;
+                                        districtEl.appendChild(opt);
+                                    });
+                                }
+                            })
+                            .catch(function (err) {
+                                console.error("Failed to load districts:", err);
+                            });
                 });
             }
 
