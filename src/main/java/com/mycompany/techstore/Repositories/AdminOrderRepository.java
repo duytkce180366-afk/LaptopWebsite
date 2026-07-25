@@ -81,51 +81,38 @@ public void changeStatus(int orderId, String target, String note, int adminId)
             con.setAutoCommit(false);
             try {
                 String current = lockStatus(con, orderId);
-
-                // Block cancel if Confirmed online payment order
-                if ("Cancelled".equals(target) && "Confirmed".equals(current)) {
-                    String paymentMethod = getPaymentMethod(con, orderId);
-                    if (!"COD".equals(paymentMethod)) {
-                        throw new IllegalArgumentException(
-                            "Cannot cancel a confirmed online payment order.");
-                    }
-                }
-
                 validateTransition(current, target);
-
                 if ("Confirmed".equals(target)) {
                     deductStock(con, orderId);
                 }
-
                 if ("Cancelled".equals(target) && "Confirmed".equals(current)) {
                     restoreStock(con, orderId);
                 }
-
-                try (PreparedStatement ps = con.prepareStatement(
-                        "UPDATE dbo.bs_Orders SET"
-                        + " order_status=?,note=COALESCE(NULLIF(?,''),note),updated_at=SYSUTCDATETIME()"
-                        + " WHERE order_id=?")) {
+                try (PreparedStatement ps
+                        = con.prepareStatement(
+                                "UPDATE dbo.bs_Orders SET"
+                                + " order_status=?,note=COALESCE(NULLIF(?,''),note),updated_at=SYSUTCDATETIME()"
+                                + " WHERE order_id=?")) {
                     ps.setString(1, target);
                     ps.setString(2, clean(note));
                     ps.setInt(3, orderId);
                     ps.executeUpdate();
                 }
-
                 if ("Delivered".equals(target)) {
                     syncDeliveredPayment(con, orderId);
                 } else if ("Cancelled".equals(target)) {
                     syncCancelledPayment(con, orderId);
                 }
-
                 audit.log(con, adminId, "STATUS_CHANGE", "ORDER", orderId, current + " -> " + target);
                 con.commit();
-
             } catch (Exception ex) {
                 con.rollback();
                 throw ex;
             }
         }
     }
+
+    
 
    
     private void syncDeliveredPayment(Connection con, int orderId) throws SQLException {
@@ -304,12 +291,5 @@ public void changeStatus(int orderId, String target, String note, int adminId)
         return value == null ? "" : value.trim();
     }
 
-    private String getPaymentMethod(Connection con, int orderId) throws SQLException {
-        try (PreparedStatement ps = con.prepareStatement(
-                "SELECT payment_method FROM bs_Orders WHERE order_id=?")) {
-            ps.setInt(1, orderId);
-            ResultSet rs = ps.executeQuery();
-            return rs.next() ? rs.getString("payment_method") : "";
-        }
-    }
+    
 }
