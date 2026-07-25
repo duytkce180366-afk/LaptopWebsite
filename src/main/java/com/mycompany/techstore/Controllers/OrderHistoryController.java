@@ -1,4 +1,5 @@
 package com.mycompany.techstore.Controllers;
+
 import com.mycompany.techstore.Models.Objects.Order;
 import com.mycompany.techstore.Models.Objects.User;
 import com.mycompany.techstore.Repositories.OrderRepository;
@@ -9,11 +10,14 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
+
 @WebServlet(name = "OrderHistoryController", urlPatterns = {"/order-history"})
 public class OrderHistoryController
         extends HttpServlet {
-    private OrderRepository repo =
-            new OrderRepository();
+
+    private OrderRepository repo
+            = new OrderRepository();
+
     @Override
     protected void doGet(
             HttpServletRequest request,
@@ -30,8 +34,8 @@ public class OrderHistoryController
         // so the list shown below is always up to date.
         repo.autoCancelExpiredVnpayOrders();
 
-        List<Order> orders =
-                repo.getOrdersByUser(userId);
+        List<Order> orders
+                = repo.getOrdersByUser(userId);
         request.setAttribute(
                 "orders",
                 orders);

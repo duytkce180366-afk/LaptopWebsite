@@ -138,7 +138,7 @@ public class AuthRepository extends DbClass {
 
         return user;
     }
-    
+
     public boolean VerifiedUser(String email) {
         boolean updated = false;
 
@@ -151,7 +151,7 @@ public class AuthRepository extends DbClass {
         try (PreparedStatement ps = super.getConnection().prepareStatement(sqlUpdate)) {
             ps.setBoolean(1, true);
             ps.setString(2, email);
-            
+
             int rows = ps.executeUpdate();
             updated = (rows > 0);
         } catch (SQLException sqlEx) {

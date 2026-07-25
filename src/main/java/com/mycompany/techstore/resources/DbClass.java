@@ -20,7 +20,7 @@ public class DbClass {
   }
 
   public DbClass() {
-    DB_PWD = isNullOrEmptyConfig(System.getenv("DB_PWD")) ? "12345" : System.getenv("DB_PWD");
+    DB_PWD = isNullOrEmptyConfig(System.getenv("DB_PWD")) ? "123456" : System.getenv("DB_PWD");
     DB_HOST =
         isNullOrEmptyConfig(System.getenv("DB_HOST")) ? "localhost" : System.getenv("DB_HOST");
     DB_PORT = isNullOrEmptyConfig(System.getenv("DB_PORT")) ? "1433" : System.getenv("DB_PORT");

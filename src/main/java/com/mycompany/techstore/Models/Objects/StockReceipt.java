@@ -3,88 +3,89 @@ package com.mycompany.techstore.Models.Objects;
 import java.sql.Timestamp;
 
 public class StockReceipt {
-  private long receiptId;
-  private int productId, quantity, previousStock, resultingStock;
-  private String sku, productName, note, adminName;
-  private Timestamp createdAt;
 
-  public long getReceiptId() {
-    return receiptId;
-  }
+    private long receiptId;
+    private int productId, quantity, previousStock, resultingStock;
+    private String sku, productName, note, adminName;
+    private Timestamp createdAt;
 
-  public void setReceiptId(long v) {
-    receiptId = v;
-  }
+    public long getReceiptId() {
+        return receiptId;
+    }
 
-  public int getProductId() {
-    return productId;
-  }
+    public void setReceiptId(long v) {
+        receiptId = v;
+    }
 
-  public void setProductId(int v) {
-    productId = v;
-  }
+    public int getProductId() {
+        return productId;
+    }
 
-  public int getQuantity() {
-    return quantity;
-  }
+    public void setProductId(int v) {
+        productId = v;
+    }
 
-  public void setQuantity(int v) {
-    quantity = v;
-  }
+    public int getQuantity() {
+        return quantity;
+    }
 
-  public int getPreviousStock() {
-    return previousStock;
-  }
+    public void setQuantity(int v) {
+        quantity = v;
+    }
 
-  public void setPreviousStock(int v) {
-    previousStock = v;
-  }
+    public int getPreviousStock() {
+        return previousStock;
+    }
 
-  public int getResultingStock() {
-    return resultingStock;
-  }
+    public void setPreviousStock(int v) {
+        previousStock = v;
+    }
 
-  public void setResultingStock(int v) {
-    resultingStock = v;
-  }
+    public int getResultingStock() {
+        return resultingStock;
+    }
 
-  public String getSku() {
-    return sku;
-  }
+    public void setResultingStock(int v) {
+        resultingStock = v;
+    }
 
-  public void setSku(String v) {
-    sku = v;
-  }
+    public String getSku() {
+        return sku;
+    }
 
-  public String getProductName() {
-    return productName;
-  }
+    public void setSku(String v) {
+        sku = v;
+    }
 
-  public void setProductName(String v) {
-    productName = v;
-  }
+    public String getProductName() {
+        return productName;
+    }
 
-  public String getNote() {
-    return note;
-  }
+    public void setProductName(String v) {
+        productName = v;
+    }
 
-  public void setNote(String v) {
-    note = v;
-  }
+    public String getNote() {
+        return note;
+    }
 
-  public String getAdminName() {
-    return adminName;
-  }
+    public void setNote(String v) {
+        note = v;
+    }
 
-  public void setAdminName(String v) {
-    adminName = v;
-  }
+    public String getAdminName() {
+        return adminName;
+    }
 
-  public Timestamp getCreatedAt() {
-    return createdAt;
-  }
+    public void setAdminName(String v) {
+        adminName = v;
+    }
 
-  public void setCreatedAt(Timestamp v) {
-    createdAt = v;
-  }
+    public Timestamp getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Timestamp v) {
+        createdAt = v;
+    }
 }

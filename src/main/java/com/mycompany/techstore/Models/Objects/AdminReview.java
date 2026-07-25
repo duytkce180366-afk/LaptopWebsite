@@ -3,95 +3,96 @@ package com.mycompany.techstore.Models.Objects;
 import java.sql.Timestamp;
 
 public class AdminReview {
-  private int reviewId, userId, productId, rating;
-  private String userName, userEmail, productName, comment, status;
-  private Timestamp createdAt, moderatedAt;
 
-  public int getReviewId() {
-    return reviewId;
-  }
+    private int reviewId, userId, productId, rating;
+    private String userName, userEmail, productName, comment, status;
+    private Timestamp createdAt, moderatedAt;
 
-  public void setReviewId(int v) {
-    reviewId = v;
-  }
+    public int getReviewId() {
+        return reviewId;
+    }
 
-  public int getUserId() {
-    return userId;
-  }
+    public void setReviewId(int v) {
+        reviewId = v;
+    }
 
-  public void setUserId(int v) {
-    userId = v;
-  }
+    public int getUserId() {
+        return userId;
+    }
 
-  public int getProductId() {
-    return productId;
-  }
+    public void setUserId(int v) {
+        userId = v;
+    }
 
-  public void setProductId(int v) {
-    productId = v;
-  }
+    public int getProductId() {
+        return productId;
+    }
 
-  public int getRating() {
-    return rating;
-  }
+    public void setProductId(int v) {
+        productId = v;
+    }
 
-  public void setRating(int v) {
-    rating = v;
-  }
+    public int getRating() {
+        return rating;
+    }
 
-  public String getUserName() {
-    return userName;
-  }
+    public void setRating(int v) {
+        rating = v;
+    }
 
-  public void setUserName(String v) {
-    userName = v;
-  }
+    public String getUserName() {
+        return userName;
+    }
 
-  public String getUserEmail() {
-    return userEmail;
-  }
+    public void setUserName(String v) {
+        userName = v;
+    }
 
-  public void setUserEmail(String v) {
-    userEmail = v;
-  }
+    public String getUserEmail() {
+        return userEmail;
+    }
 
-  public String getProductName() {
-    return productName;
-  }
+    public void setUserEmail(String v) {
+        userEmail = v;
+    }
 
-  public void setProductName(String v) {
-    productName = v;
-  }
+    public String getProductName() {
+        return productName;
+    }
 
-  public String getComment() {
-    return comment;
-  }
+    public void setProductName(String v) {
+        productName = v;
+    }
 
-  public void setComment(String v) {
-    comment = v;
-  }
+    public String getComment() {
+        return comment;
+    }
 
-  public String getStatus() {
-    return status;
-  }
+    public void setComment(String v) {
+        comment = v;
+    }
 
-  public void setStatus(String v) {
-    status = v;
-  }
+    public String getStatus() {
+        return status;
+    }
 
-  public Timestamp getCreatedAt() {
-    return createdAt;
-  }
+    public void setStatus(String v) {
+        status = v;
+    }
 
-  public void setCreatedAt(Timestamp v) {
-    createdAt = v;
-  }
+    public Timestamp getCreatedAt() {
+        return createdAt;
+    }
 
-  public Timestamp getModeratedAt() {
-    return moderatedAt;
-  }
+    public void setCreatedAt(Timestamp v) {
+        createdAt = v;
+    }
 
-  public void setModeratedAt(Timestamp v) {
-    moderatedAt = v;
-  }
+    public Timestamp getModeratedAt() {
+        return moderatedAt;
+    }
+
+    public void setModeratedAt(Timestamp v) {
+        moderatedAt = v;
+    }
 }

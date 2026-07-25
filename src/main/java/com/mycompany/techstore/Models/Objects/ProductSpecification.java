@@ -9,15 +9,15 @@ package com.mycompany.techstore.Models.Objects;
  */
 public class ProductSpecification {
 
-  private int specId;
-  private int productId;
+    private int specId;
+    private int productId;
 
-  private String cpu;
-  private String gpu;
-  private String screen;
-  private String battery;
-  private String ram;
-  private String memory;
-  private String storage;
-  private String operatingSystem;
+    private String cpu;
+    private String gpu;
+    private String screen;
+    private String battery;
+    private String ram;
+    private String memory;
+    private String storage;
+    private String operatingSystem;
 }

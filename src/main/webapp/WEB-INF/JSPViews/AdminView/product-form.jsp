@@ -139,16 +139,17 @@
         const d = document.createElement('div');
         d.className = 'spec-row';
         d.innerHTML =
-            '<input class="form-control" name="specKey" placeholder="Key">' +
-            '<input class="form-control" name="specValue" placeholder="Value">' +
-            '<button class="btn btn-outline-danger" type="button" onclick="removeSpec(this)">&times;</button>';
+                '<input class="form-control" name="specKey" placeholder="Key">' +
+                '<input class="form-control" name="specValue" placeholder="Value">' +
+                '<button class="btn btn-outline-danger" type="button" onclick="removeSpec(this)">&times;</button>';
         document.getElementById('specs').appendChild(d);
         updateSpecRows();
     }
 
     function isLaptopCategory() {
         const categorySelect = document.querySelector('select[name="categoryId"]');
-        if (!categorySelect || categorySelect.selectedIndex < 0) return false;
+        if (!categorySelect || categorySelect.selectedIndex < 0)
+            return false;
         const text = (categorySelect.options[categorySelect.selectedIndex]?.text || '').toLowerCase().trim();
         return text.includes('laptop');
     }
@@ -157,7 +158,7 @@
         const row = btn.parentElement;
         const keyInput = row.querySelector('input[name="specKey"]');
         const requiredKeys = ['cpu', 'ram', 'storage', 'gpu', 'display', 'battery', 'os'];
-        
+
         if (keyInput) {
             const keyVal = keyInput.value.trim().toLowerCase();
             if (isLaptopCategory() && requiredKeys.includes(keyVal)) {
@@ -165,7 +166,7 @@
                 return false;
             }
         }
-        
+
         row.remove();
         return false;
     }
@@ -177,7 +178,8 @@
         document.querySelectorAll('.spec-row').forEach(row => {
             const keyInput = row.querySelector('input[name="specKey"]');
             const btn = row.querySelector('button');
-            if (!keyInput) return;
+            if (!keyInput)
+                return;
 
             const keyVal = keyInput.value.trim().toLowerCase();
             const isReq = isLaptop && requiredKeys.includes(keyVal);
@@ -216,19 +218,19 @@
     // Auto-add missing keys when Laptops is selected
     const catSel = document.querySelector('select[name="categoryId"]');
     if (catSel) {
-        catSel.addEventListener('change', function() {
+        catSel.addEventListener('change', function () {
             if (isLaptopCategory()) {
                 const requiredKeys = ['cpu', 'ram', 'storage', 'gpu', 'display', 'battery', 'os'];
                 const currentKeys = Array.from(document.querySelectorAll('input[name="specKey"]')).map(i => i.value.trim().toLowerCase());
-                
+
                 requiredKeys.forEach(req => {
                     if (!currentKeys.includes(req)) {
                         const d = document.createElement('div');
                         d.className = 'spec-row';
                         d.innerHTML =
-                            '<input class="form-control" name="specKey" value="' + req + '">' +
-                            '<input class="form-control" name="specValue" placeholder="Value">' +
-                            '<button class="btn btn-outline-danger" type="button" onclick="removeSpec(this)">&times;</button>';
+                                '<input class="form-control" name="specKey" value="' + req + '">' +
+                                '<input class="form-control" name="specValue" placeholder="Value">' +
+                                '<button class="btn btn-outline-danger" type="button" onclick="removeSpec(this)">&times;</button>';
                         document.getElementById('specs').appendChild(d);
                     }
                 });
@@ -240,11 +242,11 @@
     // Intercept form submission to prevent saving invalid laptops
     const mainForm = document.querySelector('form');
     if (mainForm) {
-        mainForm.addEventListener('submit', function(e) {
+        mainForm.addEventListener('submit', function (e) {
             if (isLaptopCategory()) {
                 const requiredKeys = ['cpu', 'ram', 'storage', 'gpu', 'display', 'battery', 'os'];
                 const currentKeys = Array.from(document.querySelectorAll('input[name="specKey"]')).map(i => i.value.trim().toLowerCase());
-                
+
                 for (const req of requiredKeys) {
                     if (!currentKeys.includes(req)) {
                         e.preventDefault();
@@ -252,9 +254,9 @@
                         const d = document.createElement('div');
                         d.className = 'spec-row';
                         d.innerHTML =
-                            '<input class="form-control" name="specKey" value="' + req + '">' +
-                            '<input class="form-control" name="specValue" placeholder="Value">' +
-                            '<button class="btn btn-outline-danger" type="button" onclick="removeSpec(this)">&times;</button>';
+                                '<input class="form-control" name="specKey" value="' + req + '">' +
+                                '<input class="form-control" name="specValue" placeholder="Value">' +
+                                '<button class="btn btn-outline-danger" type="button" onclick="removeSpec(this)">&times;</button>';
                         document.getElementById('specs').appendChild(d);
                         updateSpecRows();
                         return;

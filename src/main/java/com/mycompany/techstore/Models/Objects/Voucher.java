@@ -10,6 +10,8 @@ public class Voucher {
     private int quantity;
     private Date expiredDate;
     private String status;
+    private Date createdAt;
+    private Date updatedAt;
 
     public int getVoucherId() {
         return voucherId;
@@ -59,4 +61,19 @@ public class Voucher {
         this.status = status;
     }
 
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Date getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 }

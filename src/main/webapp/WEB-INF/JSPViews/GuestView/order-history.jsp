@@ -85,6 +85,14 @@
                     <tbody>
                         <% for (Order o : orders) {
                                 String status = o.getOrderStatus();
+                                String payMethod = o.getPaymentMethod();
+                                boolean isVNPay = "VNPay".equalsIgnoreCase(payMethod);
+                                boolean isConfirmed = "Confirmed".equalsIgnoreCase(status);
+                                boolean isPending = "Pending".equalsIgnoreCase(status);
+                                boolean isPaymentFailed = "Payment Failed".equalsIgnoreCase(status);
+
+                                // Cancel allowed for: Pending, Payment Failed, or Confirmed-but-NOT-VNPay
+                                boolean canCancel = isPending || isPaymentFailed || (isConfirmed && !isVNPay);
                         %>
                         <tr data-status="<%=status.toLowerCase()%>">
                             <td>
@@ -93,13 +101,12 @@
                                 </a>
                             </td>
                             <td>
-                                <% if ("Pending".equalsIgnoreCase(status)) { %>
+                                <% if (isPending) { %>
                                 <span class="badge-status badge-pending">Pending</span>
-                                <% } else if ("Confirmed".equalsIgnoreCase(status)) { %>
+                                <% } else if (isConfirmed) { %>
                                 <span class="badge-status badge-confirmed">Confirmed</span>
-                                <% } else if ("Payment Failed".equalsIgnoreCase(status)) { %>
+                                <% } else if (isPaymentFailed) { %>
                                 <span class="badge-status badge-payment-failed">Payment Failed</span>
-                                <% } else if ("Confirmed".equalsIgnoreCase(status)) { %>
                                 <% } else if ("Shipping".equalsIgnoreCase(status)) { %>
                                 <span class="badge-status badge-shipping">Shipping</span>
                                 <% } else if ("Delivered".equalsIgnoreCase(status)) { %>
@@ -121,18 +128,18 @@
                                 <span class="order-date"><%=dateStr%></span>
                             </td>
                             <td>
-                                <% if ("Pending".equalsIgnoreCase(status) || "Confirmed".equalsIgnoreCase(status)) {%>
-                                <button type="button" class="btn-cancel-open"
-                                        onclick="openCancelModal('<%=o.getOrderId()%>')">
-                                    &#10005; Cancel Order
-                                </button>
-                                <% } else if ("Payment Failed".equalsIgnoreCase(status)) {%>
+                                <% if (isPaymentFailed) {%>
                                 <a href="<%=request.getContextPath()%>/vnpay-retry?orderId=<%=o.getOrderId()%>" class="btn-retry-checkout">
                                     &#8635; Retry Payment
                                 </a>
                                 <button type="button" class="btn-cancel-open"
                                         onclick="openCancelModal('<%=o.getOrderId()%>')">
                                     &#10005; Cancel
+                                </button>
+                                <% } else if (canCancel) {%>
+                                <button type="button" class="btn-cancel-open"
+                                        onclick="openCancelModal('<%=o.getOrderId()%>')">
+                                    &#10005; Cancel Order
                                 </button>
                                 <% } else { %>
                                 <span class="no-action">&#8212; No Action</span>

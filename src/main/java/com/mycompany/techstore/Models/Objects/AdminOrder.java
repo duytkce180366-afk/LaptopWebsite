@@ -6,157 +6,158 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AdminOrder {
-  private int orderId, userId;
-  private String customerName,
-      email,
-      phone,
-      addressInfo,
-      paymentMethod,
-      paymentStatus,
-      orderStatus,
-      note,
-      voucherCode;
-  private BigDecimal totalAmount, shippingFee, discountAmount;
-  private Timestamp createdAt, updatedAt;
-  private List<OrderDetail> details = new ArrayList<>();
 
-  public int getOrderId() {
-    return orderId;
-  }
+    private int orderId, userId;
+    private String customerName,
+            email,
+            phone,
+            addressInfo,
+            paymentMethod,
+            paymentStatus,
+            orderStatus,
+            note,
+            voucherCode;
+    private BigDecimal totalAmount, shippingFee, discountAmount;
+    private Timestamp createdAt, updatedAt;
+    private List<OrderDetail> details = new ArrayList<>();
 
-  public void setOrderId(int v) {
-    orderId = v;
-  }
+    public int getOrderId() {
+        return orderId;
+    }
 
-  public int getUserId() {
-    return userId;
-  }
+    public void setOrderId(int v) {
+        orderId = v;
+    }
 
-  public void setUserId(int v) {
-    userId = v;
-  }
+    public int getUserId() {
+        return userId;
+    }
 
-  public String getCustomerName() {
-    return customerName;
-  }
+    public void setUserId(int v) {
+        userId = v;
+    }
 
-  public void setCustomerName(String v) {
-    customerName = v;
-  }
+    public String getCustomerName() {
+        return customerName;
+    }
 
-  public String getEmail() {
-    return email;
-  }
+    public void setCustomerName(String v) {
+        customerName = v;
+    }
 
-  public void setEmail(String v) {
-    email = v;
-  }
+    public String getEmail() {
+        return email;
+    }
 
-  public String getPhone() {
-    return phone;
-  }
+    public void setEmail(String v) {
+        email = v;
+    }
 
-  public void setPhone(String v) {
-    phone = v;
-  }
+    public String getPhone() {
+        return phone;
+    }
 
-  public String getAddressInfo() {
-    return addressInfo;
-  }
+    public void setPhone(String v) {
+        phone = v;
+    }
 
-  public void setAddressInfo(String v) {
-    addressInfo = v;
-  }
+    public String getAddressInfo() {
+        return addressInfo;
+    }
 
-  public String getPaymentMethod() {
-    return paymentMethod;
-  }
+    public void setAddressInfo(String v) {
+        addressInfo = v;
+    }
 
-  public void setPaymentMethod(String v) {
-    paymentMethod = v;
-  }
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
 
-  public String getPaymentStatus() {
-    return paymentStatus;
-  }
+    public void setPaymentMethod(String v) {
+        paymentMethod = v;
+    }
 
-  public void setPaymentStatus(String v) {
-    paymentStatus = v;
-  }
+    public String getPaymentStatus() {
+        return paymentStatus;
+    }
 
-  public String getOrderStatus() {
-    return orderStatus;
-  }
+    public void setPaymentStatus(String v) {
+        paymentStatus = v;
+    }
 
-  public void setOrderStatus(String v) {
-    orderStatus = v;
-  }
+    public String getOrderStatus() {
+        return orderStatus;
+    }
 
-  public String getNote() {
-    return note;
-  }
+    public void setOrderStatus(String v) {
+        orderStatus = v;
+    }
 
-  public void setNote(String v) {
-    note = v;
-  }
+    public String getNote() {
+        return note;
+    }
 
-  public BigDecimal getTotalAmount() {
-    return totalAmount;
-  }
+    public void setNote(String v) {
+        note = v;
+    }
 
-  public void setTotalAmount(BigDecimal v) {
-    totalAmount = v;
-  }
+    public BigDecimal getTotalAmount() {
+        return totalAmount;
+    }
 
-  public BigDecimal getShippingFee() {
-    return shippingFee;
-  }
+    public void setTotalAmount(BigDecimal v) {
+        totalAmount = v;
+    }
 
-  public void setShippingFee(BigDecimal v) {
-    shippingFee = v;
-  }
+    public BigDecimal getShippingFee() {
+        return shippingFee;
+    }
 
-  public BigDecimal getDiscountAmount() {
-    return discountAmount;
-  }
+    public void setShippingFee(BigDecimal v) {
+        shippingFee = v;
+    }
 
-  public void setDiscountAmount(BigDecimal v) {
-    discountAmount = v;
-  }
+    public BigDecimal getDiscountAmount() {
+        return discountAmount;
+    }
 
-  public BigDecimal getFinalTotal() {
-    return totalAmount.add(shippingFee).subtract(discountAmount);
-  }
+    public void setDiscountAmount(BigDecimal v) {
+        discountAmount = v;
+    }
 
-  public Timestamp getCreatedAt() {
-    return createdAt;
-  }
+    public BigDecimal getFinalTotal() {
+        return totalAmount.add(shippingFee).subtract(discountAmount);
+    }
 
-  public void setCreatedAt(Timestamp v) {
-    createdAt = v;
-  }
+    public Timestamp getCreatedAt() {
+        return createdAt;
+    }
 
-  public Timestamp getUpdatedAt() {
-    return updatedAt;
-  }
+    public void setCreatedAt(Timestamp v) {
+        createdAt = v;
+    }
 
-  public void setUpdatedAt(Timestamp v) {
-    updatedAt = v;
-  }
+    public Timestamp getUpdatedAt() {
+        return updatedAt;
+    }
 
-  public List<OrderDetail> getDetails() {
-    return details;
-  }
+    public void setUpdatedAt(Timestamp v) {
+        updatedAt = v;
+    }
 
-  public void setDetails(List<OrderDetail> v) {
-    details = v;
-  }
+    public List<OrderDetail> getDetails() {
+        return details;
+    }
 
-  public String getVoucherCode() {
-    return voucherCode;
-  }
+    public void setDetails(List<OrderDetail> v) {
+        details = v;
+    }
 
-  public void setVoucherCode(String v) {
-    voucherCode = v;
-  }
+    public String getVoucherCode() {
+        return voucherCode;
+    }
+
+    public void setVoucherCode(String v) {
+        voucherCode = v;
+    }
 }

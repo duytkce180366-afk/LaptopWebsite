@@ -1,6 +1,7 @@
 package com.mycompany.techstore.Models.Objects;
 
 public class SortOption {
+
     private String label;
     private String value;
 

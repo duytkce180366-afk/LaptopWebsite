@@ -23,7 +23,7 @@
                             Error: <%= Jsoup.clean(error, Safelist.basic())%>
                         </div>
                         <% }%>
-                        <form method="post" action="<%= ctx %>/auth?action=signup">
+                        <form method="post" action="<%= ctx%>/auth?action=signup">
                             <div class="mb-3">
                                 <label class="form-label">Full name</label>
                                 <input type="text" name="name" class="form-control" required />
@@ -38,14 +38,14 @@
                             </div>
                             <div class="d-flex gap-2 align-items-center">
                                 <button class="btn btn-primary primary-action" type="submit">Create account</button>
-                                <a class="btn btn-outline-secondary secondary-action" href="<%= ctx %>/auth?action=signin">Sign in</a>
+                                <a class="btn btn-outline-secondary secondary-action" href="<%= ctx%>/auth?action=signin">Sign in</a>
                             </div>
                         </form>
 
                         <hr class="my-3" />
                         <div class="oidc-signin">
                             <p class="mb-2">Or sign up using an external provider</p>
-                            <a class="btn btn-outline-primary w-100" href="<%= ctx %>/auth?action=oidc_signin">Sign up with SSO</a>
+                            <a class="btn btn-outline-primary w-100" href="<%= ctx%>/auth?action=oidc_signin">Sign up with SSO</a>
                         </div>
                     </div>
                 </div>

@@ -111,7 +111,9 @@
                             </a>
 
                             <form method="post" action="${pageContext.request.contextPath}/admin/products/deactivate"
-                                  onsubmit="event.preventDefault(); var f = this; window.showConfirm('Deactivate this product?', function(){ f.submit(); });">
+                                  onsubmit="event.preventDefault(); var f = this; window.showConfirm('Deactivate this product?', function () {
+                                              f.submit();
+                                          });">
                                 <input type="hidden" name="csrfToken" value="${sessionScope.adminCsrfToken}">
                                 <input type="hidden" name="id" value="${p.productId}">
                                 <button class="btn btn-sm btn-outline-danger">Deactivate</button>

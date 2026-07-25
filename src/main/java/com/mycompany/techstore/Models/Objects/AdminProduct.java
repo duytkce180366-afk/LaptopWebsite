@@ -6,139 +6,140 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class AdminProduct {
-  private int productId;
-  private int categoryId;
-  private int brandId;
-  private String categoryName;
-  private String brandName;
-  private String sku;
-  private String productName;
-  private String description;
-  private BigDecimal price;
-  private int stock;
-  private String thumbnail;
-  private String status;
-  private Timestamp createdAt;
-  private Timestamp updatedAt;
-  private Map<String, String> specifications = new LinkedHashMap<>();
 
-  public int getProductId() {
-    return productId;
-  }
+    private int productId;
+    private int categoryId;
+    private int brandId;
+    private String categoryName;
+    private String brandName;
+    private String sku;
+    private String productName;
+    private String description;
+    private BigDecimal price;
+    private int stock;
+    private String thumbnail;
+    private String status;
+    private Timestamp createdAt;
+    private Timestamp updatedAt;
+    private Map<String, String> specifications = new LinkedHashMap<>();
 
-  public void setProductId(int v) {
-    productId = v;
-  }
+    public int getProductId() {
+        return productId;
+    }
 
-  public int getCategoryId() {
-    return categoryId;
-  }
+    public void setProductId(int v) {
+        productId = v;
+    }
 
-  public void setCategoryId(int v) {
-    categoryId = v;
-  }
+    public int getCategoryId() {
+        return categoryId;
+    }
 
-  public int getBrandId() {
-    return brandId;
-  }
+    public void setCategoryId(int v) {
+        categoryId = v;
+    }
 
-  public void setBrandId(int v) {
-    brandId = v;
-  }
+    public int getBrandId() {
+        return brandId;
+    }
 
-  public String getCategoryName() {
-    return categoryName;
-  }
+    public void setBrandId(int v) {
+        brandId = v;
+    }
 
-  public void setCategoryName(String v) {
-    categoryName = v;
-  }
+    public String getCategoryName() {
+        return categoryName;
+    }
 
-  public String getBrandName() {
-    return brandName;
-  }
+    public void setCategoryName(String v) {
+        categoryName = v;
+    }
 
-  public void setBrandName(String v) {
-    brandName = v;
-  }
+    public String getBrandName() {
+        return brandName;
+    }
 
-  public String getSku() {
-    return sku;
-  }
+    public void setBrandName(String v) {
+        brandName = v;
+    }
 
-  public void setSku(String v) {
-    sku = v;
-  }
+    public String getSku() {
+        return sku;
+    }
 
-  public String getProductName() {
-    return productName;
-  }
+    public void setSku(String v) {
+        sku = v;
+    }
 
-  public void setProductName(String v) {
-    productName = v;
-  }
+    public String getProductName() {
+        return productName;
+    }
 
-  public String getDescription() {
-    return description;
-  }
+    public void setProductName(String v) {
+        productName = v;
+    }
 
-  public void setDescription(String v) {
-    description = v;
-  }
+    public String getDescription() {
+        return description;
+    }
 
-  public BigDecimal getPrice() {
-    return price;
-  }
+    public void setDescription(String v) {
+        description = v;
+    }
 
-  public void setPrice(BigDecimal v) {
-    price = v;
-  }
+    public BigDecimal getPrice() {
+        return price;
+    }
 
-  public int getStock() {
-    return stock;
-  }
+    public void setPrice(BigDecimal v) {
+        price = v;
+    }
 
-  public void setStock(int v) {
-    stock = v;
-  }
+    public int getStock() {
+        return stock;
+    }
 
-  public String getThumbnail() {
-    return thumbnail;
-  }
+    public void setStock(int v) {
+        stock = v;
+    }
 
-  public void setThumbnail(String v) {
-    thumbnail = v;
-  }
+    public String getThumbnail() {
+        return thumbnail;
+    }
 
-  public String getStatus() {
-    return status;
-  }
+    public void setThumbnail(String v) {
+        thumbnail = v;
+    }
 
-  public void setStatus(String v) {
-    status = v;
-  }
+    public String getStatus() {
+        return status;
+    }
 
-  public Timestamp getCreatedAt() {
-    return createdAt;
-  }
+    public void setStatus(String v) {
+        status = v;
+    }
 
-  public void setCreatedAt(Timestamp v) {
-    createdAt = v;
-  }
+    public Timestamp getCreatedAt() {
+        return createdAt;
+    }
 
-  public Timestamp getUpdatedAt() {
-    return updatedAt;
-  }
+    public void setCreatedAt(Timestamp v) {
+        createdAt = v;
+    }
 
-  public void setUpdatedAt(Timestamp v) {
-    updatedAt = v;
-  }
+    public Timestamp getUpdatedAt() {
+        return updatedAt;
+    }
 
-  public Map<String, String> getSpecifications() {
-    return specifications;
-  }
+    public void setUpdatedAt(Timestamp v) {
+        updatedAt = v;
+    }
 
-  public void setSpecifications(Map<String, String> v) {
-    specifications = v == null ? new LinkedHashMap<>() : v;
-  }
+    public Map<String, String> getSpecifications() {
+        return specifications;
+    }
+
+    public void setSpecifications(Map<String, String> v) {
+        specifications = v == null ? new LinkedHashMap<>() : v;
+    }
 }

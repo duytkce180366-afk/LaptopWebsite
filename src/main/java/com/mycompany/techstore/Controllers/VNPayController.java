@@ -21,8 +21,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import com.mycompany.techstore.Models.Objects.Voucher;
-import com.mycompany.techstore.Repositories.VoucherRepository;
 
 @WebServlet(name = "VNPayController", urlPatterns = {"/vnpay-pay", "/vnpay-return", "/vnpay-retry"})
 public class VNPayController extends HttpServlet {
@@ -33,6 +31,7 @@ public class VNPayController extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        request.setCharacterEncoding("UTF-8");
         HttpSession session = request.getSession();
         User loggedUser = (User) session.getAttribute("loggedUser");
 
@@ -48,13 +47,15 @@ public class VNPayController extends HttpServlet {
         String address = sanitize(request.getParameter("address"));
 
         // Validate required fields
-        if (isBlank(phone) || isBlank(province) || isBlank(district) || isBlank(address)) {
-            response.sendRedirect(request.getContextPath() + "/cart");
+        if (isBlank(address) || isBlank(district) || isBlank(province)) {
+            session.setAttribute("orderError", "Please provide a complete shipping address.");
+            response.sendRedirect(request.getContextPath() + "/checkout");
             return;
         }
 
-        if (!phone.matches("[0-9]{10,11}")) {
-            response.sendRedirect(request.getContextPath() + "/cart");
+        if (isBlank(phone) || !phone.matches("[0-9]{10,11}")) {
+            session.setAttribute("orderError", "Please provide a valid phone number (10-11 digits).");
+            response.sendRedirect(request.getContextPath() + "/checkout");
             return;
         }
 
@@ -95,9 +96,19 @@ public class VNPayController extends HttpServlet {
                 voucherId, discountAmount
         );
 
+        if (orderId == -2) {
+            session.removeAttribute("voucher");
+            session.removeAttribute("discountAmount");
+            session.removeAttribute("finalTotal");
+            session.setAttribute("orderError", "You have already used this voucher. Please choose another one.");
+            response.sendRedirect(request.getContextPath() + "/checkout");
+            return;
+        }
+
         if (orderId <= 0) {
             logger.log(Level.SEVERE, "Failed to create VNPay order for user {0}", loggedUser.getUser_id());
-            response.sendRedirect(request.getContextPath() + "/cart");
+            session.setAttribute("orderError", "Failed to place order. Please try again.");
+            response.sendRedirect(request.getContextPath() + "/checkout");
             return;
         }
 
@@ -168,7 +179,9 @@ public class VNPayController extends HttpServlet {
 
         int orderId;
         try {
-            orderId = Integer.parseInt(txnRef);
+            // TxnRef is formatted as "orderId_timestamp" — extract the orderId part
+            String orderIdPart = txnRef.contains("_") ? txnRef.split("_")[0] : txnRef;
+            orderId = Integer.parseInt(orderIdPart);
         } catch (NumberFormatException e) {
             logger.log(Level.WARNING, "Invalid vnp_TxnRef: {0}", txnRef);
             response.sendRedirect(request.getContextPath() + "/order-history");
@@ -181,8 +194,6 @@ public class VNPayController extends HttpServlet {
             orderService.confirmPaymentSuccess(orderId);
             session.setAttribute("vnpayResult", "success");
         } else {
-            // Payment Failed: order stays without stock/voucher ever deducted.
-            // User can Retry Payment or Cancel it later from order history.
             orderService.updateOrderStatus(orderId, "Payment Failed");
             session.setAttribute("vnpayResult", "failed");
         }
@@ -190,6 +201,9 @@ public class VNPayController extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/order-history");
     }
 
+    // Handles "Retry Payment": reuses the SAME existing order (no new order created,
+    // no cart/stock/voucher touched again). Only allowed if the order belongs to the
+    // logged-in user and its current status is 'Pending' or 'Payment Failed'.
     private void handleRetry(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
 
@@ -216,45 +230,16 @@ public class VNPayController extends HttpServlet {
         }
 
         OrderService orderService = new OrderService();
-        Map<String, Object> result = orderService.retryToCheckout(orderId, loggedUser.getUser_id());
 
-        if (result == null) {
+        if (!orderService.canRetryPayment(orderId, loggedUser.getUser_id())) {
             session.setAttribute("adminOrderMessage", "This order cannot be retried.");
             response.sendRedirect(request.getContextPath() + "/order-history");
             return;
         }
 
-        // Preselect VNPay on checkout, since retry only applies to VNPay orders
-        session.setAttribute("preferredPaymentMethod", "VNPAY");
-
-        // Restore voucher into session if still valid
-        Object voucherIdObj = result.get("voucherId");
-        if (voucherIdObj != null) {
-            int voucherId = (Integer) voucherIdObj;
-            VoucherRepository voucherRepository = new VoucherRepository();
-            Voucher voucher = voucherRepository.getById(voucherId);
-
-            boolean stillValid = voucher != null
-                    && voucher.getQuantity() > 0
-                    && "Active".equals(voucher.getStatus())
-                    && (voucher.getExpiredDate() == null
-                    || !voucher.getExpiredDate().before(new java.util.Date()));
-
-            if (stillValid) {
-                session.setAttribute("voucher", voucher);
-                session.setAttribute("discountAmount", result.get("discountAmount"));
-            } else {
-                session.removeAttribute("voucher");
-                session.removeAttribute("discountAmount");
-                session.setAttribute("adminOrderMessage",
-                        "Your previous voucher is no longer valid, please re-apply it if needed.");
-            }
-        } else {
-            session.removeAttribute("voucher");
-            session.removeAttribute("discountAmount");
-        }
-
-        response.sendRedirect(request.getContextPath() + "/checkout");
+        double totalAmount = orderService.getOrderTotal(orderId);
+        String redirectUrl = buildVnpayRedirectUrl(orderId, totalAmount, request);
+        response.sendRedirect(redirectUrl);
     }
 
     // Shared VNPay redirect URL builder, used both for new orders and retried ones.
@@ -265,7 +250,9 @@ public class VNPayController extends HttpServlet {
             ipAddr = "127.0.0.1";
         }
 
-        String txnRef = String.valueOf(orderId);
+        // Append current timestamp so TxnRef stays unique for every payment attempt,
+        // even when retrying the same order (VNPay requires TxnRef to be unique per day).
+        String txnRef = orderId + "_" + System.currentTimeMillis();
         String createDate = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
 
         Map<String, String> vnpParams = new HashMap<>();

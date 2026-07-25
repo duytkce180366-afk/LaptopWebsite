@@ -140,7 +140,7 @@
                 </div>
                 <div class="card-body">
 
-                    <% for (OrderDetail d : details) { %>
+                    <% for (OrderDetail d : details) {%>
                     <div class="product-row" id="product-<%=d.getProductId()%>">
                         <% if (d.getThumbnail() != null && !d.getThumbnail().isEmpty()) {%>
                         <img src="<%=d.getThumbnail()%>"
@@ -161,10 +161,10 @@
                             <div style="margin-top:10px;">
                                 <a class="btn-back" style="display:inline-flex;align-items:center;gap:6px;padding:8px 12px;font-size:13px;"
                                    href="<%=request.getContextPath()%>/review?orderId=<%=order.getOrderId()%>&productId=<%=d.getProductId()%>">
-                                    <%= alreadyReviewed ? "Edit Review" : "Write Review" %>
+                                    <%= alreadyReviewed ? "Edit Review" : "Write Review"%>
                                 </a>
                             </div>
-                            <% } %>
+                            <% }%>
                         </div>
                         <div class="product-qty">x<%=d.getQuantity()%></div>
                         <div class="product-price"><%=String.format("%,.0f", d.getUnitPrice())%> d</div>
@@ -179,12 +179,12 @@
                             <td><%=String.format("%,.0f", order.getTotalAmount())%> đ</td>
                         </tr>
 
-                        <% if (order.getShippingFee() > 0) { %>
+                        <% if (order.getShippingFee() > 0) {%>
                         <tr>
                             <td>Shipping Fee</td>
                             <td><%=String.format("%,.0f", order.getShippingFee())%> đ</td>
                         </tr>
-                        <% } %>
+                        <% }%>
 
                         <tr>
                             <td>

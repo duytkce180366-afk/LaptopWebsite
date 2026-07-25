@@ -37,7 +37,7 @@
                         <div class="alert alert-danger" role="alert">
                             The email or password is incorrect.
                         </div>
-                        <% } %>
+                        <% }%>
                         <form method="post" action="<%= ctx%>/auth?action=signin">
                             <div class="mb-3">
                                 <label class="form-label">Email</label>
