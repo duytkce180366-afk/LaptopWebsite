@@ -16,6 +16,7 @@ public class AuthService {
     // Allow case-insensitive email local-part/domain validation
     private final String emailFormat = "(?i)^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$";
     private final String nameFormat = "^[\\p{L}\\s\\-\\u0027. ]+$";
+    private final String pwdFormat = "/^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$/";
 
     private final AuthRepository authRepo;
 
@@ -90,8 +91,7 @@ public class AuthService {
    * User Sign-in/Sign-up methods
      */
     // Sign in with email and password
-    public User GetUserSignIn(String email, String password)
-            throws AuthException, NoSuchAlgorithmException {
+    public User GetUserSignIn(String email, String password) throws AuthException, NoSuchAlgorithmException {
         if (!email.matches(this.emailFormat)) {
             throw new AuthException(-1, "Email is not in correct format");
         }
@@ -141,8 +141,7 @@ public class AuthService {
     }
 
     // Sign-up with email and password
-    public User CreateUserSignIn(String email, String password, String name)
-            throws AuthException, NoSuchAlgorithmException {
+    public User CreateUserSignIn(String email, String password, String name) throws AuthException, NoSuchAlgorithmException {
         if (!email.matches(this.emailFormat)) {
             throw new AuthException(-1, "Email is not in correct format");
         }
@@ -157,6 +156,10 @@ public class AuthService {
 
         String pwdHash = null;
         if (password != null) {
+            if (!password.matches(this.pwdFormat)) {
+                throw new AuthException(-1, "Password complexity does not meet");
+            }
+
             pwdHash = this.HashPassword(password);
         }
 
@@ -208,10 +211,13 @@ public class AuthService {
     }
 
     // Reset password
-    public boolean UpdateUserPassword(String email, String newPassword)
-            throws NoSuchAlgorithmException, AuthException {
+    public boolean UpdateUserPassword(String email, String newPassword) throws NoSuchAlgorithmException, AuthException {
         if (!email.matches(this.emailFormat)) {
             throw new AuthException(-1, "Email is not in correct format");
+        }
+
+        if (newPassword != null && !newPassword.matches(this.pwdFormat)) {
+            throw new AuthException(-1, "Password complexity does not meet");
         }
 
         String pwdHash = this.HashPassword(newPassword);
