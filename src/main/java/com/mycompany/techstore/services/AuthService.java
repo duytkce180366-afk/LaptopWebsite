@@ -16,7 +16,7 @@ public class AuthService {
     // Allow case-insensitive email local-part/domain validation
     private final String emailFormat = "(?i)^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$";
     private final String nameFormat = "^[\\p{L}\\s\\-\\u0027. ]+$";
-    private final String pwdFormat = "/^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$/";
+    private final String pwdFormat = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$";
 
     private final AuthRepository authRepo;
 
