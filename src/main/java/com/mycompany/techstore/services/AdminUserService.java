@@ -16,7 +16,7 @@ public class AdminUserService {
     public static final String ROLE_ADMIN = "Admin";
     public static final String ROLE_STAFF = "Staff";
     public static final String ROLE_CUSTOMER = "Customer";
-
+    private final String pwdFormat = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$";
     private final AdminUserRepository repository = new AdminUserRepository();
     private final EmailService emailService;
 
@@ -117,9 +117,11 @@ public class AdminUserService {
     public void createStaff(String name, String email, String phone, String password, int adminId)
             throws SQLException, NoSuchAlgorithmException, MessagingException {
         validateStaff(name, email, phone);
-        if (password == null || password.length() < 8) {
-            throw new BackOfficeValidationException("Password must contain at least 8 characters.");
+        
+        if (!password.matches(this.pwdFormat)) {
+            throw new BackOfficeValidationException("Password complexity does not meet.");
         }
+        
         if (repository.emailExists(email, 0)) {
             throw new BackOfficeValidationException("Email is already in use.");
         }
