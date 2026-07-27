@@ -36,12 +36,15 @@
                                 <label class="form-label">Password</label>
                                 <input type="password" name="password" class="form-control" required />
                             </div>
+                            <div class="mb-3">
+                                <label class="form-label">Repeat Password</label>
+                                <input type="password" name="repeat_password" class="form-control" required />
+                            </div>
                             <div class="d-flex gap-2 align-items-center">
                                 <button class="btn btn-primary primary-action" type="submit">Create account</button>
                                 <a class="btn btn-outline-secondary secondary-action" href="<%= ctx%>/auth?action=signin">Sign in</a>
                             </div>
                         </form>
-
                         <hr class="my-3" />
                         <div class="oidc-signin">
                             <p class="mb-2">Or sign up using an external provider</p>
