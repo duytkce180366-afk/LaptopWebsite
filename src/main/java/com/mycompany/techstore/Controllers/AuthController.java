@@ -126,9 +126,9 @@ public class AuthController extends HttpServlet {
             return BackOfficeAuthorizationPolicy.isBackOfficeRole(role) ? "/admin/dashboard" : "/";
         } catch (java.sql.SQLException ex) {
             Logger.getLogger(AuthController.class.getName()).log(
-                            Level.WARNING,
-                            "Unable to resolve the post-login destination for user " + user.getUser_id(),
-                            ex);
+                    Level.WARNING,
+                    "Unable to resolve the post-login destination for user " + user.getUser_id(),
+                    ex);
             return "/";
         }
     }
@@ -168,8 +168,7 @@ public class AuthController extends HttpServlet {
    *  OIDC methods
      */
     /////////////////////////////////////////////
-  private void HandleOidcLogin(HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
+    private void HandleOidcLogin(HttpServletRequest request, HttpServletResponse response) throws IOException {
         if (!this.isOidcEnabled) {
             response.sendRedirect(
                     request.getContextPath() + "/auth?action=signin&error=OIDC+not+enabled.");
@@ -201,8 +200,7 @@ public class AuthController extends HttpServlet {
         response.sendRedirect(authUrl);
     }
 
-    private void HandleOidcCallback(HttpServletRequest request, HttpServletResponse response)
-            throws IOException, URISyntaxException {
+    private void HandleOidcCallback(HttpServletRequest request, HttpServletResponse response) throws IOException, URISyntaxException {
         if (!this.isOidcEnabled) {
             response.sendRedirect(
                     request.getContextPath() + "/auth?action=signin&error=OIDC+not+enabled.");
@@ -307,11 +305,10 @@ public class AuthController extends HttpServlet {
     }
 
     /*
-   *  Email/Password methods
+     *  Email/Password methods
      */
     /////////////////////////////////////////////
-  private void HandleSignIn(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    private void HandleSignIn(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String email = request.getParameter("email");
         String password = request.getParameter("password");
 
@@ -332,8 +329,7 @@ public class AuthController extends HttpServlet {
             }
         } catch (AuthException ex) {
             Logger.getLogger(AuthController.class.getName()).log(Level.INFO, ex.getMessage());
-            String reason
-                    = "This account is blocked or inactive".equals(ex.getMessage()) ? "blocked" : "invalid";
+            String reason = "This account is blocked or inactive".equals(ex.getMessage()) ? "blocked" : "invalid";
             response.sendRedirect(request.getContextPath() + "/auth?action=signin&reason=" + reason);
         } catch (NoSuchAlgorithmException ex) {
             Logger.getLogger(AuthController.class.getName()).log(Level.SEVERE, null, ex);
@@ -342,14 +338,14 @@ public class AuthController extends HttpServlet {
         }
     }
 
-    private void HandleSignUp(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    private void HandleSignUp(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String email = request.getParameter("email");
         String password = request.getParameter("password");
         String name = request.getParameter("name");
+        String repeatPwd = request.getParameter("repeat_password");
 
         try {
-            User user = this.authService.CreateUserSignIn(email, password, name);
+            User user = this.authService.CreateUserSignIn(email, password, repeatPwd, name);
 
             HttpSession session = request.getSession();
             session.setAttribute("loggedUser", user);
@@ -362,8 +358,7 @@ public class AuthController extends HttpServlet {
         }
     }
 
-    private void HandleResetPassword(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    private void HandleResetPassword(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String otp = request.getParameter("otp");
         String newPwd = request.getParameter("newpwd");
         String repeatPwd = request.getParameter("repeatPwd");
@@ -502,8 +497,7 @@ public class AuthController extends HttpServlet {
    GET/POST methods
      */
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         switch (request.getParameter("action")) {
             // Default action on call
             case null -> {
@@ -527,9 +521,7 @@ public class AuthController extends HttpServlet {
                 if (this.IsSignedIn(request)) {
                     response.sendRedirect(request.getContextPath() + "/");
                 } else {
-                    request
-                            .getRequestDispatcher("/WEB-INF/JSPViews/AuthView/CreateAccount.jsp")
-                            .forward(request, response);
+                    request.getRequestDispatcher("/WEB-INF/JSPViews/AuthView/CreateAccount.jsp").forward(request, response);
                 }
             }
             case "verify" -> {
@@ -667,8 +659,7 @@ public class AuthController extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         switch (request.getParameter("action")) {
             case "signin" -> {
                 if (!this.IsSignedIn(request)) {
