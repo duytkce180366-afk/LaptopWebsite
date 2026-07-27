@@ -157,12 +157,12 @@ public class AuthService {
             throw new AuthException(-1, "Enter both password and repeat password field");
         }
 
-        if (password.equals(repeatPwd)) {
-            throw new AuthException(-1, "Password and Repeat password must be the same");
-        }
-
         if (!password.matches(this.pwdFormat)) {
             throw new AuthException(-1, "Password complexity does not meet");
+        }
+
+        if (!password.equals(repeatPwd)) {
+            throw new AuthException(-1, "Password and Repeat password must be the same");
         }
 
         String pwdHash = this.HashPassword(password);
