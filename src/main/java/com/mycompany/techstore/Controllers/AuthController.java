@@ -342,9 +342,10 @@ public class AuthController extends HttpServlet {
         String email = request.getParameter("email");
         String password = request.getParameter("password");
         String name = request.getParameter("name");
+        String repeatPwd = request.getParameter("repeat_password");
 
         try {
-            User user = this.authService.CreateUserSignIn(email, password, name);
+            User user = this.authService.CreateUserSignIn(email, password, repeatPwd, name);
 
             HttpSession session = request.getSession();
             session.setAttribute("loggedUser", user);
@@ -520,9 +521,7 @@ public class AuthController extends HttpServlet {
                 if (this.IsSignedIn(request)) {
                     response.sendRedirect(request.getContextPath() + "/");
                 } else {
-                    request
-                            .getRequestDispatcher("/WEB-INF/JSPViews/AuthView/CreateAccount.jsp")
-                            .forward(request, response);
+                    request.getRequestDispatcher("/WEB-INF/JSPViews/AuthView/CreateAccount.jsp").forward(request, response);
                 }
             }
             case "verify" -> {

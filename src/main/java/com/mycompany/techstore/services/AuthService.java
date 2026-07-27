@@ -141,7 +141,7 @@ public class AuthService {
     }
 
     // Sign-up with email and password
-    public User CreateUserSignIn(String email, String password, String name) throws AuthException, NoSuchAlgorithmException {
+    public User CreateUserSignIn(String email, String password, String repeatPwd, String name) throws AuthException, NoSuchAlgorithmException {
         if (!email.matches(this.emailFormat)) {
             throw new AuthException(-1, "Email is not in correct format");
         }
@@ -154,15 +154,19 @@ public class AuthService {
             throw new AuthException(-1, "Email already exists");
         }
 
-        String pwdHash = null;
-        if (password != null) {
-            if (!password.matches(this.pwdFormat)) {
-                throw new AuthException(-1, "Password complexity does not meet");
-            }
-
-            pwdHash = this.HashPassword(password);
+        if (password == null || repeatPwd == null) {
+            throw new AuthException(-1, "Enter both password and repeat password field");
         }
 
+        if (password.equals(repeatPwd)) {
+            throw new AuthException(-1, "Password and Repeat password must be the same");
+        }
+
+        if (!password.matches(this.pwdFormat)) {
+            throw new AuthException(-1, "Password complexity does not meet");
+        }
+
+        String pwdHash = this.HashPassword(password);
         User created = this.authRepo.CreateUser(email, pwdHash, name);
 
         if (created == null) {
