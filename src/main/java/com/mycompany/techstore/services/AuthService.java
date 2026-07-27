@@ -39,8 +39,7 @@ public class AuthService {
             byte[] salt = new byte[SALT_LENGTH];
             sr.nextBytes(salt);
 
-            PBEKeySpec spec
-                    = new PBEKeySpec(password.toCharArray(), salt, PBKDF2_ITERATIONS, DERIVED_KEY_LENGTH);
+            PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt, PBKDF2_ITERATIONS, DERIVED_KEY_LENGTH);
             SecretKeyFactory skf = SecretKeyFactory.getInstance(PBKDF2_ALGORITHM);
             byte[] hash = skf.generateSecret(spec).getEncoded();
 

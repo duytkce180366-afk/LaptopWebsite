@@ -45,7 +45,6 @@
                                 <a class="btn btn-outline-secondary secondary-action" href="<%= ctx%>/auth?action=signin">Sign in</a>
                             </div>
                         </form>
-
                         <hr class="my-3" />
                         <div class="oidc-signin">
                             <p class="mb-2">Or sign up using an external provider</p>
