@@ -491,7 +491,7 @@
 
                 var totalEl = document.getElementById('totalAmountValue');
                 if (totalEl) {
-                    totalEl.textContent = total.toLocaleString('vi-VN') + ' d';
+                    totalEl.textContent = total.toLocaleString('vi-VN') + ' đ';
                 }
             }
         </script>
