@@ -16,7 +16,7 @@ import java.util.List;
 @WebServlet("/cart")
 public class CartController extends HttpServlet {
 
-    private CartService cartService = new CartService();
+    private final CartService cartService = new CartService();
 
     @Override
     protected void doGet(

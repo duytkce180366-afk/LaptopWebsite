@@ -14,7 +14,7 @@ import jakarta.servlet.http.HttpSession;
 @WebServlet("/cart/add")
 public class AddToCartController extends HttpServlet {
 
-    private CartService service
+    private final CartService service
             = new CartService();
 
     @Override
