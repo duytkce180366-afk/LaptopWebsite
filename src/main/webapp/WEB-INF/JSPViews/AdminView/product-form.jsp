@@ -13,7 +13,15 @@
         <div class="row g-3">
             <div class="col-md-4">
                 <label class="form-label">SKU *</label>
-                <input class="form-control" required name="sku" value="<c:out value='${product.sku}' />">
+                <input
+                    class="form-control"
+                    required
+                    name="sku"
+                    value="<c:out value='${product.sku}' />"
+                    ${product.productId != 0 ? 'readonly' : ''}>
+                <c:if test="${product.productId != 0}">
+                    <div class="form-text">SKU cannot be changed after the product is created.</div>
+                </c:if>
             </div>
 
             <div class="col-md-8">

@@ -43,6 +43,7 @@ public class AdminProductService {
         if (current == null) {
             throw new BackOfficeValidationException("Product not found.");
         }
+        product.setSku(current.getSku());
         product.setStock(current.getStock());
         validate(product);
         repository.update(product, adminId);

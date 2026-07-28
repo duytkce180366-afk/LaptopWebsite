@@ -109,13 +109,13 @@ public class AdminProductRepository {
     public void update(AdminProduct p, int adminId) throws SQLException {
         String sql
                 = "UPDATE dbo.bs_Products SET"
-                + " category_id=?,brand_id=?,sku=?,product_name=?,description=?,price=?,thumbnail=?,status=?,updated_at=SYSUTCDATETIME()"
+                + " category_id=?,brand_id=?,product_name=?,description=?,price=?,thumbnail=?,status=?,updated_at=SYSUTCDATETIME()"
                 + " WHERE product_id=?";
         try (Connection con = new DbClass().getConnection()) {
             con.setAutoCommit(false);
             try (PreparedStatement ps = con.prepareStatement(sql)) {
                 bindUpdate(ps, p);
-                ps.setInt(9, p.getProductId());
+                ps.setInt(8, p.getProductId());
                 if (ps.executeUpdate() != 1) {
                     throw new SQLException("Product not found");
                 }
@@ -268,12 +268,11 @@ public class AdminProductRepository {
     private void bindUpdate(PreparedStatement ps, AdminProduct p) throws SQLException {
         ps.setInt(1, p.getCategoryId());
         ps.setInt(2, p.getBrandId());
-        ps.setString(3, p.getSku());
-        ps.setString(4, p.getProductName());
-        ps.setString(5, p.getDescription());
-        ps.setBigDecimal(6, p.getPrice());
-        ps.setString(7, p.getThumbnail());
-        ps.setString(8, p.getStatus());
+        ps.setString(3, p.getProductName());
+        ps.setString(4, p.getDescription());
+        ps.setBigDecimal(5, p.getPrice());
+        ps.setString(6, p.getThumbnail());
+        ps.setString(7, p.getStatus());
     }
 
     private void saveSpecs(Connection con, AdminProduct p) throws SQLException {
