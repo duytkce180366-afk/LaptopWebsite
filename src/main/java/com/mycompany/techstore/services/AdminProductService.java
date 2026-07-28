@@ -13,6 +13,9 @@ public class AdminProductService {
             = Set.of("Active", "Out of Stock", "Hidden", "Inactive");
     private static final Set<String> LAPTOP_SPECS
             = Set.of("cpu", "ram", "storage", "gpu", "display", "battery", "os");
+    private static final int SKU_MAX_LENGTH = 80;
+    private static final int PRODUCT_NAME_MAX_LENGTH = 200;
+    private static final int THUMBNAIL_MAX_LENGTH = 500;
     private final AdminProductRepository repository = new AdminProductRepository();
 
     public PageResult<AdminProduct> findAll(
@@ -79,8 +82,20 @@ public class AdminProductService {
         if (p.getSku().isEmpty()) {
             throw new BackOfficeValidationException("SKU is required.");
         }
+        if (p.getSku().length() > SKU_MAX_LENGTH) {
+            throw new BackOfficeValidationException(
+                    "SKU must not exceed " + SKU_MAX_LENGTH + " characters.");
+        }
         if (p.getProductName().isEmpty()) {
             throw new BackOfficeValidationException("Product name is required.");
+        }
+        if (p.getProductName().length() > PRODUCT_NAME_MAX_LENGTH) {
+            throw new BackOfficeValidationException(
+                    "Product name must not exceed " + PRODUCT_NAME_MAX_LENGTH + " characters.");
+        }
+        if (p.getThumbnail().length() > THUMBNAIL_MAX_LENGTH) {
+            throw new BackOfficeValidationException(
+                    "Thumbnail URL must not exceed " + THUMBNAIL_MAX_LENGTH + " characters.");
         }
         if (p.getCategoryId() <= 0 || p.getBrandId() <= 0) {
             throw new BackOfficeValidationException("Category and brand are required.");

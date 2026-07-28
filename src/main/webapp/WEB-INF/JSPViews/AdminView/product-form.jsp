@@ -17,6 +17,7 @@
                     class="form-control"
                     required
                     name="sku"
+                    maxlength="80"
                     value="<c:out value='${product.sku}' />"
                     ${product.productId != 0 ? 'readonly' : ''}>
                 <c:if test="${product.productId != 0}">
@@ -26,7 +27,12 @@
 
             <div class="col-md-8">
                 <label class="form-label">Product name *</label>
-                <input class="form-control" required name="productName" value="<c:out value='${product.productName}' />">
+                <input
+                    class="form-control"
+                    required
+                    name="productName"
+                    maxlength="200"
+                    value="<c:out value='${product.productName}' />">
             </div>
 
             <div class="col-md-6">
@@ -86,14 +92,17 @@
 
             <div class="col-12">
                 <label class="form-label">Thumbnail URL</label>
-                <input class="form-control" type="url" name="thumbnail" value="<c:out value='${product.thumbnail}' />">
+                <input
+                    class="form-control"
+                    type="url"
+                    name="thumbnail"
+                    maxlength="500"
+                    value="<c:out value='${product.thumbnail}' />">
             </div>
 
             <div class="col-12">
                 <label class="form-label">Description</label>
-                <textarea class="form-control" rows="4" name="description">
-                    <c:out value="${product.description}" />
-                </textarea>
+                <textarea class="form-control" rows="4" name="description"><c:out value="${product.description}" /></textarea>
             </div>
         </div>
     </div>
