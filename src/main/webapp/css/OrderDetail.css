@@ -210,3 +210,57 @@ body {
     color: #991b1b;
     font-size: 13.5px;
 }
+.badge-completed         { background: transparent; color: #065f46; border: none; }
+.badge-completed::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #10b981; flex-shrink: 0; }
+
+.badge-return         { background: transparent; color: #92400e; border: none; }
+.badge-return::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #f59e0b; flex-shrink: 0; }
+
+.action-buttons { margin-top: 20px; display: flex; gap: 12px; }
+
+.btn-confirm-receive {
+    padding: 9px 18px; border: none; border-radius: 8px;
+    background: #16a34a; color: #fff; font-size: 13px;
+    font-weight: 600; cursor: pointer;
+}
+.btn-confirm-receive:hover { background: #15803d; }
+
+.btn-request-return {
+    padding: 9px 18px; border: 1.5px solid #f59e0b;
+    border-radius: 8px; background: #fff; color: #92400e;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.btn-request-return:hover { background: #fffbeb; }
+.order-summary {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid #f3f4f6;
+}
+
+.summary-row {
+    display: flex;
+    gap: 40px;
+    justify-content: space-between;
+    min-width: 300px;
+}
+
+.summary-total {
+    display: flex;
+    gap: 40px;
+    justify-content: space-between;
+    min-width: 300px;
+    border-top: 1px solid #e5e7eb;
+    padding-top: 10px;
+    margin-top: 4px;
+}
+.badge-return         { background: transparent; color: #92400e; border: none; }
+.badge-return::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #f59e0b; flex-shrink: 0; }
+
+.badge-returned         { background: transparent; color: #5b21b6; border: none; }
+.badge-returned::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #8b5cf6; flex-shrink: 0; }
+.badge-return-rejected         { background: transparent; color: #991b1b; border: none; }
+.badge-return-rejected::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #ef4444; flex-shrink: 0; }

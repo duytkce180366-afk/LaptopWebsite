@@ -88,6 +88,11 @@ public class AdminOrderRepository {
                 if ("Cancelled".equals(target) && "Confirmed".equals(current)) {
                     restoreStock(con, orderId);
                 }
+                if ("Returned".equals(target)) {
+                    // Physical item comes back to warehouse -> restore stock
+                    restoreStock(con, orderId);
+                }
+// "Return Rejected": item stays with customer, no stock change
                 try (PreparedStatement ps
                         = con.prepareStatement(
                                 "UPDATE dbo.bs_Orders SET"
@@ -182,7 +187,8 @@ public class AdminOrderRepository {
         boolean valid
                 = ("Pending".equals(current) && Set.of("Confirmed", "Cancelled").contains(target))
                 || ("Confirmed".equals(current) && Set.of("Shipping", "Cancelled").contains(target))
-                || ("Shipping".equals(current) && "Delivered".equals(target));
+                || ("Shipping".equals(current) && "Delivered".equals(target))
+                || ("Return Requested".equals(current) && Set.of("Returned", "Return Rejected").contains(target));
         if (!valid) {
             throw new IllegalArgumentException("Invalid order transition: " + current + " -> " + target);
         }
@@ -286,6 +292,56 @@ public class AdminOrderRepository {
 
     private String clean(String value) {
         return value == null ? "" : value.trim();
+    }
+
+    private String getPaymentMethod(Connection con, int orderId) throws SQLException {
+        try (PreparedStatement ps = con.prepareStatement(
+                "SELECT payment_method FROM dbo.bs_Orders WHERE order_id=?")) {
+            ps.setInt(1, orderId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getString("payment_method") : "";
+            }
+        }
+    }
+
+    private int getVoucherId(Connection con, int orderId) throws SQLException {
+        try (PreparedStatement ps = con.prepareStatement(
+                "SELECT voucher_id FROM dbo.bs_Orders WHERE order_id=?")) {
+            ps.setInt(1, orderId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int id = rs.getInt("voucher_id");
+                    return rs.wasNull() ? 0 : id;
+                }
+                return 0;
+            }
+        }
+    }
+
+    private void deductVoucher(Connection con, int voucherId) throws SQLException {
+        try (PreparedStatement ps = con.prepareStatement(
+                "UPDATE dbo.bs_Vouchers SET quantity = quantity - 1 WHERE voucher_id = ? AND quantity > 0")) {
+            ps.setInt(1, voucherId);
+            ps.executeUpdate();
+        }
+    }
+
+    private void restoreVoucher(Connection con, int voucherId) throws SQLException {
+        try (PreparedStatement ps = con.prepareStatement(
+                "UPDATE dbo.bs_Vouchers SET quantity = quantity + 1 WHERE voucher_id = ?")) {
+            ps.setInt(1, voucherId);
+            ps.executeUpdate();
+        }
+    }
+
+    private void syncReturnedPayment(Connection con, int orderId) throws SQLException {
+        String updateSql
+                = "UPDATE dbo.bs_Payments SET payment_status='Refunded', updated_at=SYSUTCDATETIME() "
+                + "WHERE order_id=? AND payment_status='Paid'";
+        try (PreparedStatement ps = con.prepareStatement(updateSql)) {
+            ps.setInt(1, orderId);
+            ps.executeUpdate();
+        }
     }
 
 }

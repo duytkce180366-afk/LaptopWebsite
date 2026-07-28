@@ -1,10 +1,7 @@
 <%@page import="com.mycompany.techstore.Models.Objects.User"%>
 <%@page import="com.mycompany.techstore.Models.Objects.OrderDetail"%>
 <%@page import="com.mycompany.techstore.Models.Objects.Order"%>
-<%@page import="java.util.HashSet"%>
-<%@page import="java.util.Set"%>
 <%@page import="java.util.List"%>
-<%@page import="java.text.SimpleDateFormat"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
 <%
@@ -15,18 +12,11 @@
     }
     Order order = (Order) request.getAttribute("order");
     List<OrderDetail> details = (List<OrderDetail>) request.getAttribute("details");
-    List<Integer> reviewedProductIds = (List<Integer>) request.getAttribute("reviewedProductIds");
-    Set<Integer> reviewedProductIdSet = new HashSet<>();
-    if (reviewedProductIds != null) {
-        reviewedProductIdSet.addAll(reviewedProductIds);
-    }
     if (order == null) {
         response.sendRedirect(request.getContextPath() + "/order-history");
         return;
     }
-    String orderCreatedAt = order.getCreatedAt() == null
-            ? "-"
-            : new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(order.getCreatedAt());
+    String status = order.getOrderStatus();
 %>
 
 <!DOCTYPE html>
@@ -63,7 +53,7 @@
                     </div>
                     <div>
                         <h2>Order #<%=order.getOrderId()%></h2>
-                        <p>Placed on <%=orderCreatedAt%></p>
+                        <p>Placed on <%=order.getCreatedAt()%></p>
                     </div>
                 </div>
                 <a href="order-history" class="btn-back">← Back to Orders</a>
@@ -84,10 +74,7 @@
 
                         <div class="info-item">
                             <label>Status</label>
-                            <%
-                                String status = order.getOrderStatus();
-                                if ("Pending".equalsIgnoreCase(status)) {
-                            %>
+                            <% if ("Pending".equalsIgnoreCase(status)) { %>
                             <span class="badge-status badge-pending">Pending</span>
                             <% } else if ("Confirmed".equalsIgnoreCase(status)) { %>
                             <span class="badge-status badge-confirmed">Confirmed</span>
@@ -95,8 +82,19 @@
                             <span class="badge-status badge-shipping">Shipping</span>
                             <% } else if ("Delivered".equalsIgnoreCase(status)) { %>
                             <span class="badge-status badge-delivered">Delivered</span>
+                            <% } else if ("Completed".equalsIgnoreCase(status)) { %>
+                            <span class="badge-status badge-completed">Completed</span>
+                            <% } else if ("Return Requested".equalsIgnoreCase(status)) { %>
+                            <span class="badge-status badge-return">Return Requested</span>
+                            <% } else if ("Returned".equalsIgnoreCase(status)) { %>
+                            <span class="badge-status badge-returned">Returned</span>
+                            <% } else if ("Return Rejected".equalsIgnoreCase(status)) { %>
+                            <span class="badge-status badge-return-rejected">Return Rejected</span>
+                            <% } else if ("Payment Failed".equalsIgnoreCase(status)) { %>
+                            <span class="badge-status badge-payment-failed">Payment Failed</span>
                             <% } else {%>
-                            <span class="badge-status badge-cancelled">
+                            <span class="badge-status badge-cancelled"
+                                  title="<%=order.getNote() != null ? "Reason: " + order.getNote() : ""%>">
                                 Cancelled
                             </span>
                             <% }%>
@@ -117,14 +115,24 @@
                             <span><%=order.getPhone() != null ? order.getPhone() : "-"%></span>
                         </div>
 
-                        <% if ("Cancelled".equalsIgnoreCase(status) && order.getNote() != null && !order.getNote().trim().isEmpty()) {%>
-                        <div class="info-item info-item-full">
-                            <label>Cancel Reason</label>
-                            <span class="cancel-reason-text"><%=order.getNote()%></span>
-                        </div>
-                        <% }%>
-
                     </div>
+
+                    <%-- Action buttons for Delivered status --%>
+                    <% if ("Delivered".equalsIgnoreCase(status)) {%>
+                    <div class="action-buttons">
+                        <form action="<%=request.getContextPath()%>/confirm-delivery" method="post" style="display:inline;">
+                            <input type="hidden" name="id" value="<%=order.getOrderId()%>">
+                            <button type="submit" class="btn-confirm-receive">
+                                &#10003; Confirm Receive
+                            </button>
+                        </form>
+                        <button type="button" class="btn-request-return"
+                                onclick="openReturnModal(<%=order.getOrderId()%>)">
+                            &#8617; Request Return
+                        </button>
+                    </div>
+                    <% }%>
+
                 </div>
             </div>
 
@@ -139,9 +147,13 @@
                     <h3>Products (<%=details.size()%> item<%=details.size() != 1 ? "s" : ""%>)</h3>
                 </div>
                 <div class="card-body">
+                    <%
+                        java.util.Map<Integer, com.mycompany.techstore.Models.Objects.Review> reviewMap
+                                = (java.util.Map<Integer, com.mycompany.techstore.Models.Objects.Review>) request.getAttribute("reviewMap");
+                    %>
+                    <% for (OrderDetail d : details) { %>
 
-                    <% for (OrderDetail d : details) {%>
-                    <div class="product-row" id="product-<%=d.getProductId()%>">
+                    <div class="product-row">
                         <% if (d.getThumbnail() != null && !d.getThumbnail().isEmpty()) {%>
                         <img src="<%=d.getThumbnail()%>"
                              alt="<%=d.getProductName()%>"
@@ -155,60 +167,114 @@
                         <div class="product-info">
                             <p class="product-name"><%=d.getProductName()%></p>
                             <span class="product-sku">SKU: <%=d.getSku()%></span>
-                            <% if ("Delivered".equalsIgnoreCase(status)) {
-                                    boolean alreadyReviewed = reviewedProductIdSet.contains(d.getProductId());
-                            %>
-                            <div style="margin-top:10px;">
-                                <a class="btn-back" style="display:inline-flex;align-items:center;gap:6px;padding:8px 12px;font-size:13px;"
-                                   href="<%=request.getContextPath()%>/review?orderId=<%=order.getOrderId()%>&productId=<%=d.getProductId()%>">
-                                    <%= alreadyReviewed ? "Edit Review" : "Write Review"%>
-                                </a>
-                            </div>
-                            <% }%>
                         </div>
                         <div class="product-qty">x<%=d.getQuantity()%></div>
                         <div class="product-price"><%=String.format("%,.0f", d.getUnitPrice())%> d</div>
                         <div class="product-subtotal"><%=String.format("%,.0f", d.getSubtotal())%> d</div>
                     </div>
+                    <%
+                        com.mycompany.techstore.Models.Objects.Review existingReview
+                                = (reviewMap != null) ? reviewMap.get(d.getProductId()) : null;
+                    %>
+                    <% if (existingReview != null) { %>
+                    <div class="review-display">
+                        <div class="review-stars">
+                            <% for (int i = 1; i <= 5; i++) {%>
+                            <span style="color: <%= i <= existingReview.getRating() ? "#f59e0b" : "#d1d5db"%>; font-size:18px;">&#9733;</span>
+                            <% }%>
+                        </div>
+                        <p style="font-size:13px; color:#374151; margin:6px 0 0;"><%=existingReview.getComment()%></p>
+                    </div>
+                    <% } %>
                     <% }%>
 
-                    <table class="summary-table">
-
-                        <tr>
-                            <td>Subtotal</td>
-                            <td><%=String.format("%,.0f", order.getTotalAmount())%> đ</td>
-                        </tr>
-
+                    <div class="order-summary">
+                        <div class="summary-row">
+                            <span style="color:#6b7280;">Subtotal</span>
+                            <span style="color:#ef4444; font-weight:600;"><%=String.format("%,.0f", order.getTotalAmount())%> d</span>
+                        </div>
                         <% if (order.getShippingFee() > 0) {%>
-                        <tr>
-                            <td>Shipping Fee</td>
-                            <td><%=String.format("%,.0f", order.getShippingFee())%> đ</td>
-                        </tr>
+                        <div class="summary-row">
+                            <span style="color:#6b7280;">Shipping Fee</span>
+                            <span style="color:#ef4444; font-weight:600;"><%=String.format("%,.0f", order.getShippingFee())%> d</span>
+                        </div>
+                        <% } %>
+                        <% if (order.getDiscountAmount() > 0) { %>
+                        <div class="summary-row">
+                            <span style="color:#6b7280;">Discount
+                                <% if (order.getVoucherCode() != null) {%>
+                                (<%=order.getVoucherCode()%>)
+                                <% }%>
+                            </span>
+                            <span style="color:#ef4444; font-weight:600;">-<%=String.format("%,.0f", order.getDiscountAmount())%> d</span>
+                        </div>
                         <% }%>
-
-                        <tr>
-                            <td>
-                                Discount<%=order.getVoucherCode() != null && !order.getVoucherCode().trim().isEmpty() ? " (" + order.getVoucherCode() + ")" : ""%>
-                            </td>
-                            <td style="color:#dc2626;">
-                                -<%=String.format("%,.0f", order.getDiscountAmount())%> đ
-                            </td>
-                        </tr>
-
-                        <tr class="total-row">
-                            <td><strong>Total</strong></td>
-                            <td>
-                                <strong style="color:#2563eb;">
-                                    <%=String.format("%,.0f", order.getFinalTotal())%> đ
-                                </strong>
-                            </td>
-                        </tr>
-
-                    </table>
+                        <div class="summary-total">
+                            <span style="font-weight:700;">Total</span>
+                            <span style="color:#1a56db; font-weight:700; font-size:18px;"><%=String.format("%,.0f", order.getFinalTotal())%> d</span>
+                        </div>
+                    </div>
 
                 </div>
             </div>
 
+        </div>
+
+        <%-- Return Modal --%>
+        <div class="cancel-modal-overlay" id="returnModalOverlay">
+            <div class="cancel-modal">
+                <div class="cancel-modal-header">
+                    <div class="modal-icon">&#8617;</div>
+                    <h3>Request Return</h3>
+                    <button class="modal-close-btn" onclick="closeReturnModal()">&#10005;</button>
+                </div>
+                <div class="cancel-modal-body">
+                    <p>Please select a reason for return:</p>
+                    <div class="reason-list">
+                        <label class="reason-item" onclick="selectReturnReason(this, 'Product is defective')">
+                            <input type="radio" name="returnReason">
+                            <span class="reason-dot"></span>
+                            Product is defective
+                        </label>
+                        <label class="reason-item" onclick="selectReturnReason(this, 'Wrong item received')">
+                            <input type="radio" name="returnReason">
+                            <span class="reason-dot"></span>
+                            Wrong item received
+                        </label>
+                        <label class="reason-item" onclick="selectReturnReason(this, 'Item not as described')">
+                            <input type="radio" name="returnReason">
+                            <span class="reason-dot"></span>
+                            Item not as described
+                        </label>
+                        <label class="reason-item" onclick="selectReturnReason(this, 'Changed my mind')">
+                            <input type="radio" name="returnReason">
+                            <span class="reason-dot"></span>
+                            Changed my mind
+                        </label>
+                        <label class="reason-item" onclick="selectReturnReason(this, 'other')">
+                            <input type="radio" name="returnReason">
+                            <span class="reason-dot"></span>
+                            Other reason
+                        </label>
+                    </div>
+                    <div class="other-note-box" id="returnOtherNoteBox">
+                        <textarea id="returnOtherNoteText" rows="3"
+                                  placeholder="Please describe your reason..."></textarea>
+                    </div>
+                </div>
+                <div class="cancel-modal-footer">
+                    <button class="btn-modal-back" onclick="closeReturnModal()">Go Back</button>
+                    <form id="returnForm" action="<%=request.getContextPath()%>/request-return" method="post" style="display:inline;">
+                        <input type="hidden" name="id" id="returnOrderId">
+                        <input type="hidden" name="reason" id="returnReasonHidden">
+                        <button type="button" class="btn-modal-confirm"
+                                id="confirmReturnBtn" disabled
+                                onclick="submitReturn()">
+                            Confirm Return
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
 
         <script>
@@ -241,6 +307,59 @@
                 }
             }
             resolveAddress();
+
+            var selectedReturnReason = '';
+
+            function openReturnModal(orderId) {
+                document.getElementById('returnOrderId').value = orderId;
+                selectedReturnReason = '';
+                document.querySelectorAll('.reason-item').forEach(function (el) {
+                    el.classList.remove('selected');
+                    el.querySelector('input').checked = false;
+                });
+                document.getElementById('returnOtherNoteBox').classList.remove('visible');
+                document.getElementById('returnOtherNoteText').value = '';
+                document.getElementById('confirmReturnBtn').disabled = true;
+                document.getElementById('returnModalOverlay').classList.add('active');
+            }
+
+            function closeReturnModal() {
+                document.getElementById('returnModalOverlay').classList.remove('active');
+            }
+
+            function selectReturnReason(el, value) {
+                document.querySelectorAll('.reason-item').forEach(function (item) {
+                    item.classList.remove('selected');
+                });
+                el.classList.add('selected');
+                el.querySelector('input').checked = true;
+                selectedReturnReason = value;
+                var noteBox = document.getElementById('returnOtherNoteBox');
+                if (value === 'other') {
+                    noteBox.classList.add('visible');
+                    document.getElementById('returnOtherNoteText').focus();
+                    document.getElementById('confirmReturnBtn').disabled = true;
+                    document.getElementById('returnOtherNoteText').oninput = function () {
+                        document.getElementById('confirmReturnBtn').disabled = this.value.trim().length === 0;
+                    };
+                } else {
+                    noteBox.classList.remove('visible');
+                    document.getElementById('confirmReturnBtn').disabled = false;
+                }
+            }
+
+            function submitReturn() {
+                var reason = selectedReturnReason === 'other'
+                        ? document.getElementById('returnOtherNoteText').value.trim()
+                        : selectedReturnReason;
+                document.getElementById('returnReasonHidden').value = reason;
+                document.getElementById('returnForm').submit();
+            }
+
+            document.getElementById('returnModalOverlay').addEventListener('click', function (e) {
+                if (e.target === this)
+                    closeReturnModal();
+            });
         </script>
 
     </body>

@@ -161,10 +161,14 @@ body {
 
 .status-Active,
 .status-Visible,
-.status-Delivered,
-.status-Confirmed {
+.status-Delivered {
     background: #dcfce7;
-    color: #166534;
+    color: #065f46;
+}
+
+.status-Confirmed {
+    background: #dbeafe;
+    color: #1e40af;
 }
 
 .status-Blocked,
@@ -180,6 +184,20 @@ body {
 .status-Out-of-Stock {
     background: #fef3c7;
     color: #92400e;
+}
+.status-Completed {
+    background: #dcfce7;
+    color: #065f46;
+}
+
+.status-ReturnRequested {
+    background: #fde68a;
+    color: #92400e;
+}
+
+.status-Returned {
+    background: #ede9fe;
+    color: #5b21b6;
 }
 
 /* Dashboard Metrics */
@@ -292,4 +310,9 @@ body {
     .admin-user {
         display: none;
     }
+}
+
+.status-ReturnRejected {
+    background: #fee2e2;
+    color: #991b1b;
 }
