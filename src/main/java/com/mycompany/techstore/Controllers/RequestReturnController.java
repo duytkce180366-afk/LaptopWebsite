@@ -1,4 +1,5 @@
 package com.mycompany.techstore.Controllers;
+
 import com.mycompany.techstore.Models.Objects.User;
 import com.mycompany.techstore.services.OrderService;
 import jakarta.servlet.ServletException;
@@ -8,11 +9,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+
 @WebServlet(
         name = "RequestReturnController",
         urlPatterns = {"/request-return"})
 public class RequestReturnController extends HttpServlet {
+
     OrderService orderService = new OrderService();
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -31,7 +35,7 @@ public class RequestReturnController extends HttpServlet {
 
         if (result == -4) {
             session.setAttribute("orderError",
-                "The return window for this order has expired (3 days after delivery).");
+                    "The return window for this order has expired (3 days after delivery).");
         } else if (result != 1) {
             session.setAttribute("orderError", "Unable to request a return for this order.");
         }

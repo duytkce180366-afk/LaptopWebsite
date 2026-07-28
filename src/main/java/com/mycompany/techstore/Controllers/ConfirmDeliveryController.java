@@ -1,4 +1,5 @@
 package com.mycompany.techstore.Controllers;
+
 import com.mycompany.techstore.Models.Objects.User;
 import com.mycompany.techstore.services.OrderService;
 import jakarta.servlet.ServletException;
@@ -7,11 +8,14 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+
 @WebServlet(
         name = "ConfirmDeliveryController",
         urlPatterns = {"/confirm-delivery"})
 public class ConfirmDeliveryController extends HttpServlet {
+
     OrderService orderService = new OrderService();
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
