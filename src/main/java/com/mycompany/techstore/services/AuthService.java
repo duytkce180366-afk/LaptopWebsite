@@ -16,6 +16,7 @@ public class AuthService {
     // Allow case-insensitive email local-part/domain validation
     private final String emailFormat = "(?i)^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$";
     private final String nameFormat = "^[\\p{L}\\s\\-\\u0027. ]+$";
+    private final String pwdFormat = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$";
 
     private final AuthRepository authRepo;
 
@@ -38,8 +39,7 @@ public class AuthService {
             byte[] salt = new byte[SALT_LENGTH];
             sr.nextBytes(salt);
 
-            PBEKeySpec spec
-                    = new PBEKeySpec(password.toCharArray(), salt, PBKDF2_ITERATIONS, DERIVED_KEY_LENGTH);
+            PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt, PBKDF2_ITERATIONS, DERIVED_KEY_LENGTH);
             SecretKeyFactory skf = SecretKeyFactory.getInstance(PBKDF2_ALGORITHM);
             byte[] hash = skf.generateSecret(spec).getEncoded();
 
@@ -90,8 +90,7 @@ public class AuthService {
    * User Sign-in/Sign-up methods
      */
     // Sign in with email and password
-    public User GetUserSignIn(String email, String password)
-            throws AuthException, NoSuchAlgorithmException {
+    public User GetUserSignIn(String email, String password) throws AuthException, NoSuchAlgorithmException {
         if (!email.matches(this.emailFormat)) {
             throw new AuthException(-1, "Email is not in correct format");
         }
@@ -141,8 +140,7 @@ public class AuthService {
     }
 
     // Sign-up with email and password
-    public User CreateUserSignIn(String email, String password, String name)
-            throws AuthException, NoSuchAlgorithmException {
+    public User CreateUserSignIn(String email, String password, String repeatPwd, String name) throws AuthException, NoSuchAlgorithmException {
         if (!email.matches(this.emailFormat)) {
             throw new AuthException(-1, "Email is not in correct format");
         }
@@ -155,11 +153,19 @@ public class AuthService {
             throw new AuthException(-1, "Email already exists");
         }
 
-        String pwdHash = null;
-        if (password != null) {
-            pwdHash = this.HashPassword(password);
+        if (password == null || repeatPwd == null) {
+            throw new AuthException(-1, "Enter both password and repeat password field");
         }
 
+        if (!password.matches(this.pwdFormat)) {
+            throw new AuthException(-1, "Password complexity does not meet");
+        }
+
+        if (!password.equals(repeatPwd)) {
+            throw new AuthException(-1, "Password and Repeat password must be the same");
+        }
+
+        String pwdHash = this.HashPassword(password);
         User created = this.authRepo.CreateUser(email, pwdHash, name);
 
         if (created == null) {
@@ -208,10 +214,13 @@ public class AuthService {
     }
 
     // Reset password
-    public boolean UpdateUserPassword(String email, String newPassword)
-            throws NoSuchAlgorithmException, AuthException {
+    public boolean UpdateUserPassword(String email, String newPassword) throws NoSuchAlgorithmException, AuthException {
         if (!email.matches(this.emailFormat)) {
             throw new AuthException(-1, "Email is not in correct format");
+        }
+
+        if (newPassword != null && !newPassword.matches(this.pwdFormat)) {
+            throw new AuthException(-1, "Password complexity does not meet");
         }
 
         String pwdHash = this.HashPassword(newPassword);

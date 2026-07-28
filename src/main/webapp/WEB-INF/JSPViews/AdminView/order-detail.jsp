@@ -1,6 +1,7 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
+<%@ page contentType="text/html" pageEncoding="UTF-8" %>
 <c:set var="pageTitle" value="Order #${order.orderId}" />
 <%@ include file="_start.jsp" %>
 
@@ -26,7 +27,7 @@
 
             <dt class="col-sm-4">Address</dt>
             <dd class="col-sm-8">
-                <c:out value="${order.addressInfo}" />
+                <span id="deliveryAddress"><c:out value="${order.addressInfo}" /></span>
             </dd>
         </dl>
     </section>
@@ -141,5 +142,40 @@
 <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/admin/orders">
     Back to orders
 </a>
+
+<script>
+    (function resolveAddress() {
+        var el = document.getElementById('deliveryAddress');
+        if (!el)
+            return;
+        var raw = el.textContent.trim();
+        var parts = raw.split(',').map(function (s) {
+            return s.trim();
+        });
+        if (parts.length < 3)
+            return;
+
+        var address = parts[0];
+        var distCode = parts[1];
+        var provCode = parts[2];
+
+        if (isNaN(distCode) || isNaN(provCode))
+            return;
+
+        Promise.all([
+            fetch('https://provinces.open-api.vn/api/p/' + provCode).then(function (r) {
+                return r.json();
+            }),
+            fetch('https://provinces.open-api.vn/api/d/' + distCode).then(function (r) {
+                return r.json();
+            })
+        ]).then(function (results) {
+            var provData = results[0];
+            var distData = results[1];
+            el.textContent = address + ', ' + distData.name + ', ' + provData.name;
+        }).catch(function () { /* keep original if any error */
+        });
+    })();
+</script>
 
 <%@ include file="_end.jsp" %>
