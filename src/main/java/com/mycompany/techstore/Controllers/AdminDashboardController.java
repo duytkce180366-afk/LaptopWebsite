@@ -32,6 +32,9 @@ public class AdminDashboardController extends HttpServlet {
             req.setAttribute("stats", service.load(from, to));
             req.setAttribute("from", from);
             req.setAttribute("to", to);
+            req.setAttribute(
+                    "activePeriod",
+                    "30".equals(period) ? "30" : (from == null && to == null ? "all" : "custom"));
             req.getRequestDispatcher("/WEB-INF/JSPViews/AdminView/dashboard.jsp").forward(req, res);
         } catch (SQLException ex) {
             throw new ServletException(ex);

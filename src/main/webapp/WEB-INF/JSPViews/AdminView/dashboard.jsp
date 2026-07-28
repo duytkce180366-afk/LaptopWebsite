@@ -15,11 +15,15 @@
         </div>
 
         <div class="admin-actions" style="grid-column: span 3;">
-            <button class="btn btn-primary">Apply period</button>
-            <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/admin/dashboard?period=30">
+            <button class="btn ${activePeriod == 'custom' ? 'btn-primary' : 'btn-outline-primary'}">
+                Apply period
+            </button>
+            <a class="btn ${activePeriod == '30' ? 'btn-primary' : 'btn-outline-secondary'}"
+               href="${pageContext.request.contextPath}/admin/dashboard?period=30">
                 Last 30 days
             </a>
-            <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/admin/dashboard">
+            <a class="btn ${activePeriod == 'all' ? 'btn-primary' : 'btn-outline-secondary'}"
+               href="${pageContext.request.contextPath}/admin/dashboard">
                 All time
             </a>
             <a class="btn btn-outline-success"
@@ -28,6 +32,10 @@
             </a>
         </div>
     </form>
+    <small class="text-muted">
+        The period applies to revenue, orders, registered customers, added products, reviews,
+        sales and activity. Low stock always shows the current inventory.
+    </small>
 </div>
 
 <div class="metric-grid">
@@ -42,17 +50,17 @@
     </div>
 
     <div class="metric">
-        <small>Customers</small>
+        <small>Customers registered</small>
         <strong>${stats.users}</strong>
     </div>
 
     <div class="metric">
-        <small>Products</small>
+        <small>Products added</small>
         <strong>${stats.products}</strong>
     </div>
 
     <div class="metric">
-        <small>Reviews</small>
+        <small>Reviews submitted</small>
         <strong>${stats.reviews}</strong>
     </div>
 </div>

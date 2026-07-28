@@ -13,7 +13,13 @@ public class DashboardRepository {
     public DashboardStats load(LocalDate from, LocalDate to) throws SQLException {
         DashboardStats s = new DashboardStats();
         try (Connection con = new DbClass().getConnection()) {
-            s.setProducts(number(con, "SELECT COUNT(*) FROM dbo.bs_Products WHERE status<>'Inactive'"));
+            s.setProducts(
+                    number(
+                            con,
+                            "SELECT COUNT(*) FROM dbo.bs_Products WHERE status<>'Inactive'"
+                            + range("created_at"),
+                            from,
+                            to));
             s.setOrders(
                     number(
                             con, "SELECT COUNT(*) FROM dbo.bs_Orders WHERE 1=1" + range("created_at"), from, to));
@@ -21,7 +27,10 @@ public class DashboardRepository {
                     number(
                             con,
                             "SELECT COUNT(*) FROM dbo.bs_user u JOIN dbo.bs_Roles r ON r.role_id=u.role_id WHERE"
-                            + " r.role_name IN ('User', 'Customer')"));
+                            + " r.role_name IN ('User', 'Customer')"
+                            + range("u.created_at"),
+                            from,
+                            to));
             s.setReviews(
                     number(
                             con,
