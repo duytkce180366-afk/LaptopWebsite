@@ -1,4 +1,5 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="pageTitle" value="Dashboard" />
 <%@ include file="_start.jsp" %>
 
@@ -41,7 +42,7 @@
 <div class="metric-grid">
     <div class="metric">
         <small>Delivered revenue</small>
-        <strong>${stats.revenue}</strong>
+        <strong><fmt:formatNumber value="${stats.revenue}" pattern="#,###" /> ₫</strong>
     </div>
 
     <div class="metric">
