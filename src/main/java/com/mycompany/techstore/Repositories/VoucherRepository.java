@@ -327,7 +327,6 @@ public class VoucherRepository {
         UPDATE bs_Vouchers
         SET status='Expired'
         WHERE expired_date < CAST(GETDATE() AS DATE)
-        AND status='Active'
         """;
 
         try (
@@ -336,5 +335,51 @@ public class VoucherRepository {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public boolean isVoucherCodeExists(String code) {
+
+        String sql = "SELECT 1 FROM bs_Vouchers WHERE code = ?";
+
+        try (
+                Connection con = new DbClass().getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, code);
+
+            ResultSet rs = ps.executeQuery();
+
+            return rs.next();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    public boolean isVoucherCodeExistsExceptCurrent(int voucherId, String code) {
+
+        String sql = """
+        SELECT 1
+        FROM bs_Vouchers
+        WHERE code = ?
+        AND voucher_id <> ?
+        """;
+
+        try (
+                Connection con = new DbClass().getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, code);
+            ps.setInt(2, voucherId);
+
+            ResultSet rs = ps.executeQuery();
+
+            return rs.next();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
     }
 }

@@ -77,4 +77,12 @@ public class VoucherService {
     public void updateExpiredVoucher() {
         repo.updateExpiredVoucher();
     }
+
+    public boolean isVoucherCodeExists(String code) {
+        return repo.isVoucherCodeExists(code);
+    }
+
+    public boolean isVoucherCodeExistsExceptCurrent(int voucherId, String code) {
+        return repo.isVoucherCodeExistsExceptCurrent(voucherId, code);
+    }
 }
