@@ -332,7 +332,8 @@ VALUES (?, ?, ?, ?, ?, SYSUTCDATETIME(), SYSUTCDATETIME());
 SELECT 1
 FROM dbo.bs_Orders o
 INNER JOIN dbo.bs_OrderDetails od ON od.order_id = o.order_id
-WHERE o.order_id = ? AND o.user_id = ? AND o.order_status = 'Delivered' AND od.product_id = ?;
+WHERE o.order_id = ? AND o.user_id = ? AND od.product_id = ?
+  AND o.order_status IN ('Completed', 'Return Requested');
 """;
 
         try (PreparedStatement ps = super.getConnection().prepareStatement(sqlCommand)) {

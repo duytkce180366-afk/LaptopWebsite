@@ -17,6 +17,8 @@
         return;
     }
     String status = order.getOrderStatus();
+    java.util.List<Integer> reviewedProductIds
+            = (java.util.List<Integer>) request.getAttribute("reviewedProductIds");
 %>
 
 <!DOCTYPE html>
@@ -117,21 +119,7 @@
 
                     </div>
 
-                    <%-- Action buttons for Delivered status --%>
-                    <% if ("Delivered".equalsIgnoreCase(status)) {%>
-                    <div class="action-buttons">
-                        <form action="<%=request.getContextPath()%>/confirm-delivery" method="post" style="display:inline;">
-                            <input type="hidden" name="id" value="<%=order.getOrderId()%>">
-                            <button type="submit" class="btn-confirm-receive">
-                                &#10003; Confirm Receive
-                            </button>
-                        </form>
-                        <button type="button" class="btn-request-return"
-                                onclick="openReturnModal(<%=order.getOrderId()%>)">
-                            &#8617; Request Return
-                        </button>
-                    </div>
-                    <% }%>
+
 
                 </div>
             </div>
@@ -175,7 +163,10 @@
                     <%
                         com.mycompany.techstore.Models.Objects.Review existingReview
                                 = (reviewMap != null) ? reviewMap.get(d.getProductId()) : null;
+                        boolean isReviewed = reviewedProductIds != null && reviewedProductIds.contains(d.getProductId());
+                        boolean canReview = "Completed".equalsIgnoreCase(status) || "Return Requested".equalsIgnoreCase(status);
                     %>
+
                     <% if (existingReview != null) { %>
                     <div class="review-display">
                         <div class="review-stars">
@@ -185,7 +176,13 @@
                         </div>
                         <p style="font-size:13px; color:#374151; margin:6px 0 0;"><%=existingReview.getComment()%></p>
                     </div>
+                    <% } else if (canReview && !isReviewed) {%>
+                    <a href="<%=request.getContextPath()%>/review?orderId=<%=order.getOrderId()%>&productId=<%=d.getProductId()%>"
+                       class="btn-write-review">
+                        Write Review
+                    </a>
                     <% } %>
+
                     <% }%>
 
                     <div class="order-summary">
@@ -220,62 +217,7 @@
 
         </div>
 
-        <%-- Return Modal --%>
-        <div class="cancel-modal-overlay" id="returnModalOverlay">
-            <div class="cancel-modal">
-                <div class="cancel-modal-header">
-                    <div class="modal-icon">&#8617;</div>
-                    <h3>Request Return</h3>
-                    <button class="modal-close-btn" onclick="closeReturnModal()">&#10005;</button>
-                </div>
-                <div class="cancel-modal-body">
-                    <p>Please select a reason for return:</p>
-                    <div class="reason-list">
-                        <label class="reason-item" onclick="selectReturnReason(this, 'Product is defective')">
-                            <input type="radio" name="returnReason">
-                            <span class="reason-dot"></span>
-                            Product is defective
-                        </label>
-                        <label class="reason-item" onclick="selectReturnReason(this, 'Wrong item received')">
-                            <input type="radio" name="returnReason">
-                            <span class="reason-dot"></span>
-                            Wrong item received
-                        </label>
-                        <label class="reason-item" onclick="selectReturnReason(this, 'Item not as described')">
-                            <input type="radio" name="returnReason">
-                            <span class="reason-dot"></span>
-                            Item not as described
-                        </label>
-                        <label class="reason-item" onclick="selectReturnReason(this, 'Changed my mind')">
-                            <input type="radio" name="returnReason">
-                            <span class="reason-dot"></span>
-                            Changed my mind
-                        </label>
-                        <label class="reason-item" onclick="selectReturnReason(this, 'other')">
-                            <input type="radio" name="returnReason">
-                            <span class="reason-dot"></span>
-                            Other reason
-                        </label>
-                    </div>
-                    <div class="other-note-box" id="returnOtherNoteBox">
-                        <textarea id="returnOtherNoteText" rows="3"
-                                  placeholder="Please describe your reason..."></textarea>
-                    </div>
-                </div>
-                <div class="cancel-modal-footer">
-                    <button class="btn-modal-back" onclick="closeReturnModal()">Go Back</button>
-                    <form id="returnForm" action="<%=request.getContextPath()%>/request-return" method="post" style="display:inline;">
-                        <input type="hidden" name="id" id="returnOrderId">
-                        <input type="hidden" name="reason" id="returnReasonHidden">
-                        <button type="button" class="btn-modal-confirm"
-                                id="confirmReturnBtn" disabled
-                                onclick="submitReturn()">
-                            Confirm Return
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
+
 
         <script>
             async function resolveAddress() {
@@ -309,6 +251,7 @@
             resolveAddress();
 
             var selectedReturnReason = '';
+
 
             function openReturnModal(orderId) {
                 document.getElementById('returnOrderId').value = orderId;
@@ -356,10 +299,13 @@
                 document.getElementById('returnForm').submit();
             }
 
-            document.getElementById('returnModalOverlay').addEventListener('click', function (e) {
-                if (e.target === this)
-                    closeReturnModal();
-            });
+            var returnOverlay = document.getElementById('returnModalOverlay');
+            if (returnOverlay) {
+                returnOverlay.addEventListener('click', function (e) {
+                    if (e.target === this)
+                        closeReturnModal();
+                });
+            }
         </script>
 
     </body>

@@ -39,7 +39,10 @@ public class ReviewController extends HttpServlet {
         }
 
         Order order = orderDetailRepository.getOrderById(orderId, userId);
-        if (order == null || !"Delivered".equalsIgnoreCase(order.getOrderStatus())
+        boolean statusAllowsReview = order != null
+                && ("Completed".equalsIgnoreCase(order.getOrderStatus())
+                    || "Return Requested".equalsIgnoreCase(order.getOrderStatus()));
+        if (!statusAllowsReview
                 || !productService.canReviewOrderProduct(orderId, productId, userId)) {
             response.sendRedirect(request.getContextPath() + "/order-detail?id=" + orderId);
             return;
@@ -73,7 +76,10 @@ public class ReviewController extends HttpServlet {
         Product product = productService.getById(productId);
         Review existingReview = productService.getReviewByOrderAndProduct(orderId, productId, userId);
 
-        if (order == null || product == null || !"Delivered".equalsIgnoreCase(order.getOrderStatus())
+        boolean statusAllowsReview = order != null
+                && ("Completed".equalsIgnoreCase(order.getOrderStatus())
+                    || "Return Requested".equalsIgnoreCase(order.getOrderStatus()));
+        if (!statusAllowsReview || product == null
                 || !productService.canReviewOrderProduct(orderId, productId, userId)) {
             request.setAttribute("error", "You can only review delivered products from your own order.");
             request.setAttribute("order", order);

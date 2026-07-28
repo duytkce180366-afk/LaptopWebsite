@@ -60,15 +60,18 @@
                 </div>
             </div>
 
-            <div class="filter-tabs">
+            <div class="filter-tabs<div class="filter-tabs">
                 <button class="filter-tab active" onclick="filterOrders('all', this)">All</button>
                 <button class="filter-tab" onclick="filterOrders('pending', this)">Pending</button>
                 <button class="filter-tab" onclick="filterOrders('confirmed', this)">Confirmed</button>
                 <button class="filter-tab" onclick="filterOrders('shipping', this)">Shipping</button>
                 <button class="filter-tab" onclick="filterOrders('delivered', this)">Delivered</button>
+                <button class="filter-tab" onclick="filterOrders('completed', this)">Completed</button>
+                <button class="filter-tab" onclick="filterOrders('return requested', this)">Return Requested</button>
+                <button class="filter-tab" onclick="filterOrders('return rejected', this)">Return Rejected</button>
+                <button class="filter-tab" onclick="filterOrders('returned', this)">Returned</button>
                 <button class="filter-tab" onclick="filterOrders('cancelled', this)">Cancelled</button>
             </div>
-
             <div class="orders-card">
 
                 <% if (orders == null || orders.isEmpty()) { %>
@@ -171,8 +174,8 @@
                                 <div class="d-flex-actions">
                                     <form action="<%=request.getContextPath()%>/confirm-delivery" method="post" style="display:inline;">
                                         <input type="hidden" name="id" value="<%=o.getOrderId()%>">
-                                        <button type="submit" class="btn-confirm-received"
-                                                onclick="return confirm('Have you received this order?');">
+                                        <button type="button" class="btn-confirm-received"
+                                                onclick="confirmReceive(<%=o.getOrderId()%>)">
                                             &#10003; Confirm Receive
                                         </button>
                                     </form>
@@ -333,6 +336,28 @@
                 </div>
             </div>
         </div>
+        <!-- Confirm Receive Modal -->
+        <div class="cancel-modal-overlay" id="confirmReceiveOverlay">
+            <div class="cancel-modal">
+                <div class="cancel-modal-header">
+                    <div class="modal-icon">&#10003;</div>
+                    <h3>Confirm Receive</h3>
+                    <button class="modal-close-btn" onclick="closeConfirmModal()">&#10005;</button>
+                </div>
+                <div class="cancel-modal-body">
+                    <p>Have you received this order?</p>
+                </div>
+                <div class="cancel-modal-footer">
+                    <button class="btn-modal-back" onclick="closeConfirmModal()">Cancel</button>
+                    <form id="confirmReceiveForm" action="${pageContext.request.contextPath}/confirm-delivery" method="post" style="display:inline;">
+                        <input type="hidden" name="id" id="confirmReceiveOrderId">
+                        <button type="submit" class="btn-modal-confirm" style="background:#16a34a;">
+                            &#10003; Confirm
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
 
         <script>
             var selectedReason = '';
@@ -373,6 +398,10 @@
                     noteBox.classList.remove('visible');
                     document.getElementById('confirmCancelBtn').disabled = false;
                 }
+            }
+            function confirmReceive(orderId) {
+                document.getElementById('confirmReceiveOrderId').value = orderId;
+                document.getElementById('confirmReceiveOverlay').classList.add('active');
             }
 
             function submitCancel() {
