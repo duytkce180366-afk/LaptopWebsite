@@ -37,6 +37,7 @@ public class AdminProductService {
 
     public int create(AdminProduct product, int adminId) throws SQLException {
         product.setStock(0);
+        normalizeLockedSpecifications(product, null);
         validate(product);
         return repository.create(product, adminId);
     }
@@ -48,6 +49,7 @@ public class AdminProductService {
         }
         product.setSku(current.getSku());
         product.setStock(current.getStock());
+        normalizeLockedSpecifications(product, current);
         validate(product);
         repository.update(product, adminId);
     }
@@ -132,6 +134,48 @@ public class AdminProductService {
             }
         }
         return false;
+    }
+
+    private void normalizeLockedSpecifications(AdminProduct submitted, AdminProduct current) {
+        Map<String, String> submittedSpecs = submitted.getSpecifications();
+        Map<String, String> currentSpecs
+                = current == null ? Collections.emptyMap() : current.getSpecifications();
+
+        for (String lockedKey : LAPTOP_SPECS) {
+            String submittedValue = removeIgnoreCase(submittedSpecs, lockedKey);
+            if (submittedValue != null) {
+                submittedSpecs.put(lockedKey, submittedValue);
+                continue;
+            }
+
+            String currentValue = findIgnoreCase(currentSpecs, lockedKey);
+            if (currentValue != null) {
+                throw new BackOfficeValidationException(
+                        "Specification key '" + lockedKey + "' cannot be changed or removed.");
+            }
+        }
+    }
+
+    private String removeIgnoreCase(Map<String, String> specifications, String targetKey) {
+        String value = null;
+        Iterator<Map.Entry<String, String>> iterator = specifications.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<String, String> entry = iterator.next();
+            if (targetKey.equalsIgnoreCase(clean(entry.getKey()))) {
+                value = entry.getValue();
+                iterator.remove();
+            }
+        }
+        return value;
+    }
+
+    private String findIgnoreCase(Map<String, String> specifications, String targetKey) {
+        for (Map.Entry<String, String> entry : specifications.entrySet()) {
+            if (targetKey.equalsIgnoreCase(clean(entry.getKey()))) {
+                return entry.getValue();
+            }
+        }
+        return null;
     }
 
     private String canonicalStatus(String value) {

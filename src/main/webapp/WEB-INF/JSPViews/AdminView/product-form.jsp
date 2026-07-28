@@ -1,4 +1,5 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <c:set var="pageTitle" value="${product.productId == 0 ? 'Add Product' : 'Edit Product'}" />
 <%@ include file="_start.jsp" %>
 
@@ -122,7 +123,7 @@
             <c:if test="${empty product.specifications}">
                 <c:forEach var="key" items="${['cpu','ram','storage','gpu','display','battery','os']}">
                     <div class="spec-row" data-initial="true">
-                        <input class="form-control" name="specKey" value="${key}">
+                        <input class="form-control" name="specKey" value="${key}" readonly>
                         <input class="form-control" name="specValue" placeholder="Value">
                         <button class="btn btn-outline-danger" type="button" onclick="removeSpec(this)" style="display: none !important;">
                             &times;
@@ -132,8 +133,22 @@
             </c:if>
 
             <c:forEach var="spec" items="${product.specifications}">
+                <c:set var="normalizedSpecKey" value="${fn:toLowerCase(spec.key)}" />
+                <c:set
+                    var="isLockedSpecKey"
+                    value="${normalizedSpecKey == 'cpu'
+                             || normalizedSpecKey == 'ram'
+                             || normalizedSpecKey == 'storage'
+                             || normalizedSpecKey == 'gpu'
+                             || normalizedSpecKey == 'display'
+                             || normalizedSpecKey == 'battery'
+                             || normalizedSpecKey == 'os'}" />
                 <div class="spec-row" data-initial="true">
-                    <input class="form-control" name="specKey" value="<c:out value='${spec.key}' />">
+                    <input
+                        class="form-control"
+                        name="specKey"
+                        value="<c:out value='${spec.key}' />"
+                        ${isLockedSpecKey ? 'readonly' : ''}>
                     <input class="form-control" name="specValue" value="<c:out value='${spec.value}' />">
                     <button class="btn btn-outline-danger" type="button" onclick="removeSpec(this)" style="display: none !important;">
                         &times;
@@ -178,8 +193,8 @@
 
         if (keyInput) {
             const keyVal = keyInput.value.trim().toLowerCase();
-            if (isLaptopCategory() && requiredKeys.includes(keyVal)) {
-                alert("Thông số '" + keyVal + "' là BẮT BUỘC cho Laptop và KHÔNG THỂ XÓA!");
+            if (requiredKeys.includes(keyVal)) {
+                alert("The specification key '" + keyVal + "' cannot be changed or removed.");
                 return false;
             }
         }
@@ -189,7 +204,6 @@
     }
 
     function updateSpecRows() {
-        const isLaptop = isLaptopCategory();
         const requiredKeys = ['cpu', 'ram', 'storage', 'gpu', 'display', 'battery', 'os'];
 
         document.querySelectorAll('.spec-row').forEach(row => {
@@ -199,7 +213,7 @@
                 return;
 
             const keyVal = keyInput.value.trim().toLowerCase();
-            const isReq = isLaptop && requiredKeys.includes(keyVal);
+            const isReq = requiredKeys.includes(keyVal);
             const isInitial = row.dataset.initial === 'true';
 
             if (isReq) {
@@ -245,7 +259,7 @@
                         const d = document.createElement('div');
                         d.className = 'spec-row';
                         d.innerHTML =
-                                '<input class="form-control" name="specKey" value="' + req + '">' +
+                                '<input class="form-control" name="specKey" value="' + req + '" readonly>' +
                                 '<input class="form-control" name="specValue" placeholder="Value">' +
                                 '<button class="btn btn-outline-danger" type="button" onclick="removeSpec(this)">&times;</button>';
                         document.getElementById('specs').appendChild(d);
@@ -271,7 +285,7 @@
                         const d = document.createElement('div');
                         d.className = 'spec-row';
                         d.innerHTML =
-                                '<input class="form-control" name="specKey" value="' + req + '">' +
+                                '<input class="form-control" name="specKey" value="' + req + '" readonly>' +
                                 '<input class="form-control" name="specValue" placeholder="Value">' +
                                 '<button class="btn btn-outline-danger" type="button" onclick="removeSpec(this)">&times;</button>';
                         document.getElementById('specs').appendChild(d);
