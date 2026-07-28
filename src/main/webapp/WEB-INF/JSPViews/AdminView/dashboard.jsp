@@ -42,7 +42,7 @@
 <div class="metric-grid">
     <div class="metric">
         <small>Delivered revenue</small>
-        <strong><fmt:formatNumber value="${stats.revenue}" pattern="#,###" /> ₫</strong>
+        <strong><fmt:formatNumber value="${stats.revenue}" pattern="#,###" /> &#8363;</strong>
     </div>
 
     <div class="metric">
