@@ -157,14 +157,14 @@
                             <span class="product-sku">SKU: <%=d.getSku()%></span>
                         </div>
                         <div class="product-qty">x<%=d.getQuantity()%></div>
-                        <div class="product-price"><%=String.format("%,.0f", d.getUnitPrice())%> d</div>
-                        <div class="product-subtotal"><%=String.format("%,.0f", d.getSubtotal())%> d</div>
+                        <div class="product-price"><%=String.format("%,.0f", d.getUnitPrice())%> &#8363;</div>
+<div class="product-subtotal"><%=String.format("%,.0f", d.getSubtotal())%> &#8363;</div>
                     </div>
                     <%
                         com.mycompany.techstore.Models.Objects.Review existingReview
                                 = (reviewMap != null) ? reviewMap.get(d.getProductId()) : null;
                         boolean isReviewed = reviewedProductIds != null && reviewedProductIds.contains(d.getProductId());
-                        boolean canReview = "Completed".equalsIgnoreCase(status) || "Return Requested".equalsIgnoreCase(status);
+                        boolean canReview = "Completed".equalsIgnoreCase(status);
                     %>
 
                     <% if (existingReview != null) { %>
@@ -187,13 +187,13 @@
 
                     <div class="order-summary">
                         <div class="summary-row">
-                            <span style="color:#6b7280;">Subtotal</span>
-                            <span style="color:#ef4444; font-weight:600;"><%=String.format("%,.0f", order.getTotalAmount())%> d</span>
-                        </div>
+    <span style="color:#6b7280;">Subtotal</span>
+    <span style="color:#ef4444; font-weight:600;"><%=String.format("%,.0f", order.getTotalAmount())%> &#8363;</span>
+</div>
                         <% if (order.getShippingFee() > 0) {%>
                         <div class="summary-row">
                             <span style="color:#6b7280;">Shipping Fee</span>
-                            <span style="color:#ef4444; font-weight:600;"><%=String.format("%,.0f", order.getShippingFee())%> d</span>
+                           <span style="color:#ef4444; font-weight:600;"><%=String.format("%,.0f", order.getShippingFee())%> &#8363;</span>
                         </div>
                         <% } %>
                         <% if (order.getDiscountAmount() > 0) { %>
@@ -203,13 +203,12 @@
                                 (<%=order.getVoucherCode()%>)
                                 <% }%>
                             </span>
-                            <span style="color:#ef4444; font-weight:600;">-<%=String.format("%,.0f", order.getDiscountAmount())%> d</span>
+<span style="color:#ef4444; font-weight:600;">-<%=String.format("%,.0f", order.getDiscountAmount())%> &#8363;</span>
                         </div>
                         <% }%>
                         <div class="summary-total">
                             <span style="font-weight:700;">Total</span>
-                            <span style="color:#1a56db; font-weight:700; font-size:18px;"><%=String.format("%,.0f", order.getFinalTotal())%> d</span>
-                        </div>
+<span style="color:#1a56db; font-weight:700; font-size:18px;"><%=String.format("%,.0f", order.getFinalTotal())%> &#8363;</span>                        </div>
                     </div>
 
                 </div>
