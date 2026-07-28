@@ -263,7 +263,7 @@ BEGIN
         CONSTRAINT CK_bs_Orders_shipping_fee CHECK (shipping_fee >= 0),
         CONSTRAINT CK_bs_Orders_discount_amount CHECK (discount_amount >= 0),
         CONSTRAINT CK_bs_Orders_payment_method CHECK (payment_method IN ('COD', 'VNPay', 'MoMo', 'Bank Transfer', 'Other')),
-         CONSTRAINT CK_bs_Orders_order_status CHECK (
+        CONSTRAINT CK_bs_Orders_order_status CHECK (
     order_status IN (
         'Pending',
         'Confirmed',
