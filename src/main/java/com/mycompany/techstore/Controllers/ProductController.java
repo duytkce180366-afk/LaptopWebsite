@@ -198,7 +198,7 @@ public class ProductController extends HttpServlet {
 
         Product product = this.productService.getById(Integer.parseInt(id));
         if (product == null) {
-            response.sendError(404, "Product not found");
+            response.sendRedirect(request.getContextPath() + "/home?error=Product+not+found.");
             return;
         }
 

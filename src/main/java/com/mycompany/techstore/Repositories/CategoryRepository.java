@@ -73,13 +73,13 @@ public class CategoryRepository extends DbClass {
 
         String sqlCommand
                 = """
-SELECT c.category_id, cf.filter_key, cf.filter_label, cfo.option_value
-FROM dbo.bs_Categories c
-INNER JOIN dbo.bs_CategoryFilters cf ON cf.category_id = c.category_id
-LEFT JOIN dbo.bs_CategoryFilterOptions cfo ON cfo.category_filter_id = cf.category_filter_id
-WHERE c.status IS NULL OR LOWER(c.status) = 'active'
-ORDER BY c.category_id, cf.sort_order, cfo.sort_order;
-""";
+                SELECT c.category_id, cf.filter_key, cf.filter_label, cfo.option_value
+                FROM dbo.bs_Categories c
+                INNER JOIN dbo.bs_CategoryFilters cf ON cf.category_id = c.category_id
+                LEFT JOIN dbo.bs_CategoryFilterOptions cfo ON cfo.category_filter_id = cf.category_filter_id
+                WHERE c.status IS NULL OR LOWER(c.status) = 'active'
+                ORDER BY c.category_id, cf.sort_order, cfo.sort_order;
+                """;
 
         try (PreparedStatement ps = super.getConnection().prepareStatement(sqlCommand); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
