@@ -1,4 +1,5 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="pageTitle" value="Manage Products" />
 <%@ include file="_start.jsp" %>
 
@@ -94,7 +95,7 @@
                     </td>
 
                     <td><c:out value="${p.categoryName}" /></td>
-                    <td>${p.price}</td>
+                    <td><fmt:formatNumber value="${p.price}" pattern="#,###" /> &#8363;</td>
                     <td>${p.stock}</td>
 
                     <td>

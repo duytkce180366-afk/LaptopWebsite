@@ -71,7 +71,7 @@
                             <td><c:out value="${r.email}" /></td>
                             <td><c:out value="${r.payment_method}" /></td>
                             <td><c:out value="${r.order_status}" /></td>
-                            <td>${r.total}</td>
+                            <td><fmt:formatNumber value="${r.total}" pattern="#,###" /> &#8363;</td>
                             <td><fmt:formatDate value="${r.created_at}" pattern="dd/MM/yyyy HH:mm:ss" /></td>
                         </tr>
                     </c:forEach>
@@ -96,7 +96,7 @@
                             <td><c:out value="${r.sku}" /></td>
                             <td><c:out value="${r.product_name}" /></td>
                             <td>${r.quantity}</td>
-                            <td>${r.revenue}</td>
+                            <td><fmt:formatNumber value="${r.revenue}" pattern="#,###" /> &#8363;</td>
                         </tr>
                     </c:forEach>
                 </tbody>
@@ -118,7 +118,7 @@
                         <tr>
                             <td><fmt:formatDate value="${r.report_date}" pattern="dd/MM/yyyy" /></td>
                             <td>${r.orders}</td>
-                            <td>${r.revenue}</td>
+                            <td><fmt:formatNumber value="${r.revenue}" pattern="#,###" /> &#8363;</td>
                         </tr>
                     </c:forEach>
                 </tbody>

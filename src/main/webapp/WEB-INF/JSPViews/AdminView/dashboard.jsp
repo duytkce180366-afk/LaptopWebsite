@@ -160,7 +160,7 @@
                         <td>
                             <c:out value="${r.status}" />
                         </td>
-                        <td>${r.value}</td>
+                        <td><fmt:formatNumber value="${r.value}" pattern="#,###" /> &#8363;</td>
                     </tr>
                 </c:forEach>
 
@@ -180,7 +180,9 @@
                 <c:forEach var="r" items="${stats.dailyRevenue}">
                     <tr>
                         <td>${r.label}</td>
-                        <td class="text-end">${r.value}</td>
+                        <td class="text-end">
+                            <fmt:formatNumber value="${r.value}" pattern="#,###" /> &#8363;
+                        </td>
                     </tr>
                 </c:forEach>
 
