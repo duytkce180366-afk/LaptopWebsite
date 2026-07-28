@@ -1,5 +1,6 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <%@ page contentType="text/html" pageEncoding="UTF-8" %>
 <c:set var="pageTitle" value="Order #${order.orderId}" />
 <%@ include file="_start.jsp" %>
@@ -43,7 +44,7 @@
         </p>
 
         <p>
-            <span class="status-pill status-${order.orderStatus}">
+            <span class="status-pill status-${fn:replace(order.orderStatus, ' ', '')}">
                 <c:out value="${order.orderStatus}" />
             </span>
         </p>
@@ -93,8 +94,7 @@
     </div>
 </div>
 
-<c:if test="${order.orderStatus != 'Delivered' and order.orderStatus != 'Cancelled'}">
-    <div class="admin-card">
+<c:if test="${order.orderStatus == 'Pending' or order.orderStatus == 'Confirmed' or order.orderStatus == 'Shipping' or order.orderStatus == 'Return Requested'}">    <div class="admin-card">
         <h2 class="h5">Update status</h2>
 
         <form method="post" action="${pageContext.request.contextPath}/admin/orders/status" class="row g-3">
@@ -117,6 +117,10 @@
 
                     <c:if test="${order.orderStatus == 'Shipping'}">
                         <option>Delivered</option>
+                    </c:if>
+                    <c:if test="${order.orderStatus == 'Return Requested'}">
+                        <option>Returned</option>
+                        <option>Return Rejected</option>
                     </c:if>
                 </select>
             </div>

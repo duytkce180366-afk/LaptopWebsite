@@ -10,7 +10,7 @@ import java.util.Set;
 public class AdminOrderService {
 
     private static final Set<String> TARGETS
-            = Set.of("Confirmed", "Shipping", "Delivered", "Cancelled");
+            = Set.of("Confirmed", "Shipping", "Delivered", "Cancelled", "Returned", "Return Rejected");
     private final AdminOrderRepository repository = new AdminOrderRepository();
 
     public PageResult<AdminOrder> findAll(
@@ -29,4 +29,5 @@ public class AdminOrderService {
         }
         repository.changeStatus(id, target, note, adminId);
     }
+
 }

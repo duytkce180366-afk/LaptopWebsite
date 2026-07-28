@@ -14,7 +14,16 @@ public final class OrderStatusPolicy {
         if ("Confirmed".equals(current)) {
             return Set.of("Shipping", "Cancelled").contains(target);
         }
-        return "Shipping".equals(current) && "Delivered".equals(target);
+        if ("Shipping".equals(current)) {
+            return "Delivered".equals(target);
+        }
+        if ("Delivered".equals(current)) {
+            return Set.of("Completed", "Return Requested").contains(target);
+        }
+        if ("Return Requested".equals(current)) {
+            return Set.of("Returned", "Return Rejected").contains(target);
+        }
+        return false;
     }
 
     public static void requireValid(String current, String target) {
