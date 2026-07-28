@@ -1,5 +1,4 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
-<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <c:set var="pageTitle" value="${product.productId == 0 ? 'Add Product' : 'Edit Product'}" />
 <%@ include file="_start.jsp" %>
 
@@ -120,35 +119,9 @@
         </div>
 
         <div id="specs">
-            <c:if test="${empty product.specifications}">
-                <c:forEach var="key" items="${['cpu','ram','storage','gpu','display','battery','os']}">
-                    <div class="spec-row" data-initial="true">
-                        <input class="form-control" name="specKey" value="${key}" readonly>
-                        <input class="form-control" name="specValue" placeholder="Value">
-                        <button class="btn btn-outline-danger" type="button" onclick="removeSpec(this)" style="display: none !important;">
-                            &times;
-                        </button>
-                    </div>
-                </c:forEach>
-            </c:if>
-
             <c:forEach var="spec" items="${product.specifications}">
-                <c:set var="normalizedSpecKey" value="${fn:toLowerCase(spec.key)}" />
-                <c:set
-                    var="isLockedSpecKey"
-                    value="${normalizedSpecKey == 'cpu'
-                             || normalizedSpecKey == 'ram'
-                             || normalizedSpecKey == 'storage'
-                             || normalizedSpecKey == 'gpu'
-                             || normalizedSpecKey == 'display'
-                             || normalizedSpecKey == 'battery'
-                             || normalizedSpecKey == 'os'}" />
                 <div class="spec-row" data-initial="true">
-                    <input
-                        class="form-control"
-                        name="specKey"
-                        value="<c:out value='${spec.key}' />"
-                        ${isLockedSpecKey ? 'readonly' : ''}>
+                    <input class="form-control" name="specKey" value="<c:out value='${spec.key}' />">
                     <input class="form-control" name="specValue" value="<c:out value='${spec.value}' />">
                     <button class="btn btn-outline-danger" type="button" onclick="removeSpec(this)" style="display: none !important;">
                         &times;
@@ -167,6 +140,8 @@
 </form>
 
 <script>
+    const laptopRequiredKeys = ['cpu', 'ram', 'storage', 'gpu', 'display', 'battery', 'os'];
+
     function addSpec() {
         const d = document.createElement('div');
         d.className = 'spec-row';
@@ -189,11 +164,10 @@
     function removeSpec(btn) {
         const row = btn.parentElement;
         const keyInput = row.querySelector('input[name="specKey"]');
-        const requiredKeys = ['cpu', 'ram', 'storage', 'gpu', 'display', 'battery', 'os'];
 
         if (keyInput) {
             const keyVal = keyInput.value.trim().toLowerCase();
-            if (requiredKeys.includes(keyVal)) {
+            if (isLaptopCategory() && laptopRequiredKeys.includes(keyVal)) {
                 alert("The specification key '" + keyVal + "' cannot be changed or removed.");
                 return false;
             }
@@ -204,7 +178,7 @@
     }
 
     function updateSpecRows() {
-        const requiredKeys = ['cpu', 'ram', 'storage', 'gpu', 'display', 'battery', 'os'];
+        const isLaptop = isLaptopCategory();
 
         document.querySelectorAll('.spec-row').forEach(row => {
             const keyInput = row.querySelector('input[name="specKey"]');
@@ -213,7 +187,7 @@
                 return;
 
             const keyVal = keyInput.value.trim().toLowerCase();
-            const isReq = requiredKeys.includes(keyVal);
+            const isReq = isLaptop && laptopRequiredKeys.includes(keyVal);
             const isInitial = row.dataset.initial === 'true';
 
             if (isReq) {
@@ -240,34 +214,47 @@
         });
     }
 
+    function addLaptopSpec(key) {
+        const d = document.createElement('div');
+        d.className = 'spec-row';
+        d.dataset.autoRequired = 'true';
+        d.innerHTML =
+                '<input class="form-control" name="specKey" value="' + key + '" readonly>' +
+                '<input class="form-control" name="specValue" placeholder="Value">' +
+                '<button class="btn btn-outline-danger" type="button" onclick="removeSpec(this)">&times;</button>';
+        document.getElementById('specs').appendChild(d);
+    }
+
+    function syncCategorySpecifications() {
+        if (isLaptopCategory()) {
+            const currentKeys = Array.from(document.querySelectorAll('input[name="specKey"]'))
+                    .map(input => input.value.trim().toLowerCase());
+            laptopRequiredKeys.forEach(key => {
+                if (!currentKeys.includes(key)) {
+                    addLaptopSpec(key);
+                }
+            });
+        } else {
+            document.querySelectorAll('.spec-row[data-auto-required="true"]').forEach(row => {
+                const valueInput = row.querySelector('input[name="specValue"]');
+                if (!valueInput || !valueInput.value.trim()) {
+                    row.remove();
+                }
+            });
+        }
+        updateSpecRows();
+    }
+
     // Run immediately on initial load & polling safeguard
-    updateSpecRows();
-    document.addEventListener('DOMContentLoaded', updateSpecRows);
-    window.addEventListener('load', updateSpecRows);
+    syncCategorySpecifications();
+    document.addEventListener('DOMContentLoaded', syncCategorySpecifications);
+    window.addEventListener('load', syncCategorySpecifications);
     setInterval(updateSpecRows, 300);
 
     // Auto-add missing keys when Laptops is selected
     const catSel = document.querySelector('select[name="categoryId"]');
     if (catSel) {
-        catSel.addEventListener('change', function () {
-            if (isLaptopCategory()) {
-                const requiredKeys = ['cpu', 'ram', 'storage', 'gpu', 'display', 'battery', 'os'];
-                const currentKeys = Array.from(document.querySelectorAll('input[name="specKey"]')).map(i => i.value.trim().toLowerCase());
-
-                requiredKeys.forEach(req => {
-                    if (!currentKeys.includes(req)) {
-                        const d = document.createElement('div');
-                        d.className = 'spec-row';
-                        d.innerHTML =
-                                '<input class="form-control" name="specKey" value="' + req + '" readonly>' +
-                                '<input class="form-control" name="specValue" placeholder="Value">' +
-                                '<button class="btn btn-outline-danger" type="button" onclick="removeSpec(this)">&times;</button>';
-                        document.getElementById('specs').appendChild(d);
-                    }
-                });
-            }
-            updateSpecRows();
-        });
+        catSel.addEventListener('change', syncCategorySpecifications);
     }
 
     // Intercept form submission to prevent saving invalid laptops
@@ -275,20 +262,13 @@
     if (mainForm) {
         mainForm.addEventListener('submit', function (e) {
             if (isLaptopCategory()) {
-                const requiredKeys = ['cpu', 'ram', 'storage', 'gpu', 'display', 'battery', 'os'];
                 const currentKeys = Array.from(document.querySelectorAll('input[name="specKey"]')).map(i => i.value.trim().toLowerCase());
 
-                for (const req of requiredKeys) {
+                for (const req of laptopRequiredKeys) {
                     if (!currentKeys.includes(req)) {
                         e.preventDefault();
                         alert("Thiếu thông số bắt buộc: '" + req + "'. Sản phẩm Laptop phải có thuộc tính này.");
-                        const d = document.createElement('div');
-                        d.className = 'spec-row';
-                        d.innerHTML =
-                                '<input class="form-control" name="specKey" value="' + req + '" readonly>' +
-                                '<input class="form-control" name="specValue" placeholder="Value">' +
-                                '<button class="btn btn-outline-danger" type="button" onclick="removeSpec(this)">&times;</button>';
-                        document.getElementById('specs').appendChild(d);
+                        addLaptopSpec(req);
                         updateSpecRows();
                         return;
                     }

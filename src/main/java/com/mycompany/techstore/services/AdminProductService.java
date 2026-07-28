@@ -37,8 +37,11 @@ public class AdminProductService {
 
     public int create(AdminProduct product, int adminId) throws SQLException {
         product.setStock(0);
-        normalizeLockedSpecifications(product, null);
-        validate(product);
+        boolean laptop = isLaptop(product.getCategoryId());
+        if (laptop) {
+            normalizeLockedSpecifications(product, null);
+        }
+        validate(product, laptop);
         return repository.create(product, adminId);
     }
 
@@ -49,8 +52,11 @@ public class AdminProductService {
         }
         product.setSku(current.getSku());
         product.setStock(current.getStock());
-        normalizeLockedSpecifications(product, current);
-        validate(product);
+        boolean laptop = isLaptop(product.getCategoryId());
+        if (laptop) {
+            normalizeLockedSpecifications(product, current);
+        }
+        validate(product, laptop);
         repository.update(product, adminId);
     }
 
@@ -75,7 +81,7 @@ public class AdminProductService {
         return repository.recentReceipts();
     }
 
-    private void validate(AdminProduct p) throws SQLException {
+    private void validate(AdminProduct p, boolean laptop) throws SQLException {
         p.setSku(clean(p.getSku()));
         p.setProductName(clean(p.getProductName()));
         p.setDescription(clean(p.getDescription()));
@@ -117,7 +123,7 @@ public class AdminProductService {
         if (p.getStock() > 0 && "Out of Stock".equals(p.getStatus())) {
             p.setStatus("Active");
         }
-        if (isLaptop(p.getCategoryId())) {
+        if (laptop) {
             for (String key : LAPTOP_SPECS) {
                 if (clean(p.getSpecifications().get(key)).isEmpty()) {
                     throw new BackOfficeValidationException(
