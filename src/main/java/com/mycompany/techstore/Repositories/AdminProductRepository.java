@@ -230,7 +230,7 @@ public class AdminProductRepository {
                         previous = rs.getInt(1);
                     }
                 }
-                int resulting = previous + quantity;
+                int resulting = quantity;
                 try (PreparedStatement update
                         = con.prepareStatement(
                                 "UPDATE dbo.bs_Products SET stock=?,status=CASE WHEN status='Out of Stock' THEN"
@@ -258,7 +258,7 @@ public class AdminProductRepository {
                         "STOCK_RECEIPT",
                         "PRODUCT",
                         productId,
-                        "+"
+                        "SET "
                         + quantity
                         + " ("
                         + previous

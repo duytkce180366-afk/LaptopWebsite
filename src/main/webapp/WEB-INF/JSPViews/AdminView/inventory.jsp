@@ -116,7 +116,7 @@
                     <td><fmt:formatDate value="${r.createdAt}" pattern="dd/MM/yyyy HH:mm:ss" /></td>
                     <td><c:out value="${r.sku}" /></td>
                     <td><c:out value="${r.productName}" /></td>
-                    <td>+${r.quantity}</td>
+                    <td>${r.quantity}</td>
                     <td>${r.previousStock} &rarr; ${r.resultingStock}</td>
                     <td><c:out value="${r.adminName}" /></td>
                     <td><c:out value="${r.note}" /></td>
@@ -145,7 +145,7 @@
                     && receivedQuantity <= 100000;
 
             stockCell.textContent = isValidQuantity
-                    ? currentStock + receivedQuantity
+                    ? receivedQuantity
                     : currentStock;
         });
     });
