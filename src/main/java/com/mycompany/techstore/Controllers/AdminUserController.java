@@ -70,6 +70,7 @@ public class AdminUserController extends HttpServlet {
                             text(req, "email"),
                             text(req, "phone"),
                             text(req, "password"),
+                            text(req, "repeatPassword"),
                             admin.getUser_id());
                 } catch (MessagingException ex) {
                     Logger.getLogger(AdminUserController.class.getName()).log(Level.SEVERE, null, ex);
