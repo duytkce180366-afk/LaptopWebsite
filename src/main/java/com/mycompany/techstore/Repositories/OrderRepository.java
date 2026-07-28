@@ -707,6 +707,7 @@ public class OrderRepository {
 
         throw new Exception("Failed to create cart for user " + userId);
     }
+
     // ================= REQUEST RETURN (Delivered -> Return Requested) =================
     // Called by the customer. No stock/voucher change here — the goods
     // haven't physically come back to the shop yet.
@@ -716,8 +717,8 @@ public class OrderRepository {
         try {
             Connection conn = new DbClass().getConnection();
 
-            String checkSql =
-                "SELECT order_status, updated_at FROM bs_Orders WHERE order_id=? AND user_id=?";
+            String checkSql
+                    = "SELECT order_status, updated_at FROM bs_Orders WHERE order_id=? AND user_id=?";
             PreparedStatement psCheck = conn.prepareStatement(checkSql);
             psCheck.setInt(1, orderId);
             psCheck.setInt(2, userId);
@@ -742,8 +743,8 @@ public class OrderRepository {
                 }
             }
 
-            String updateSql =
-                "UPDATE bs_Orders "
+            String updateSql
+                    = "UPDATE bs_Orders "
                     + "SET order_status='Return Requested', note=? "
                     + "WHERE order_id=? AND user_id=? AND order_status='Delivered'";
             PreparedStatement ps = conn.prepareStatement(updateSql);
@@ -759,13 +760,14 @@ public class OrderRepository {
 
         return 0;
     }
+
     // ================= Customer confirms receipt (Shipping -> Delivered) =================
     // Triggered by the customer, scoped to their own order for safety.
     // ================= Customer confirms receipt (Delivered -> Completed) =================
     public boolean confirmDelivery(int orderId, int userId) {
 
-        String sql =
-            "UPDATE bs_Orders "
+        String sql
+                = "UPDATE bs_Orders "
                 + "SET order_status='Completed' "
                 + "WHERE order_id=? AND user_id=? AND order_status='Delivered'";
 
