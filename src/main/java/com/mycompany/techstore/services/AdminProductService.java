@@ -11,8 +11,6 @@ public class AdminProductService {
 
     private static final Set<String> STATUSES
             = Set.of("Active", "Out of Stock", "Hidden", "Inactive");
-    private static final Set<String> LAPTOP_SPECS
-            = Set.of("cpu", "ram", "storage", "gpu", "display", "battery", "os");
     private static final int SKU_MAX_LENGTH = 80;
     private static final int PRODUCT_NAME_MAX_LENGTH = 200;
     private static final int THUMBNAIL_MAX_LENGTH = 500;
@@ -35,13 +33,16 @@ public class AdminProductService {
         return repository.brands();
     }
 
+    public Map<Integer, LinkedHashMap<String, String>> specificationTemplates()
+            throws SQLException {
+        return repository.specificationTemplates();
+    }
+
     public int create(AdminProduct product, int adminId) throws SQLException {
         product.setStock(0);
-        boolean laptop = isLaptop(product.getCategoryId());
-        if (laptop) {
-            normalizeLockedSpecifications(product, null);
-        }
-        validate(product, laptop);
+        Set<String> templateKeys = templateKeys(product.getCategoryId());
+        normalizeTemplateSpecifications(product, null, templateKeys);
+        validate(product, templateKeys);
         return repository.create(product, adminId);
     }
 
@@ -52,11 +53,9 @@ public class AdminProductService {
         }
         product.setSku(current.getSku());
         product.setStock(current.getStock());
-        boolean laptop = isLaptop(product.getCategoryId());
-        if (laptop) {
-            normalizeLockedSpecifications(product, current);
-        }
-        validate(product, laptop);
+        Set<String> templateKeys = templateKeys(product.getCategoryId());
+        normalizeTemplateSpecifications(product, current, templateKeys);
+        validate(product, templateKeys);
         repository.update(product, adminId);
     }
 
@@ -81,7 +80,7 @@ public class AdminProductService {
         return repository.recentReceipts();
     }
 
-    private void validate(AdminProduct p, boolean laptop) throws SQLException {
+    private void validate(AdminProduct p, Set<String> templateKeys) throws SQLException {
         p.setSku(clean(p.getSku()));
         p.setProductName(clean(p.getProductName()));
         p.setDescription(clean(p.getDescription()));
@@ -123,41 +122,36 @@ public class AdminProductService {
         if (p.getStock() > 0 && "Out of Stock".equals(p.getStatus())) {
             p.setStatus("Active");
         }
-        if (laptop) {
-            for (String key : LAPTOP_SPECS) {
-                if (clean(p.getSpecifications().get(key)).isEmpty()) {
-                    throw new BackOfficeValidationException(
-                            "Laptop specification '" + key + "' is required.");
-                }
+        for (String key : templateKeys) {
+            if (clean(p.getSpecifications().get(key)).isEmpty()) {
+                throw new BackOfficeValidationException(
+                        "Specification '" + key + "' is required for the selected category.");
             }
         }
     }
 
-    private boolean isLaptop(int categoryId) throws SQLException {
-        for (LookupOption option : repository.categories()) {
-            if (option.getId() == categoryId) {
-                return "Laptops".equalsIgnoreCase(option.getName());
-            }
-        }
-        return false;
+    private Set<String> templateKeys(int categoryId) throws SQLException {
+        Map<String, String> template = repository.specificationTemplates().get(categoryId);
+        return template == null ? Collections.emptySet() : new LinkedHashSet<>(template.keySet());
     }
 
-    private void normalizeLockedSpecifications(AdminProduct submitted, AdminProduct current) {
+    private void normalizeTemplateSpecifications(
+            AdminProduct submitted, AdminProduct current, Set<String> templateKeys) {
         Map<String, String> submittedSpecs = submitted.getSpecifications();
         Map<String, String> currentSpecs
                 = current == null ? Collections.emptyMap() : current.getSpecifications();
 
-        for (String lockedKey : LAPTOP_SPECS) {
-            String submittedValue = removeIgnoreCase(submittedSpecs, lockedKey);
+        for (String templateKey : templateKeys) {
+            String submittedValue = removeIgnoreCase(submittedSpecs, templateKey);
             if (submittedValue != null) {
-                submittedSpecs.put(lockedKey, submittedValue);
+                submittedSpecs.put(templateKey, submittedValue);
                 continue;
             }
 
-            String currentValue = findIgnoreCase(currentSpecs, lockedKey);
+            String currentValue = findIgnoreCase(currentSpecs, templateKey);
             if (currentValue != null) {
                 throw new BackOfficeValidationException(
-                        "Specification key '" + lockedKey + "' cannot be changed or removed.");
+                        "Specification key '" + templateKey + "' cannot be changed or removed.");
             }
         }
     }

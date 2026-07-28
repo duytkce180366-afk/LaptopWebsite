@@ -79,6 +79,54 @@ public class AdminProductRepository {
         return lookups("SELECT brand_id id,brand_name name FROM dbo.bs_Brands ORDER BY brand_name");
     }
 
+    public Map<Integer, LinkedHashMap<String, String>> specificationTemplates()
+            throws SQLException {
+        String sql
+                = """
+        WITH template_keys AS (
+            SELECT
+                cf.category_id,
+                LOWER(LTRIM(RTRIM(cf.filter_key))) spec_key,
+                cf.filter_label spec_label,
+                cf.sort_order
+            FROM dbo.bs_CategoryFilters cf
+            WHERE LOWER(LTRIM(RTRIM(cf.filter_key))) <> 'brand'
+
+            UNION ALL
+
+            SELECT
+                p.category_id,
+                LOWER(LTRIM(RTRIM(s.spec_key))) spec_key,
+                MAX(s.spec_label) spec_label,
+                1000 + MIN(s.sort_order) sort_order
+            FROM dbo.bs_ProductSpecifications s
+            JOIN dbo.bs_Products p ON p.product_id = s.product_id
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM dbo.bs_CategoryFilters cf
+                WHERE cf.category_id = p.category_id
+                  AND LOWER(LTRIM(RTRIM(cf.filter_key)))
+                      = LOWER(LTRIM(RTRIM(s.spec_key)))
+            )
+            GROUP BY p.category_id, LOWER(LTRIM(RTRIM(s.spec_key)))
+        )
+        SELECT category_id, spec_key, spec_label
+        FROM template_keys
+        ORDER BY category_id, sort_order, spec_key
+        """;
+        Map<Integer, LinkedHashMap<String, String>> templates = new LinkedHashMap<>();
+        try (Connection con = new DbClass().getConnection();
+                PreparedStatement ps = con.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                templates
+                        .computeIfAbsent(rs.getInt("category_id"), ignored -> new LinkedHashMap<>())
+                        .put(rs.getString("spec_key"), rs.getString("spec_label"));
+            }
+        }
+        return templates;
+    }
+
     public int create(AdminProduct p, int adminId) throws SQLException {
         String sql
                 = "INSERT INTO"
