@@ -50,7 +50,12 @@ public class AdminUserService {
         if (!ROLE_STAFF.equals(actorRole)) {
             return roles();
         }
-        return roles().stream().filter(role -> ROLE_CUSTOMER.equals(role.getName()) || "User".equals(role.getName())).toList();
+        return roles().stream()
+                .filter(
+                        role
+                        -> ROLE_CUSTOMER.equals(role.getName())
+                        || "User".equals(role.getName()))
+                .toList();
     }
 
     public AdminUser findById(int id) throws SQLException {
@@ -124,11 +129,16 @@ public class AdminUserService {
             throws SQLException, NoSuchAlgorithmException, MessagingException {
         validateStaff(name, email, phone);
         validatePasswordConfirmation(password, repeatPassword);
-        
+
         if (repository.emailExists(email, 0)) {
             throw new BackOfficeValidationException("Email is already in use.");
         }
-        repository.createStaff(name.trim(), email.trim(), clean(phone), PasswordUtil.hashPassword(password), adminId);
+        repository.createStaff(
+                name.trim(),
+                email.trim(),
+                clean(phone),
+                PasswordUtil.hashPassword(password),
+                adminId);
         if (emailService != null) {
             emailService.sendStaffCredentialsEmail(email.trim(), name.trim(), password);
         }

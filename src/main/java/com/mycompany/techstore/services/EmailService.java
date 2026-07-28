@@ -48,7 +48,11 @@ public class EmailService {
 
             boolean trustAll = trustMailTLS.equalsIgnoreCase("true");
             if (trustAll) {
-                Logger.getLogger(EmailService.class.getName()).log(Level.WARNING, "SMTP_TRUST_ALL is enabled — hostname verification and certificate name checks will be disabled. Use only for testing.");
+                Logger.getLogger(EmailService.class.getName())
+                        .log(
+                                Level.WARNING,
+                                "SMTP_TRUST_ALL is enabled — hostname verification and"
+                                + " certificate name checks will be disabled. Use only for testing.");
                 this.mailProps.put("mail.smtp.ssl.trust", smtpHost);
                 this.mailProps.put("mail.smtp.ssl.checkserveridentity", "false");
             } else if (smtpHost != null) {
@@ -61,7 +65,8 @@ public class EmailService {
         this.mailSession = Session.getInstance(this.mailProps, new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(System.getenv("SMTP_USERNAME"), System.getenv("SMTP_PASSWORD"));
+                return new PasswordAuthentication(
+                        System.getenv("SMTP_USERNAME"), System.getenv("SMTP_PASSWORD"));
             }
         });
 
@@ -92,7 +97,8 @@ public class EmailService {
             try {
                 Message message = new MimeMessage(mailSession);
                 message.setFrom(new InternetAddress(System.getenv("SMTP_USERNAME")));
-                message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(user.getEmail()));
+                message.setRecipients(
+                        Message.RecipientType.TO, InternetAddress.parse(user.getEmail()));
                 message.setSubject("Verify your Tech Store account");
                 String body = """
                               Hi %s,
@@ -106,18 +112,31 @@ public class EmailService {
 
                 message.setText(body);
                 Transport.send(message);
-                Logger.getLogger(EmailService.class.getName()).log(Level.INFO, "OTP sent to %s".formatted(user.getEmail()));
+                Logger.getLogger(EmailService.class.getName())
+                        .log(Level.INFO, "OTP sent to %s".formatted(user.getEmail()));
             } catch (MessagingException mex) {
-                Logger.getLogger(EmailService.class.getName()).log(Level.SEVERE, "Failed to send OTP to email adress: " + mex.getMessage() + ", with email: " + user.getEmail(), mex);
+                Logger.getLogger(EmailService.class.getName())
+                        .log(
+                                Level.SEVERE,
+                                "Failed to send OTP to email adress: "
+                                + mex.getMessage()
+                                + ", with email: "
+                                + user.getEmail(),
+                                mex);
             } catch (Exception ex) {
-                Logger.getLogger(EmailService.class.getName()).log(Level.SEVERE, "Unexpected error sending OTP to " + user.getEmail(), ex);
+                Logger.getLogger(EmailService.class.getName())
+                        .log(
+                                Level.SEVERE,
+                                "Unexpected error sending OTP to " + user.getEmail(),
+                                ex);
             }
         });
 
         return otp;
     }
 
-    public void sendStaffCredentialsEmail(String email, String name, String rawPassword) throws MessagingException {
+    public void sendStaffCredentialsEmail(String email, String name, String rawPassword)
+            throws MessagingException {
         // Send the email asynchronously so callers don't block on network I/O.
         this.emailExecutor.submit(() -> {
             try {
@@ -137,16 +156,26 @@ public class EmailService {
 
                 message.setText(body);
                 Transport.send(message);
-                Logger.getLogger(EmailService.class.getName()).log(Level.INFO, "Email sent to %s".formatted(email));
+                Logger.getLogger(EmailService.class.getName())
+                        .log(Level.INFO, "Email sent to %s".formatted(email));
             } catch (MessagingException mex) {
-                Logger.getLogger(EmailService.class.getName()).log(Level.SEVERE, "Failed to send to email adress: " + mex.getMessage() + ", with email: " + email, mex);
+                Logger.getLogger(EmailService.class.getName())
+                        .log(
+                                Level.SEVERE,
+                                "Failed to send to email adress: "
+                                + mex.getMessage()
+                                + ", with email: "
+                                + email,
+                                mex);
             } catch (Exception ex) {
-                Logger.getLogger(EmailService.class.getName()).log(Level.SEVERE, "Unexpected error sending to " + email, ex);
+                Logger.getLogger(EmailService.class.getName())
+                        .log(Level.SEVERE, "Unexpected error sending to " + email, ex);
             }
         });
     }
 
-    public void sendAccountBlockedEmail(String email, String name, String reason) throws MessagingException {
+    public void sendAccountBlockedEmail(String email, String name, String reason)
+            throws MessagingException {
         // Send the email asynchronously so callers don't block on network I/O.
         this.emailExecutor.submit(() -> {
             try {
@@ -166,11 +195,20 @@ public class EmailService {
 
                 message.setText(body);
                 Transport.send(message);
-                Logger.getLogger(EmailService.class.getName()).log(Level.INFO, "Email sent to %s".formatted(email));
+                Logger.getLogger(EmailService.class.getName())
+                        .log(Level.INFO, "Email sent to %s".formatted(email));
             } catch (MessagingException mex) {
-                Logger.getLogger(EmailService.class.getName()).log(Level.SEVERE, "Failed to send to email adress: " + mex.getMessage() + ", with email: " + email, mex);
+                Logger.getLogger(EmailService.class.getName())
+                        .log(
+                                Level.SEVERE,
+                                "Failed to send to email adress: "
+                                + mex.getMessage()
+                                + ", with email: "
+                                + email,
+                                mex);
             } catch (Exception ex) {
-                Logger.getLogger(EmailService.class.getName()).log(Level.SEVERE, "Unexpected error sending to " + email, ex);
+                Logger.getLogger(EmailService.class.getName())
+                        .log(Level.SEVERE, "Unexpected error sending to " + email, ex);
             }
         });
     }
@@ -181,7 +219,8 @@ public class EmailService {
         try {
             this.emailExecutor.shutdownNow();
         } catch (Exception ex) {
-            Logger.getLogger(EmailService.class.getName()).log(Level.WARNING, "Error shutting down email executor", ex);
+            Logger.getLogger(EmailService.class.getName())
+                    .log(Level.WARNING, "Error shutting down email executor", ex);
         }
     }
 }

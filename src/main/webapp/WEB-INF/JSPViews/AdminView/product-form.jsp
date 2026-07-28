@@ -102,7 +102,10 @@
 
             <div class="col-12">
                 <label class="form-label">Description</label>
-                <textarea class="form-control" rows="4" name="description"><c:out value="${product.description}" /></textarea>
+                <textarea
+                    class="form-control"
+                    rows="4"
+                    name="description"><c:out value="${product.description}" /></textarea>
             </div>
         </div>
     </div>
@@ -123,7 +126,11 @@
                 <div class="spec-row" data-initial="true">
                     <input class="form-control" name="specKey" value="<c:out value='${spec.key}' />">
                     <input class="form-control" name="specValue" value="<c:out value='${spec.value}' />">
-                    <button class="btn btn-outline-danger" type="button" onclick="removeSpec(this)" style="display: none !important;">
+                    <button
+                        class="btn btn-outline-danger"
+                        type="button"
+                        onclick="removeSpec(this)"
+                        style="display: none !important;">
                         &times;
                     </button>
                 </div>
@@ -292,8 +299,10 @@
         const help = document.getElementById('specificationHelp');
         if (help) {
             help.textContent = template.length
-                    ? 'Specification names are loaded from the selected category. Fill in every required value.'
-                    : 'No specification template is configured for this category. Use Add row for custom specifications.';
+                    ? 'Specification names are loaded from the selected category. '
+                    + 'Fill in every required value.'
+                    : 'No specification template is configured for this category. '
+                    + 'Use Add row for custom specifications.';
         }
         updateSpecRows();
     }

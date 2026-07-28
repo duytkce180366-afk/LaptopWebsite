@@ -25,7 +25,8 @@ public class AdminProductRepository {
         """;
         List<AdminProduct> items = new ArrayList<>();
         int total = 0;
-        try (Connection con = new DbClass().getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = new DbClass().getConnection();
+                PreparedStatement ps = con.prepareStatement(sql)) {
             String q = search == null ? "" : search.trim(),
                     like = "%" + q + "%",
                     s = status == null ? "" : status;
@@ -56,7 +57,8 @@ public class AdminProductRepository {
                 + " c.category_id=p.category_id JOIN dbo.bs_Brands b ON b.brand_id=p.brand_id WHERE"
                 + " p.product_id=?";
         AdminProduct product = null;
-        try (Connection con = new DbClass().getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = new DbClass().getConnection();
+                PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -130,7 +132,8 @@ public class AdminProductRepository {
     public int create(AdminProduct p, int adminId) throws SQLException {
         String sql
                 = "INSERT INTO"
-                + " dbo.bs_Products(category_id,brand_id,sku,product_name,description,price,stock,thumbnail,status,created_at,updated_at)"
+                + " dbo.bs_Products(category_id,brand_id,sku,product_name,description,price,"
+                + "stock,thumbnail,status,created_at,updated_at)"
                 + " VALUES(?,?,?,?,?,?,?,?,?,SYSUTCDATETIME(),SYSUTCDATETIME())";
         try (Connection con = new DbClass().getConnection()) {
             con.setAutoCommit(false);
@@ -157,7 +160,8 @@ public class AdminProductRepository {
     public void update(AdminProduct p, int adminId) throws SQLException {
         String sql
                 = "UPDATE dbo.bs_Products SET"
-                + " category_id=?,brand_id=?,product_name=?,description=?,price=?,thumbnail=?,status=?,updated_at=SYSUTCDATETIME()"
+                + " category_id=?,brand_id=?,product_name=?,description=?,price=?,thumbnail=?,"
+                + "status=?,updated_at=SYSUTCDATETIME()"
                 + " WHERE product_id=?";
         try (Connection con = new DbClass().getConnection()) {
             con.setAutoCommit(false);
@@ -203,7 +207,8 @@ public class AdminProductRepository {
     }
 
     public boolean skuExists(String sku, int exceptId) throws SQLException {
-        try (Connection con = new DbClass().getConnection(); PreparedStatement ps
+        try (Connection con = new DbClass().getConnection();
+                PreparedStatement ps
                 = con.prepareStatement("SELECT 1 FROM dbo.bs_Products WHERE sku=? AND product_id<>?")) {
             ps.setString(1, sku);
             ps.setInt(2, exceptId);
@@ -221,7 +226,8 @@ public class AdminProductRepository {
                 int previous;
                 try (PreparedStatement lock
                         = con.prepareStatement(
-                                "SELECT stock FROM dbo.bs_Products WITH (UPDLOCK,ROWLOCK) WHERE product_id=?")) {
+                                "SELECT stock FROM dbo.bs_Products WITH (UPDLOCK,ROWLOCK)"
+                                + " WHERE product_id=?")) {
                     lock.setInt(1, productId);
                     try (ResultSet rs = lock.executeQuery()) {
                         if (!rs.next()) {
@@ -233,8 +239,9 @@ public class AdminProductRepository {
                 int resulting = quantity;
                 try (PreparedStatement update
                         = con.prepareStatement(
-                                "UPDATE dbo.bs_Products SET stock=?,status=CASE WHEN status='Out of Stock' THEN"
-                                + " 'Active' ELSE status END,updated_at=SYSUTCDATETIME() WHERE product_id=?")) {
+                                "UPDATE dbo.bs_Products SET stock=?,status=CASE"
+                                + " WHEN status='Out of Stock' THEN 'Active' ELSE status END,"
+                                + "updated_at=SYSUTCDATETIME() WHERE product_id=?")) {
                     update.setInt(1, resulting);
                     update.setInt(2, productId);
                     update.executeUpdate();
@@ -242,7 +249,8 @@ public class AdminProductRepository {
                 try (PreparedStatement receipt
                         = con.prepareStatement(
                                 "INSERT INTO"
-                                + " dbo.bs_StockReceipts(product_id,quantity,previous_stock,resulting_stock,note,admin_id)"
+                                + " dbo.bs_StockReceipts(product_id,quantity,previous_stock,"
+                                + "resulting_stock,note,admin_id)"
                                 + " VALUES(?,?,?,?,?,?)")) {
                     receipt.setInt(1, productId);
                     receipt.setInt(2, quantity);
@@ -277,12 +285,15 @@ public class AdminProductRepository {
     public List<StockReceipt> recentReceipts() throws SQLException {
         String sql
                 = "SELECT TOP 50"
-                + " r.receipt_id,r.product_id,p.sku,p.product_name,r.quantity,r.previous_stock,r.resulting_stock,r.note,u.full_name"
+                + " r.receipt_id,r.product_id,p.sku,p.product_name,r.quantity,"
+                + "r.previous_stock,r.resulting_stock,r.note,u.full_name"
                 + " admin_name,r.created_at FROM dbo.bs_StockReceipts r JOIN dbo.bs_Products p ON"
                 + " p.product_id=r.product_id JOIN dbo.bs_user u ON u.user_id=r.admin_id ORDER BY"
                 + " r.created_at DESC,r.receipt_id DESC";
         List<StockReceipt> out = new ArrayList<>();
-        try (Connection con = new DbClass().getConnection(); PreparedStatement ps = con.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+        try (Connection con = new DbClass().getConnection();
+                PreparedStatement ps = con.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 StockReceipt r = new StockReceipt();
                 r.setReceiptId(rs.getLong("receipt_id"));
@@ -326,7 +337,8 @@ public class AdminProductRepository {
     private void saveSpecs(Connection con, AdminProduct p) throws SQLException {
         String sql
                 = "INSERT INTO"
-                + " dbo.bs_ProductSpecifications(product_id,spec_key,spec_label,spec_value,sort_order,created_at,updated_at)"
+                + " dbo.bs_ProductSpecifications(product_id,spec_key,spec_label,spec_value,"
+                + "sort_order,created_at,updated_at)"
                 + " VALUES(?,?,?,?,?,SYSUTCDATETIME(),SYSUTCDATETIME())";
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             int order = 0;
@@ -346,8 +358,8 @@ public class AdminProductRepository {
         Map<String, String> out = new LinkedHashMap<>();
         try (PreparedStatement ps
                 = con.prepareStatement(
-                        "SELECT spec_key,spec_value FROM dbo.bs_ProductSpecifications WHERE product_id=? ORDER"
-                        + " BY sort_order")) {
+                        "SELECT spec_key,spec_value FROM dbo.bs_ProductSpecifications"
+                        + " WHERE product_id=? ORDER BY sort_order")) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -360,7 +372,9 @@ public class AdminProductRepository {
 
     private List<LookupOption> lookups(String sql) throws SQLException {
         List<LookupOption> out = new ArrayList<>();
-        try (Connection con = new DbClass().getConnection(); PreparedStatement ps = con.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+        try (Connection con = new DbClass().getConnection();
+                PreparedStatement ps = con.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 out.add(new LookupOption(rs.getInt("id"), rs.getString("name")));
             }

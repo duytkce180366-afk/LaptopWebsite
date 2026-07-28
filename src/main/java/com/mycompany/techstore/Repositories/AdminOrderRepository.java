@@ -29,7 +29,8 @@ public class AdminOrderRepository {
         List<AdminOrder> items = new ArrayList<>();
         int total = 0;
         String search = clean(q), like = "%" + clean(q) + "%";
-        try (Connection con = new DbClass().getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = new DbClass().getConnection();
+                PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, search);
             ps.setString(2, search);
             ps.setString(3, like);
@@ -56,11 +57,13 @@ public class AdminOrderRepository {
 
     public AdminOrder findById(int id) throws SQLException {
         String sql
-                = "SELECT o.*,u.full_name,u.email,py.payment_status,v.code AS voucher_code FROM dbo.bs_Orders o JOIN dbo.bs_user u"
+                = "SELECT o.*,u.full_name,u.email,py.payment_status,v.code AS voucher_code"
+                + " FROM dbo.bs_Orders o JOIN dbo.bs_user u"
                 + " ON u.user_id=o.user_id LEFT JOIN dbo.bs_Payments py ON py.order_id=o.order_id"
                 + " LEFT JOIN dbo.bs_Vouchers v ON v.voucher_id=o.voucher_id WHERE"
                 + " o.order_id=?";
-        try (Connection con = new DbClass().getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = new DbClass().getConnection();
+                PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, id);
             AdminOrder order = null;
             try (ResultSet rs = ps.executeQuery()) {
@@ -132,9 +135,11 @@ public class AdminOrderRepository {
         } else {
             String insertSql
                     = "INSERT INTO"
-                    + " dbo.bs_Payments(order_id,payment_method,payment_status,transaction_no,paid_at,created_at,updated_at)"
+                    + " dbo.bs_Payments(order_id,payment_method,payment_status,transaction_no,"
+                    + "paid_at,created_at,updated_at)"
                     + " SELECT"
-                    + " order_id,payment_method,'Paid',CONCAT('COD-',order_id),SYSUTCDATETIME(),SYSUTCDATETIME(),SYSUTCDATETIME()"
+                    + " order_id,payment_method,'Paid',CONCAT('COD-',order_id),"
+                    + "SYSUTCDATETIME(),SYSUTCDATETIME(),SYSUTCDATETIME()"
                     + " FROM dbo.bs_Orders WHERE order_id=?";
             try (PreparedStatement ps = con.prepareStatement(insertSql)) {
                 ps.setInt(1, orderId);

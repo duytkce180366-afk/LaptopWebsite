@@ -42,7 +42,10 @@
             <c:forEach var="p" items="${result.items}">
                 <tr>
                     <td>
-                        <form id="receive-${p.productId}" method="post" action="${pageContext.request.contextPath}/admin/inventory">
+                        <form
+                            id="receive-${p.productId}"
+                            method="post"
+                            action="${pageContext.request.contextPath}/admin/inventory">
                             <input type="hidden" name="csrfToken" value="${sessionScope.adminCsrfToken}">
                             <input type="hidden" name="productId" value="${p.productId}">
                         </form>

@@ -77,7 +77,11 @@ public class AdminUserController extends HttpServlet {
                 }
             } else if ("/update".equals(path)) {
                 service.updateStaff(
-                        id, text(req, "fullName"), text(req, "email"), text(req, "phone"), admin.getUser_id());
+                        id,
+                        text(req, "fullName"),
+                        text(req, "email"),
+                        text(req, "phone"),
+                        admin.getUser_id());
             } else if ("/delete".equals(path)) {
                 service.deleteStaff(id, admin.getUser_id());
             } else {
