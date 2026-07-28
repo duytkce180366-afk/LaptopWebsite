@@ -50,16 +50,21 @@
                     </td>
 
                     <td><c:out value="${p.productName}" /></td>
-                    <td>${p.stock}</td>
+                    <td
+                        class="current-stock"
+                        data-current-stock="${p.stock}">
+                        ${p.stock}
+                    </td>
 
                     <td>
                         <input
-                            class="form-control"
+                            class="form-control receive-quantity"
                             form="receive-${p.productId}"
                             type="number"
                             name="quantity"
                             min="1"
                             max="100000"
+                            step="1"
                             required>
                     </td>
 
@@ -126,5 +131,24 @@
         </tbody>
     </table>
 </div>
+
+<script>
+    document.querySelectorAll('.receive-quantity').forEach(function (quantityInput) {
+        var stockCell = quantityInput.closest('tr').querySelector('.current-stock');
+        var currentStock = Number(stockCell.dataset.currentStock);
+
+        quantityInput.addEventListener('input', function () {
+            var receivedQuantity = Number(quantityInput.value);
+            var isValidQuantity = quantityInput.value !== ''
+                    && Number.isInteger(receivedQuantity)
+                    && receivedQuantity >= 1
+                    && receivedQuantity <= 100000;
+
+            stockCell.textContent = isValidQuantity
+                    ? currentStock + receivedQuantity
+                    : currentStock;
+        });
+    });
+</script>
 
 <%@ include file="_end.jsp" %>
