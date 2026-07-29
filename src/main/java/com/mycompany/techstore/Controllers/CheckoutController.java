@@ -15,14 +15,15 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.Locale;
 
 @WebServlet("/checkout")
 public class CheckoutController extends HttpServlet {
 
-    private CartService cartService
+    private final CartService cartService
             = new CartService();
-    private AddressRepository addressRepo = new AddressRepository();
+    private final AddressRepository addressRepo = new AddressRepository();
 
     @Override
     protected void doGet(
@@ -48,9 +49,36 @@ public class CheckoutController extends HttpServlet {
                     + "/auth?action=signin");
             return;
         }
-        List<CartItem> cartItems
-                = cartService.getCartItems(
-                        user.getUser_id());
+        String cartItemId
+                = request.getParameter("cartItemId");
+
+        List<CartItem> cartItems;
+
+        if (cartItemId != null) {
+
+            CartItem item
+                    = cartService.getCartItemById(
+                            Integer.parseInt(cartItemId),
+                            user.getUser_id());
+
+            cartItems = new ArrayList<>();
+
+            if (item != null) {
+                cartItems.add(item);
+            }
+
+            session.setAttribute("checkoutCartItemId",
+                    Integer.valueOf(cartItemId));
+
+        } else {
+
+            cartItems
+                    = cartService.getCartItems(
+                            user.getUser_id());
+
+            session.removeAttribute(
+                    "checkoutCartItemId");
+        }
 
         if (cartItems == null || cartItems.isEmpty()) {
 
@@ -73,7 +101,7 @@ public class CheckoutController extends HttpServlet {
 
         NumberFormat vn
                 = NumberFormat.getCurrencyInstance(
-                        new Locale("vi", "VN"));
+                         Locale.of("vi", "VN"));
         Double discount
                 = (Double) session.getAttribute(
                         "discountAmount");

@@ -111,7 +111,9 @@ body {
     flex-shrink: 0;
 }
 
-.item-info { flex: 1; }
+.item-info {
+    flex: 1;
+}
 
 .item-name {
     font-size: 15px;

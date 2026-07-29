@@ -22,13 +22,13 @@ public class OrderRepository {
     public int placeOrder(int userId, String paymentMethod,
             String address, String district,
             String province, String phone) {
-        return placeOrder(userId, paymentMethod, address, district, province, phone, 0, 0);
+        return placeOrder(userId, paymentMethod, address, district, province, phone, 0, 0, null);
     }
 
     public int placeOrder(int userId, String paymentMethod,
             String address, String district,
             String province, String phone,
-            int voucherId, double discountAmount) {
+            int voucherId, double discountAmount, Integer checkoutCartItemId) {
 
         Connection conn = null;
 
@@ -92,10 +92,35 @@ public class OrderRepository {
             }
 
             // Insert order details
-            String itemSql = "SELECT * FROM bs_CartItems WHERE cart_id=?";
-            PreparedStatement psItem = conn.prepareStatement(itemSql);
+            String itemSql;
+
+            if (checkoutCartItemId == null) {
+
+                itemSql
+                        = "SELECT * "
+                        + "FROM bs_CartItems "
+                        + "WHERE cart_id=?";
+
+            } else {
+
+                itemSql
+                        = "SELECT * "
+                        + "FROM bs_CartItems "
+                        + "WHERE cart_id=? "
+                        + "AND cart_item_id=?";
+            }
+
+            PreparedStatement psItem
+                    = conn.prepareStatement(itemSql);
+
             psItem.setInt(1, cartId);
-            ResultSet rsItem = psItem.executeQuery();
+
+            if (checkoutCartItemId != null) {
+                psItem.setInt(2, checkoutCartItemId);
+            }
+
+            ResultSet rsItem
+                    = psItem.executeQuery();
 
             while (rsItem.next()) {
                 int productId = rsItem.getInt("product_id");
@@ -114,9 +139,33 @@ public class OrderRepository {
             }
 
             // Clear cart
-            String clearSql = "DELETE FROM bs_CartItems WHERE cart_id=?";
-            PreparedStatement psClear = conn.prepareStatement(clearSql);
-            psClear.setInt(1, cartId);
+            String clearSql;
+
+            if (checkoutCartItemId == null) {
+
+                clearSql
+                        = "DELETE FROM bs_CartItems "
+                        + "WHERE cart_id=?";
+
+            } else {
+
+                clearSql
+                        = "DELETE FROM bs_CartItems "
+                        + "WHERE cart_item_id=?";
+            }
+
+            PreparedStatement psClear
+                    = conn.prepareStatement(clearSql);
+
+            if (checkoutCartItemId == null) {
+
+                psClear.setInt(1, cartId);
+
+            } else {
+
+                psClear.setInt(1, checkoutCartItemId);
+            }
+
             psClear.executeUpdate();
 
             conn.commit();

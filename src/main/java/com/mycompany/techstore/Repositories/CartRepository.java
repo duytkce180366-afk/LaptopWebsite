@@ -285,4 +285,75 @@ public class CartRepository {
 
         return -1;
     }
+
+    public CartItem getCartItemById(int cartItemId, int userId) {
+
+        String sql
+                = "SELECT ci.*, "
+                + "p.product_name, "
+                + "p.stock, "
+                + "p.thumbnail "
+                + "FROM bs_CartItems ci "
+                + "INNER JOIN bs_Cart c "
+                + "ON ci.cart_id = c.cart_id "
+                + "INNER JOIN bs_Products p "
+                + "ON ci.product_id = p.product_id "
+                + "WHERE ci.cart_item_id = ? "
+                + "AND c.user_id = ?";
+
+        try (
+                Connection con = new DbClass().getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, cartItemId);
+            ps.setInt(2, userId);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+
+                CartItem item = new CartItem();
+
+                item.setCartItemId(rs.getInt("cart_item_id"));
+                item.setCartId(rs.getInt("cart_id"));
+                item.setProductId(rs.getInt("product_id"));
+                item.setQuantity(rs.getInt("quantity"));
+                item.setUnitPrice(rs.getDouble("unit_price"));
+
+                item.setProductName(rs.getString("product_name"));
+                item.setStock(rs.getInt("stock"));
+                item.setImage(rs.getString("thumbnail"));
+
+                return item;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public boolean deleteAllCartItems(int userId) {
+
+        String sql
+                = "DELETE ci "
+                + "FROM bs_CartItems ci "
+                + "INNER JOIN bs_Cart c "
+                + "ON ci.cart_id=c.cart_id "
+                + "WHERE c.user_id=?";
+
+        try (
+                Connection con = new DbClass().getConnection(); PreparedStatement ps
+                = con.prepareStatement(sql)) {
+
+            ps.setInt(1, userId);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
 }

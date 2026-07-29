@@ -2,6 +2,7 @@ package com.mycompany.techstore.Controllers;
 
 import com.mycompany.techstore.Models.Objects.User;
 import com.mycompany.techstore.Models.Objects.Voucher;
+import com.mycompany.techstore.services.CartService;
 import com.mycompany.techstore.services.OrderService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -15,6 +16,8 @@ import java.io.IOException;
 
 @WebServlet(name = "PlaceOrderController", urlPatterns = {"/place-order"})
 public class PlaceOrderController extends HttpServlet {
+
+    private final CartService cartService = new CartService();
 
     @Override
     protected void doPost(HttpServletRequest request,
@@ -65,11 +68,12 @@ public class PlaceOrderController extends HttpServlet {
         double discountAmount = (discountObj != null) ? (Double) discountObj : 0;
 
         OrderService orderService = new OrderService();
-
+        Integer checkoutCartItemId
+                = (Integer) session.getAttribute("checkoutCartItemId");
         // placeOrder: > 0 = success, -1 = system error, -2 = voucher already used
         int orderId = orderService.placeOrder(
                 userId, paymentMethod, address, district, province, phone,
-                voucherId, discountAmount
+                voucherId, discountAmount, checkoutCartItemId
         );
 
         if (orderId > 0) {
@@ -77,7 +81,6 @@ public class PlaceOrderController extends HttpServlet {
             session.removeAttribute("voucher");
             session.removeAttribute("discountAmount");
             session.removeAttribute("finalTotal");
-
             if ("VNPay".equals(paymentMethod)) {
                 double totalAmount = orderService.getOrderTotal(orderId);
                 session.setAttribute("pendingOrderId", orderId);

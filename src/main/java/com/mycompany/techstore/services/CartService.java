@@ -93,4 +93,12 @@ public class CartService {
 
         return total;
     }
+
+    public CartItem getCartItemById(int cartItemId, int userId) {
+        return repo.getCartItemById(cartItemId, userId);
+    }
+
+    public boolean deleteAllCartItems(int userId) {
+        return repo.deleteAllCartItems(userId);
+    }
 }

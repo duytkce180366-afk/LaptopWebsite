@@ -16,9 +16,9 @@ public class OrderService {
     public int placeOrder(int userId, String paymentMethod,
             String address, String district,
             String province, String phone,
-            int voucherId, double discountAmount) {
+            int voucherId, double discountAmount, Integer checkoutCartItemId) {
         return repo.placeOrder(userId, paymentMethod, address, district, province, phone,
-                voucherId, discountAmount);
+                voucherId, discountAmount, checkoutCartItemId);
     }
 
     public double getOrderTotal(int orderId) {

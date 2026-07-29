@@ -89,11 +89,13 @@ public class VNPayController extends HttpServlet {
         }
 
         // Place order
+        Integer checkoutCartItemId =
+        (Integer) session.getAttribute("checkoutCartItemId");
         OrderService orderService = new OrderService();
         int orderId = orderService.placeOrder(
                 loggedUser.getUser_id(), "VNPay",
                 address, district, province, phone,
-                voucherId, discountAmount
+                voucherId, discountAmount, checkoutCartItemId
         );
 
         if (orderId == -2) {
