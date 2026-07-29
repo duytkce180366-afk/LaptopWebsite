@@ -2,6 +2,7 @@ package com.mycompany.techstore.services;
 
 import com.mycompany.techstore.Repositories.OrderRepository;
 import java.util.Map;
+import java.util.List; import java.util.ArrayList;
 
 public class OrderService {
 
@@ -13,13 +14,7 @@ public class OrderService {
         return repo.placeOrder(userId, paymentMethod, address, district, province, phone);
     }
 
-    public int placeOrder(int userId, String paymentMethod,
-            String address, String district,
-            String province, String phone,
-            int voucherId, double discountAmount, Integer checkoutCartItemId) {
-        return repo.placeOrder(userId, paymentMethod, address, district, province, phone,
-                voucherId, discountAmount, checkoutCartItemId);
-    }
+
 
     public double getOrderTotal(int orderId) {
         return repo.getOrderTotal(orderId);
@@ -48,4 +43,10 @@ public class OrderService {
     public boolean confirmDelivery(int orderId, int userId) {
         return repo.confirmDelivery(orderId, userId);
     }
+    public int placeOrder(int userId, String paymentMethod,
+        String address, String district, String province, String phone,
+        int voucherId, double discountAmount, List<Integer> selectedCartItemIds) {
+    return repo.placeOrder(userId, paymentMethod, address, district, province, phone,
+            voucherId, discountAmount, selectedCartItemIds);
+}
 }

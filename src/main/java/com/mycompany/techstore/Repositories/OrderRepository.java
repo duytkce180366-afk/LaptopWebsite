@@ -19,6 +19,9 @@ public class OrderRepository {
     // ================= PLACE ORDER =================
     // COD: voucher deducted immediately. Stock deducted when Confirmed by admin.
     // VNPay: nothing deducted here. Both voucher and stock deducted in confirmPaymentSuccess().
+// ================= PLACE ORDER =================
+    // COD: voucher deducted immediately. Stock deducted when Confirmed by admin.
+    // VNPay: nothing deducted here. Both voucher and stock deducted in confirmPaymentSuccess().
     public int placeOrder(int userId, String paymentMethod,
             String address, String district,
             String province, String phone) {
@@ -28,7 +31,15 @@ public class OrderRepository {
     public int placeOrder(int userId, String paymentMethod,
             String address, String district,
             String province, String phone,
-            int voucherId, double discountAmount, Integer checkoutCartItemId) {
+            int voucherId, double discountAmount) {
+        return placeOrder(userId, paymentMethod, address, district, province, phone, voucherId, discountAmount, null);
+    }
+
+    public int placeOrder(int userId, String paymentMethod,
+            String address, String district,
+            String province, String phone,
+            int voucherId, double discountAmount,
+            List<Integer> selectedCartItemIds) {
 
         Connection conn = null;
 
@@ -42,7 +53,8 @@ public class OrderRepository {
                 return -2;
             }
 
-            double subtotal = calculateTotal(userId, conn);
+            // Calculate subtotal only for selected items
+            double subtotal = calculateTotal(userId, selectedCartItemIds, conn);
 
             String createOrder = "INSERT INTO bs_Orders("
                     + "user_id, voucher_id, total_amount, shipping_fee, discount_amount, "
@@ -72,7 +84,7 @@ public class OrderRepository {
                 orderId = rs.getInt(1);
             }
 
-            // COD: deduct voucher immediately (stock deducted later when admin confirms)
+            // COD: deduct voucher immediately
             if (!"VNPay".equals(paymentMethod) && voucherId > 0) {
                 String voucherSql = "UPDATE bs_Vouchers SET quantity = quantity - 1 "
                         + "WHERE voucher_id = ? AND quantity > 0";
@@ -81,47 +93,34 @@ public class OrderRepository {
                 psVoucher.executeUpdate();
             }
 
-            // Get cart
-            String cartSql = "SELECT cart_id FROM bs_Cart WHERE user_id=?";
-            PreparedStatement psCart = conn.prepareStatement(cartSql);
-            psCart.setInt(1, userId);
-            ResultSet rsCart = psCart.executeQuery();
-            int cartId = 0;
-            if (rsCart.next()) {
-                cartId = rsCart.getInt("cart_id");
+            // Get cart items (only selected ones if specified)
+            ResultSet rsItem;
+            if (selectedCartItemIds != null && !selectedCartItemIds.isEmpty()) {
+                String placeholders = buildPlaceholders(selectedCartItemIds.size());
+                String itemSql = "SELECT * FROM bs_CartItems WHERE cart_item_id IN (" + placeholders + ")";
+                PreparedStatement psItem = conn.prepareStatement(itemSql);
+                for (int i = 0; i < selectedCartItemIds.size(); i++) {
+                    psItem.setInt(i + 1, selectedCartItemIds.get(i));
+                }
+                rsItem = psItem.executeQuery();
+            } else {
+                // Fallback: get all cart items
+                String cartSql = "SELECT cart_id FROM bs_Cart WHERE user_id=?";
+                PreparedStatement psCart = conn.prepareStatement(cartSql);
+                psCart.setInt(1, userId);
+                ResultSet rsCart = psCart.executeQuery();
+                int cartId = 0;
+                if (rsCart.next()) {
+                    cartId = rsCart.getInt("cart_id");
+                }
+
+                String itemSql = "SELECT * FROM bs_CartItems WHERE cart_id=?";
+                PreparedStatement psItem = conn.prepareStatement(itemSql);
+                psItem.setInt(1, cartId);
+                rsItem = psItem.executeQuery();
             }
 
             // Insert order details
-            String itemSql;
-
-            if (checkoutCartItemId == null) {
-
-                itemSql
-                        = "SELECT * "
-                        + "FROM bs_CartItems "
-                        + "WHERE cart_id=?";
-
-            } else {
-
-                itemSql
-                        = "SELECT * "
-                        + "FROM bs_CartItems "
-                        + "WHERE cart_id=? "
-                        + "AND cart_item_id=?";
-            }
-
-            PreparedStatement psItem
-                    = conn.prepareStatement(itemSql);
-
-            psItem.setInt(1, cartId);
-
-            if (checkoutCartItemId != null) {
-                psItem.setInt(2, checkoutCartItemId);
-            }
-
-            ResultSet rsItem
-                    = psItem.executeQuery();
-
             while (rsItem.next()) {
                 int productId = rsItem.getInt("product_id");
                 int quantity = rsItem.getInt("quantity");
@@ -138,35 +137,29 @@ public class OrderRepository {
                 psDetail.executeUpdate();
             }
 
-            // Clear cart
-            String clearSql;
-
-            if (checkoutCartItemId == null) {
-
-                clearSql
-                        = "DELETE FROM bs_CartItems "
-                        + "WHERE cart_id=?";
-
+            // Clear only selected cart items
+            if (selectedCartItemIds != null && !selectedCartItemIds.isEmpty()) {
+                String placeholders = buildPlaceholders(selectedCartItemIds.size());
+                String clearSql = "DELETE FROM bs_CartItems WHERE cart_item_id IN (" + placeholders + ")";
+                PreparedStatement psClear = conn.prepareStatement(clearSql);
+                for (int i = 0; i < selectedCartItemIds.size(); i++) {
+                    psClear.setInt(i + 1, selectedCartItemIds.get(i));
+                }
+                psClear.executeUpdate();
             } else {
-
-                clearSql
-                        = "DELETE FROM bs_CartItems "
-                        + "WHERE cart_item_id=?";
+                // Fallback: clear all cart items
+                String cartSql = "SELECT cart_id FROM bs_Cart WHERE user_id=?";
+                PreparedStatement psCart = conn.prepareStatement(cartSql);
+                psCart.setInt(1, userId);
+                ResultSet rsCart = psCart.executeQuery();
+                if (rsCart.next()) {
+                    int cartId = rsCart.getInt("cart_id");
+                    String clearSql = "DELETE FROM bs_CartItems WHERE cart_id=?";
+                    PreparedStatement psClear = conn.prepareStatement(clearSql);
+                    psClear.setInt(1, cartId);
+                    psClear.executeUpdate();
+                }
             }
-
-            PreparedStatement psClear
-                    = conn.prepareStatement(clearSql);
-
-            if (checkoutCartItemId == null) {
-
-                psClear.setInt(1, cartId);
-
-            } else {
-
-                psClear.setInt(1, checkoutCartItemId);
-            }
-
-            psClear.executeUpdate();
 
             conn.commit();
             return orderId;
@@ -189,6 +182,48 @@ public class OrderRepository {
         }
 
         return -1;
+    }
+
+    private double calculateTotal(int userId, List<Integer> selectedCartItemIds, Connection conn) throws Exception {
+        if (selectedCartItemIds != null && !selectedCartItemIds.isEmpty()) {
+            // Calculate only for selected items
+            String placeholders = buildPlaceholders(selectedCartItemIds.size());
+            String sql = "SELECT SUM(quantity * unit_price) total FROM bs_CartItems "
+                    + "WHERE cart_item_id IN (" + placeholders + ")";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            for (int i = 0; i < selectedCartItemIds.size(); i++) {
+                ps.setInt(i + 1, selectedCartItemIds.get(i));
+            }
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getDouble("total");
+            }
+            return 0;
+        } else {
+            // Fallback: calculate all cart items
+            String sql = "SELECT SUM(quantity * unit_price) total "
+                    + "FROM bs_CartItems ci "
+                    + "JOIN bs_Cart c ON ci.cart_id = c.cart_id "
+                    + "WHERE c.user_id=?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, userId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getDouble("total");
+            }
+            return 0;
+        }
+    }
+
+    private String buildPlaceholders(int count) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < count; i++) {
+            if (i > 0) {
+                sb.append(",");
+            }
+            sb.append("?");
+        }
+        return sb.toString();
     }
 
     // ================= CONFIRM (Pending -> Confirmed) =================
@@ -514,13 +549,20 @@ public class OrderRepository {
         return 0;
     }
 
-    private double calculateTotal(int userId, Connection conn) throws Exception {
-        String sql = "SELECT SUM(quantity * unit_price) total "
-                + "FROM bs_CartItems ci "
-                + "JOIN bs_Cart c ON ci.cart_id = c.cart_id "
-                + "WHERE c.user_id=?";
+    // calculateTotal chỉ tính selected items
+    private double calculateTotal(List<Integer> selectedCartItemIds, Connection conn) throws Exception {
+        if (selectedCartItemIds == null || selectedCartItemIds.isEmpty()) {
+            return 0;
+        }
+        StringBuilder placeholders = new StringBuilder();
+        for (int i = 0; i < selectedCartItemIds.size(); i++) {
+            placeholders.append(i == 0 ? "?" : ",?");
+        }
+        String sql = "SELECT SUM(quantity * unit_price) total FROM bs_CartItems WHERE cart_item_id IN (" + placeholders + ")";
         PreparedStatement ps = conn.prepareStatement(sql);
-        ps.setInt(1, userId);
+        for (int i = 0; i < selectedCartItemIds.size(); i++) {
+            ps.setInt(i + 1, selectedCartItemIds.get(i));
+        }
         ResultSet rs = ps.executeQuery();
         if (rs.next()) {
             return rs.getDouble("total");
