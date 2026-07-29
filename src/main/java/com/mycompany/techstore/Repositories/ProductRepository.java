@@ -212,13 +212,13 @@ public class ProductRepository extends DbClass {
     public Review getReviewByOrderAndProduct(int orderId, int productId, int userId) {
         String sqlCommand
                 = """
-SELECT TOP 1 r.review_id, r.user_id, r.order_id, r.product_id, r.rating, r.comment, r.created_at,
-       u.full_name AS user_name
-FROM dbo.bs_Reviews r
-LEFT JOIN dbo.bs_user u ON u.user_id = r.user_id
-WHERE r.order_id = ? AND r.product_id = ? AND r.user_id = ?
-ORDER BY r.created_at DESC, r.review_id DESC;
-""";
+        SELECT TOP 1 r.review_id, r.user_id, r.order_id, r.product_id, r.rating, r.comment, r.created_at,
+               u.full_name AS user_name
+        FROM dbo.bs_Reviews r
+        LEFT JOIN dbo.bs_user u ON u.user_id = r.user_id
+        WHERE r.order_id = ? AND r.product_id = ? AND r.user_id = ?
+        ORDER BY r.created_at DESC, r.review_id DESC;
+        """;
 
         try (PreparedStatement ps = super.getConnection().prepareStatement(sqlCommand)) {
             ps.setInt(1, orderId);
@@ -286,9 +286,9 @@ ORDER BY r.created_at DESC, r.review_id DESC;
         """;
         String insertSql
                 = """
-INSERT INTO dbo.bs_Reviews (user_id, order_id, product_id, rating, comment, created_at, updated_at)
-VALUES (?, ?, ?, ?, ?, SYSUTCDATETIME(), SYSUTCDATETIME());
-""";
+        INSERT INTO dbo.bs_Reviews (user_id, order_id, product_id, rating, comment, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, SYSUTCDATETIME(), SYSUTCDATETIME());
+        """;
 
         try (PreparedStatement existingPs = super.getConnection().prepareStatement(existingSql)) {
             existingPs.setInt(1, userId);
@@ -329,12 +329,12 @@ VALUES (?, ?, ?, ?, ?, SYSUTCDATETIME(), SYSUTCDATETIME());
     public boolean canReviewOrderProduct(int orderId, int productId, int userId) {
         String sqlCommand
                 = """
-SELECT 1
-FROM dbo.bs_Orders o
-INNER JOIN dbo.bs_OrderDetails od ON od.order_id = o.order_id
-WHERE o.order_id = ? AND o.user_id = ? AND od.product_id = ?
-  AND o.order_status = 'Completed';
-""";
+        SELECT 1
+        FROM dbo.bs_Orders o
+        INNER JOIN dbo.bs_OrderDetails od ON od.order_id = o.order_id
+        WHERE o.order_id = ? AND o.user_id = ? AND od.product_id = ?
+          AND o.order_status = 'Completed';
+        """;
 
         try (PreparedStatement ps = super.getConnection().prepareStatement(sqlCommand)) {
             ps.setInt(1, orderId);
