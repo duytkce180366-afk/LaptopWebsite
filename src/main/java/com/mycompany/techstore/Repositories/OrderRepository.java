@@ -707,4 +707,80 @@ public class OrderRepository {
 
         throw new Exception("Failed to create cart for user " + userId);
     }
+
+    // ================= REQUEST RETURN (Delivered -> Return Requested) =================
+    // Called by the customer. No stock/voucher change here — the goods
+    // haven't physically come back to the shop yet.
+    // Returns: 1 = success, 0 = not eligible, -4 = return window (3 days) expired
+    public int requestReturn(int orderId, int userId, String reason) {
+
+        try {
+            Connection conn = new DbClass().getConnection();
+
+            String checkSql
+                    = "SELECT order_status, updated_at FROM bs_Orders WHERE order_id=? AND user_id=?";
+            PreparedStatement psCheck = conn.prepareStatement(checkSql);
+            psCheck.setInt(1, orderId);
+            psCheck.setInt(2, userId);
+            ResultSet rs = psCheck.executeQuery();
+
+            if (!rs.next()) {
+                return 0;
+            }
+
+            String status = rs.getString("order_status");
+            java.sql.Timestamp deliveredAt = rs.getTimestamp("updated_at");
+
+            if (!"Delivered".equals(status)) {
+                return 0;
+            }
+
+            if (deliveredAt != null) {
+                long diffMillis = System.currentTimeMillis() - deliveredAt.getTime();
+                long diffDays = diffMillis / (1000L * 60 * 60 * 24);
+                if (diffDays > 3) {
+                    return -4; // return window expired
+                }
+            }
+
+            String updateSql
+                    = "UPDATE bs_Orders "
+                    + "SET order_status='Return Requested', note=? "
+                    + "WHERE order_id=? AND user_id=? AND order_status='Delivered'";
+            PreparedStatement ps = conn.prepareStatement(updateSql);
+            ps.setString(1, reason);
+            ps.setInt(2, orderId);
+            ps.setInt(3, userId);
+
+            return ps.executeUpdate() > 0 ? 1 : 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
+
+    // ================= Customer confirms receipt (Shipping -> Delivered) =================
+    // Triggered by the customer, scoped to their own order for safety.
+    // ================= Customer confirms receipt (Delivered -> Completed) =================
+    public boolean confirmDelivery(int orderId, int userId) {
+
+        String sql
+                = "UPDATE bs_Orders "
+                + "SET order_status='Completed' "
+                + "WHERE order_id=? AND user_id=? AND order_status='Delivered'";
+
+        try {
+            Connection conn = new DbClass().getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, orderId);
+            ps.setInt(2, userId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
 }

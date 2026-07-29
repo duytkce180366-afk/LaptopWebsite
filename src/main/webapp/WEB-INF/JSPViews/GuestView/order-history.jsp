@@ -1,3 +1,4 @@
+<%@page import="com.mycompany.techstore.services.VietnamTime"%>
 <%@page import="com.mycompany.techstore.Models.Objects.User"%>
 <%@page import="com.mycompany.techstore.Models.Objects.Order"%>
 <%@page import="java.util.List"%>
@@ -23,6 +24,18 @@
 
         <%@include file="/WEB-INF/JSPViews/global/nav.jsp" %>
 
+        <%            String orderError = (String) session.getAttribute("orderError");
+            if (orderError != null) {
+                session.removeAttribute("orderError");
+        %>
+        <div class="order-error-banner">
+            <%=orderError%>
+        </div>
+        <%
+            }
+        %>
+
+
         <div class="orders-wrapper">
 
             <div class="breadcrumb-bar">
@@ -47,15 +60,18 @@
                 </div>
             </div>
 
-            <div class="filter-tabs">
+            <div class="filter-tabs<div class="filter-tabs">
                 <button class="filter-tab active" onclick="filterOrders('all', this)">All</button>
                 <button class="filter-tab" onclick="filterOrders('pending', this)">Pending</button>
                 <button class="filter-tab" onclick="filterOrders('confirmed', this)">Confirmed</button>
                 <button class="filter-tab" onclick="filterOrders('shipping', this)">Shipping</button>
                 <button class="filter-tab" onclick="filterOrders('delivered', this)">Delivered</button>
+                <button class="filter-tab" onclick="filterOrders('completed', this)">Completed</button>
+                <button class="filter-tab" onclick="filterOrders('return requested', this)">Return Requested</button>
+                <button class="filter-tab" onclick="filterOrders('return rejected', this)">Return Rejected</button>
+                <button class="filter-tab" onclick="filterOrders('returned', this)">Returned</button>
                 <button class="filter-tab" onclick="filterOrders('cancelled', this)">Cancelled</button>
             </div>
-
             <div class="orders-card">
 
                 <% if (orders == null || orders.isEmpty()) { %>
@@ -90,8 +106,12 @@
                                 boolean isConfirmed = "Confirmed".equalsIgnoreCase(status);
                                 boolean isPending = "Pending".equalsIgnoreCase(status);
                                 boolean isPaymentFailed = "Payment Failed".equalsIgnoreCase(status);
-
-                                // Cancel allowed for: Pending, Payment Failed, or Confirmed-but-NOT-VNPay
+                                boolean isDelivered = "Delivered".equalsIgnoreCase(status);
+                                boolean isShipping = "Shipping".equalsIgnoreCase(status);
+                                boolean isCompleted = "Completed".equalsIgnoreCase(status);
+                                boolean isReturnRequested = "Return Requested".equalsIgnoreCase(status);
+                                boolean isReturned = "Returned".equalsIgnoreCase(status);
+                                boolean isReturnRejected = "Return Rejected".equalsIgnoreCase(status);                                // Cancel allowed for: Pending, Payment Failed, or Confirmed-but-NOT-VNPay
                                 boolean canCancel = isPending || isPaymentFailed || (isConfirmed && !isVNPay);
                         %>
                         <tr data-status="<%=status.toLowerCase()%>">
@@ -109,8 +129,16 @@
                                 <span class="badge-status badge-payment-failed">Payment Failed</span>
                                 <% } else if ("Shipping".equalsIgnoreCase(status)) { %>
                                 <span class="badge-status badge-shipping">Shipping</span>
-                                <% } else if ("Delivered".equalsIgnoreCase(status)) { %>
+                                <% } else if (isDelivered) { %>
                                 <span class="badge-status badge-delivered">Delivered</span>
+                                <% } else if (isReturnRequested) { %>
+                                <span class="badge-status badge-return-requested">Return Requested</span>
+                                <% } else if (isReturned) { %>
+                                <span class="badge-status badge-returned">Returned</span>
+                                <% } else if (isReturnRejected) { %>
+                                <span class="badge-status badge-return-rejected">Return Rejected</span>
+                                <% } else if (isCompleted) { %>
+                                <span class="badge-status badge-completed">Completed</span>
                                 <% } else { %>
                                 <span class="badge-status badge-cancelled">Cancelled</span>
                                 <% } %>
@@ -141,6 +169,25 @@
                                         onclick="openCancelModal('<%=o.getOrderId()%>')">
                                     &#10005; Cancel Order
                                 </button>
+
+                                <% } else if (isDelivered) {%>
+                                <div class="d-flex-actions">
+                                    <form action="<%=request.getContextPath()%>/confirm-delivery" method="post" style="display:inline;">
+                                        <input type="hidden" name="id" value="<%=o.getOrderId()%>">
+                                        <button type="button" class="btn-confirm-received"
+                                                onclick="confirmReceive(<%=o.getOrderId()%>)">
+                                            &#10003; Confirm Receive
+                                        </button>
+                                    </form>
+                                    <button type="button" class="btn-return-open"
+                                            onclick="openReturnModal('<%=o.getOrderId()%>')">
+                                        &#8630; Request Return
+                                    </button>
+                                </div>
+                                <% } else if (isReturnRequested) { %>
+                                <span class="no-action">Awaiting confirmation</span>
+                                <% } else if (isReturnRejected) { %>
+                                <span class="no-action">Return request declined</span>
                                 <% } else { %>
                                 <span class="no-action">&#8212; No Action</span>
                                 <% } %>
@@ -238,6 +285,79 @@
                 </div>
             </div>
         </div>
+        <!-- Return Modal -->
+        <div class="cancel-modal-overlay" id="returnModalOverlay">
+            <div class="cancel-modal">
+                <div class="cancel-modal-header">
+                    <div class="modal-icon">&#8630;</div>
+                    <h3>Request Return</h3>
+                    <button class="modal-close-btn" onclick="closeReturnModal()">&#10005;</button>
+                </div>
+                <div class="cancel-modal-body">
+                    <p>Please select a reason for the return:</p>
+                    <div class="reason-list">
+                        <label class="reason-item" onclick="selectReturnReason(this, 'Item is defective/damaged')">
+                            <input type="radio" name="returnReason">
+                            <span class="reason-dot"></span>
+                            Item is defective/damaged
+                        </label>
+                        <label class="reason-item" onclick="selectReturnReason(this, 'Wrong item received')">
+                            <input type="radio" name="returnReason">
+                            <span class="reason-dot"></span>
+                            Wrong item received
+                        </label>
+                        <label class="reason-item" onclick="selectReturnReason(this, 'Item does not match description')">
+                            <input type="radio" name="returnReason">
+                            <span class="reason-dot"></span>
+                            Item does not match description
+                        </label>
+                        <label class="reason-item" onclick="selectReturnReason(this, 'other')">
+                            <input type="radio" name="returnReason">
+                            <span class="reason-dot"></span>
+                            Other reason
+                        </label>
+                    </div>
+                    <div class="other-note-box" id="otherReturnNoteBox">
+                        <textarea id="otherReturnNoteText" rows="3"
+                                  placeholder="Please describe your reason..."></textarea>
+                    </div>
+                </div>
+                <div class="cancel-modal-footer">
+                    <button class="btn-modal-back" onclick="closeReturnModal()">Go Back</button>
+                    <form id="returnForm" action="request-return" method="post" style="display:inline;">
+                        <input type="hidden" name="id" id="returnOrderId">
+                        <input type="hidden" name="reason" id="returnReasonHidden">
+                        <button type="button" class="btn-modal-confirm"
+                                id="confirmReturnBtn" disabled
+                                onclick="submitReturn()">
+                            Confirm Return Request
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- Confirm Receive Modal -->
+        <div class="cancel-modal-overlay" id="confirmReceiveOverlay">
+            <div class="cancel-modal">
+                <div class="cancel-modal-header">
+                    <div class="modal-icon">&#10003;</div>
+                    <h3>Confirm Receive</h3>
+                    <button class="modal-close-btn" onclick="closeConfirmModal()">&#10005;</button>
+                </div>
+                <div class="cancel-modal-body">
+                    <p>Have you received this order?</p>
+                </div>
+                <div class="cancel-modal-footer">
+                    <button class="btn-modal-back" onclick="closeConfirmModal()">Cancel</button>
+                    <form id="confirmReceiveForm" action="${pageContext.request.contextPath}/confirm-delivery" method="post" style="display:inline;">
+                        <input type="hidden" name="id" id="confirmReceiveOrderId">
+                        <button type="submit" class="btn-modal-confirm" style="background:#16a34a;">
+                            &#10003; Confirm
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
 
         <script>
             var selectedReason = '';
@@ -279,6 +399,10 @@
                     document.getElementById('confirmCancelBtn').disabled = false;
                 }
             }
+            function confirmReceive(orderId) {
+                document.getElementById('confirmReceiveOrderId').value = orderId;
+                document.getElementById('confirmReceiveOverlay').classList.add('active');
+            }
 
             function submitCancel() {
                 var note = selectedReason === 'other'
@@ -291,6 +415,58 @@
             document.getElementById('cancelModalOverlay').addEventListener('click', function (e) {
                 if (e.target === this)
                     closeCancelModal();
+            });
+            var selectedReturnReason = '';
+
+            function openReturnModal(orderId) {
+                document.getElementById('returnOrderId').value = orderId;
+                selectedReturnReason = '';
+                document.querySelectorAll('#returnModalOverlay .reason-item').forEach(function (el) {
+                    el.classList.remove('selected');
+                    el.querySelector('input').checked = false;
+                });
+                document.getElementById('otherReturnNoteBox').classList.remove('visible');
+                document.getElementById('otherReturnNoteText').value = '';
+                document.getElementById('confirmReturnBtn').disabled = true;
+                document.getElementById('returnModalOverlay').classList.add('active');
+            }
+
+            function closeReturnModal() {
+                document.getElementById('returnModalOverlay').classList.remove('active');
+            }
+
+            function selectReturnReason(el, value) {
+                document.querySelectorAll('#returnModalOverlay .reason-item').forEach(function (item) {
+                    item.classList.remove('selected');
+                });
+                el.classList.add('selected');
+                el.querySelector('input').checked = true;
+                selectedReturnReason = value;
+                var noteBox = document.getElementById('otherReturnNoteBox');
+                if (value === 'other') {
+                    noteBox.classList.add('visible');
+                    document.getElementById('otherReturnNoteText').focus();
+                    document.getElementById('confirmReturnBtn').disabled = true;
+                    document.getElementById('otherReturnNoteText').oninput = function () {
+                        document.getElementById('confirmReturnBtn').disabled = this.value.trim().length === 0;
+                    };
+                } else {
+                    noteBox.classList.remove('visible');
+                    document.getElementById('confirmReturnBtn').disabled = false;
+                }
+            }
+
+            function submitReturn() {
+                var reason = selectedReturnReason === 'other'
+                        ? document.getElementById('otherReturnNoteText').value.trim()
+                        : selectedReturnReason;
+                document.getElementById('returnReasonHidden').value = reason;
+                document.getElementById('returnForm').submit();
+            }
+
+            document.getElementById('returnModalOverlay').addEventListener('click', function (e) {
+                if (e.target === this)
+                    closeReturnModal();
             });
 
             function filterOrders(status, btn) {
@@ -315,7 +491,7 @@
 
                 var totalEl = document.getElementById('totalAmountValue');
                 if (totalEl) {
-                    totalEl.textContent = total.toLocaleString('vi-VN') + ' d';
+                    totalEl.textContent = total.toLocaleString('vi-VN') + ' đ';
                 }
             }
         </script>
