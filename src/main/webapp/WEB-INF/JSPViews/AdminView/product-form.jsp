@@ -13,12 +13,26 @@
         <div class="row g-3">
             <div class="col-md-4">
                 <label class="form-label">SKU *</label>
-                <input class="form-control" required name="sku" value="<c:out value='${product.sku}' />">
+                <input
+                    class="form-control"
+                    required
+                    name="sku"
+                    maxlength="80"
+                    value="<c:out value='${product.sku}' />"
+                    ${product.productId != 0 ? 'readonly' : ''}>
+                <c:if test="${product.productId != 0}">
+                    <div class="form-text">SKU cannot be changed after the product is created.</div>
+                </c:if>
             </div>
 
             <div class="col-md-8">
                 <label class="form-label">Product name *</label>
-                <input class="form-control" required name="productName" value="<c:out value='${product.productName}' />">
+                <input
+                    class="form-control"
+                    required
+                    name="productName"
+                    maxlength="200"
+                    value="<c:out value='${product.productName}' />">
             </div>
 
             <div class="col-md-6">
@@ -78,14 +92,20 @@
 
             <div class="col-12">
                 <label class="form-label">Thumbnail URL</label>
-                <input class="form-control" type="url" name="thumbnail" value="<c:out value='${product.thumbnail}' />">
+                <input
+                    class="form-control"
+                    type="url"
+                    name="thumbnail"
+                    maxlength="500"
+                    value="<c:out value='${product.thumbnail}' />">
             </div>
 
             <div class="col-12">
                 <label class="form-label">Description</label>
-                <textarea class="form-control" rows="4" name="description">
-                    <c:out value="${product.description}" />
-                </textarea>
+                <textarea
+                    class="form-control"
+                    rows="4"
+                    name="description"><c:out value="${product.description}" /></textarea>
             </div>
         </div>
     </div>
@@ -97,30 +117,34 @@
                 Add row
             </button>
         </div>
-        <div class="form-text mb-3 text-muted">
-            <small><i class="bi bi-info-circle"></i> <strong>Note for Laptops:</strong> The exact keys <code class="text-primary">cpu, ram, storage, gpu, display, battery, os</code> are strictly required.</small>
+        <div class="form-text mb-3 text-muted" id="specificationHelp">
+            Select a category to load its specification template from the database.
         </div>
 
         <div id="specs">
-            <c:if test="${empty product.specifications}">
-                <c:forEach var="key" items="${['cpu','ram','storage','gpu','display','battery','os']}">
-                    <div class="spec-row" data-initial="true">
-                        <input class="form-control" name="specKey" value="${key}">
-                        <input class="form-control" name="specValue" placeholder="Value">
-                        <button class="btn btn-outline-danger" type="button" onclick="removeSpec(this)" style="display: none !important;">
-                            &times;
-                        </button>
-                    </div>
-                </c:forEach>
-            </c:if>
-
             <c:forEach var="spec" items="${product.specifications}">
                 <div class="spec-row" data-initial="true">
                     <input class="form-control" name="specKey" value="<c:out value='${spec.key}' />">
                     <input class="form-control" name="specValue" value="<c:out value='${spec.value}' />">
-                    <button class="btn btn-outline-danger" type="button" onclick="removeSpec(this)" style="display: none !important;">
+                    <button
+                        class="btn btn-outline-danger"
+                        type="button"
+                        onclick="removeSpec(this)"
+                        style="display: none !important;">
                         &times;
                     </button>
+                </div>
+            </c:forEach>
+        </div>
+
+        <div id="specificationTemplates" hidden>
+            <c:forEach var="categoryTemplate" items="${specificationTemplates}">
+                <div data-category-id="${categoryTemplate.key}">
+                    <c:forEach var="templateSpec" items="${categoryTemplate.value}">
+                        <span
+                            data-key="<c:out value='${templateSpec.key}' />"
+                            data-label="<c:out value='${templateSpec.value}' />"></span>
+                    </c:forEach>
                 </div>
             </c:forEach>
         </div>
@@ -135,34 +159,68 @@
 </form>
 
 <script>
+    function selectedTemplate() {
+        const categorySelect = document.querySelector('select[name="categoryId"]');
+        if (!categorySelect || !categorySelect.value) {
+            return [];
+        }
+
+        const templates = document.querySelectorAll('#specificationTemplates [data-category-id]');
+        for (const template of templates) {
+            if (template.dataset.categoryId === categorySelect.value) {
+                return Array.from(template.querySelectorAll('[data-key]')).map(item => ({
+                    key: item.dataset.key.trim().toLowerCase(),
+                    label: item.dataset.label
+                }));
+            }
+        }
+        return [];
+    }
+
     function addSpec() {
-        const d = document.createElement('div');
-        d.className = 'spec-row';
-        d.innerHTML =
-                '<input class="form-control" name="specKey" placeholder="Key">' +
-                '<input class="form-control" name="specValue" placeholder="Value">' +
-                '<button class="btn btn-outline-danger" type="button" onclick="removeSpec(this)">&times;</button>';
-        document.getElementById('specs').appendChild(d);
+        addSpecRow('', 'Value', false);
         updateSpecRows();
     }
 
-    function isLaptopCategory() {
-        const categorySelect = document.querySelector('select[name="categoryId"]');
-        if (!categorySelect || categorySelect.selectedIndex < 0)
-            return false;
-        const text = (categorySelect.options[categorySelect.selectedIndex]?.text || '').toLowerCase().trim();
-        return text.includes('laptop');
+    function addSpecRow(key, label, fromTemplate) {
+        const d = document.createElement('div');
+        d.className = 'spec-row';
+        if (fromTemplate) {
+            d.dataset.autoTemplate = 'true';
+        }
+
+        const keyInput = document.createElement('input');
+        keyInput.className = 'form-control';
+        keyInput.name = 'specKey';
+        keyInput.placeholder = 'Key';
+        keyInput.value = key;
+
+        const valueInput = document.createElement('input');
+        valueInput.className = 'form-control';
+        valueInput.name = 'specValue';
+        valueInput.placeholder = label || 'Value';
+
+        const removeButton = document.createElement('button');
+        removeButton.className = 'btn btn-outline-danger';
+        removeButton.type = 'button';
+        removeButton.textContent = '\u00d7';
+        removeButton.addEventListener('click', function () {
+            removeSpec(removeButton);
+        });
+
+        d.append(keyInput, valueInput, removeButton);
+        document.getElementById('specs').appendChild(d);
     }
 
     function removeSpec(btn) {
         const row = btn.parentElement;
         const keyInput = row.querySelector('input[name="specKey"]');
-        const requiredKeys = ['cpu', 'ram', 'storage', 'gpu', 'display', 'battery', 'os'];
+        const templateKeys = selectedTemplate().map(spec => spec.key);
 
         if (keyInput) {
             const keyVal = keyInput.value.trim().toLowerCase();
-            if (isLaptopCategory() && requiredKeys.includes(keyVal)) {
-                alert("Thông số '" + keyVal + "' là BẮT BUỘC cho Laptop và KHÔNG THỂ XÓA!");
+            if (templateKeys.includes(keyVal)) {
+                alert("The specification key '" + keyVal + "' cannot be changed or removed.");
                 return false;
             }
         }
@@ -172,17 +230,17 @@
     }
 
     function updateSpecRows() {
-        const isLaptop = isLaptopCategory();
-        const requiredKeys = ['cpu', 'ram', 'storage', 'gpu', 'display', 'battery', 'os'];
+        const templateKeys = selectedTemplate().map(spec => spec.key);
 
         document.querySelectorAll('.spec-row').forEach(row => {
             const keyInput = row.querySelector('input[name="specKey"]');
+            const valueInput = row.querySelector('input[name="specValue"]');
             const btn = row.querySelector('button');
             if (!keyInput)
                 return;
 
             const keyVal = keyInput.value.trim().toLowerCase();
-            const isReq = isLaptop && requiredKeys.includes(keyVal);
+            const isReq = templateKeys.includes(keyVal);
             const isInitial = row.dataset.initial === 'true';
 
             if (isReq) {
@@ -197,6 +255,10 @@
                 keyInput.style.cursor = '';
             }
 
+            if (valueInput) {
+                valueInput.required = isReq;
+            }
+
             if (btn) {
                 if (isReq || isInitial) {
                     btn.style.setProperty('display', 'none', 'important');
@@ -209,58 +271,69 @@
         });
     }
 
-    // Run immediately on initial load & polling safeguard
-    updateSpecRows();
-    document.addEventListener('DOMContentLoaded', updateSpecRows);
-    window.addEventListener('load', updateSpecRows);
-    setInterval(updateSpecRows, 300);
+    function syncCategorySpecifications() {
+        const template = selectedTemplate();
+        const templateKeys = template.map(spec => spec.key);
 
-    // Auto-add missing keys when Laptops is selected
-    const catSel = document.querySelector('select[name="categoryId"]');
-    if (catSel) {
-        catSel.addEventListener('change', function () {
-            if (isLaptopCategory()) {
-                const requiredKeys = ['cpu', 'ram', 'storage', 'gpu', 'display', 'battery', 'os'];
-                const currentKeys = Array.from(document.querySelectorAll('input[name="specKey"]')).map(i => i.value.trim().toLowerCase());
-
-                requiredKeys.forEach(req => {
-                    if (!currentKeys.includes(req)) {
-                        const d = document.createElement('div');
-                        d.className = 'spec-row';
-                        d.innerHTML =
-                                '<input class="form-control" name="specKey" value="' + req + '">' +
-                                '<input class="form-control" name="specValue" placeholder="Value">' +
-                                '<button class="btn btn-outline-danger" type="button" onclick="removeSpec(this)">&times;</button>';
-                        document.getElementById('specs').appendChild(d);
-                    }
-                });
+        document.querySelectorAll('.spec-row[data-auto-template="true"]').forEach(row => {
+            const keyInput = row.querySelector('input[name="specKey"]');
+            const key = keyInput ? keyInput.value.trim().toLowerCase() : '';
+            if (!templateKeys.includes(key)) {
+                const valueInput = row.querySelector('input[name="specValue"]');
+                if (!valueInput || !valueInput.value.trim()) {
+                    row.remove();
+                } else {
+                    delete row.dataset.autoTemplate;
+                }
             }
-            updateSpecRows();
         });
+
+        const currentKeys = Array.from(document.querySelectorAll('input[name="specKey"]'))
+                .map(input => input.value.trim().toLowerCase());
+        template.forEach(spec => {
+            if (!currentKeys.includes(spec.key)) {
+                addSpecRow(spec.key, spec.label, true);
+            }
+        });
+
+        const help = document.getElementById('specificationHelp');
+        if (help) {
+            help.textContent = template.length
+                    ? 'Specification names are loaded from the selected category. '
+                    + 'Fill in every required value.'
+                    : 'No specification template is configured for this category. '
+                    + 'Use Add row for custom specifications.';
+        }
+        updateSpecRows();
     }
 
-    // Intercept form submission to prevent saving invalid laptops
+    // Run immediately on initial load & polling safeguard
+    syncCategorySpecifications();
+    document.addEventListener('DOMContentLoaded', syncCategorySpecifications);
+    window.addEventListener('load', syncCategorySpecifications);
+    setInterval(updateSpecRows, 300);
+
+    // Reload the database-backed template when the category changes.
+    const catSel = document.querySelector('select[name="categoryId"]');
+    if (catSel) {
+        catSel.addEventListener('change', syncCategorySpecifications);
+    }
+
+    // Ensure the selected category template is complete before submission.
     const mainForm = document.querySelector('form');
     if (mainForm) {
         mainForm.addEventListener('submit', function (e) {
-            if (isLaptopCategory()) {
-                const requiredKeys = ['cpu', 'ram', 'storage', 'gpu', 'display', 'battery', 'os'];
-                const currentKeys = Array.from(document.querySelectorAll('input[name="specKey"]')).map(i => i.value.trim().toLowerCase());
+            const template = selectedTemplate();
+            const currentKeys = Array.from(document.querySelectorAll('input[name="specKey"]'))
+                    .map(input => input.value.trim().toLowerCase());
 
-                for (const req of requiredKeys) {
-                    if (!currentKeys.includes(req)) {
-                        e.preventDefault();
-                        alert("Thiếu thông số bắt buộc: '" + req + "'. Sản phẩm Laptop phải có thuộc tính này.");
-                        const d = document.createElement('div');
-                        d.className = 'spec-row';
-                        d.innerHTML =
-                                '<input class="form-control" name="specKey" value="' + req + '">' +
-                                '<input class="form-control" name="specValue" placeholder="Value">' +
-                                '<button class="btn btn-outline-danger" type="button" onclick="removeSpec(this)">&times;</button>';
-                        document.getElementById('specs').appendChild(d);
-                        updateSpecRows();
-                        return;
-                    }
+            for (const spec of template) {
+                if (!currentKeys.includes(spec.key)) {
+                    e.preventDefault();
+                    alert("Missing required specification: '" + spec.key + "'.");
+                    addSpecRow(spec.key, spec.label, true);
+                    updateSpecRows();
+                    return;
                 }
             }
         });

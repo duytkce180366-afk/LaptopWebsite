@@ -99,6 +99,7 @@ public class AdminProductController extends HttpServlet {
         req.setAttribute("product", p);
         req.setAttribute("categories", service.categories());
         req.setAttribute("brands", service.brands());
+        req.setAttribute("specificationTemplates", service.specificationTemplates());
         req.getRequestDispatcher("/WEB-INF/JSPViews/AdminView/product-form.jsp").forward(req, res);
     }
 

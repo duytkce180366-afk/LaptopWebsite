@@ -25,7 +25,8 @@ public class AdminProductRepository {
         """;
         List<AdminProduct> items = new ArrayList<>();
         int total = 0;
-        try (Connection con = new DbClass().getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = new DbClass().getConnection();
+                PreparedStatement ps = con.prepareStatement(sql)) {
             String q = search == null ? "" : search.trim(),
                     like = "%" + q + "%",
                     s = status == null ? "" : status;
@@ -56,7 +57,8 @@ public class AdminProductRepository {
                 + " c.category_id=p.category_id JOIN dbo.bs_Brands b ON b.brand_id=p.brand_id WHERE"
                 + " p.product_id=?";
         AdminProduct product = null;
-        try (Connection con = new DbClass().getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = new DbClass().getConnection();
+                PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -79,10 +81,59 @@ public class AdminProductRepository {
         return lookups("SELECT brand_id id,brand_name name FROM dbo.bs_Brands ORDER BY brand_name");
     }
 
+    public Map<Integer, LinkedHashMap<String, String>> specificationTemplates()
+            throws SQLException {
+        String sql
+                = """
+        WITH template_keys AS (
+            SELECT
+                cf.category_id,
+                LOWER(LTRIM(RTRIM(cf.filter_key))) spec_key,
+                cf.filter_label spec_label,
+                cf.sort_order
+            FROM dbo.bs_CategoryFilters cf
+            WHERE LOWER(LTRIM(RTRIM(cf.filter_key))) <> 'brand'
+
+            UNION ALL
+
+            SELECT
+                p.category_id,
+                LOWER(LTRIM(RTRIM(s.spec_key))) spec_key,
+                MAX(s.spec_label) spec_label,
+                1000 + MIN(s.sort_order) sort_order
+            FROM dbo.bs_ProductSpecifications s
+            JOIN dbo.bs_Products p ON p.product_id = s.product_id
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM dbo.bs_CategoryFilters cf
+                WHERE cf.category_id = p.category_id
+                  AND LOWER(LTRIM(RTRIM(cf.filter_key)))
+                      = LOWER(LTRIM(RTRIM(s.spec_key)))
+            )
+            GROUP BY p.category_id, LOWER(LTRIM(RTRIM(s.spec_key)))
+        )
+        SELECT category_id, spec_key, spec_label
+        FROM template_keys
+        ORDER BY category_id, sort_order, spec_key
+        """;
+        Map<Integer, LinkedHashMap<String, String>> templates = new LinkedHashMap<>();
+        try (Connection con = new DbClass().getConnection();
+                PreparedStatement ps = con.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                templates
+                        .computeIfAbsent(rs.getInt("category_id"), ignored -> new LinkedHashMap<>())
+                        .put(rs.getString("spec_key"), rs.getString("spec_label"));
+            }
+        }
+        return templates;
+    }
+
     public int create(AdminProduct p, int adminId) throws SQLException {
         String sql
                 = "INSERT INTO"
-                + " dbo.bs_Products(category_id,brand_id,sku,product_name,description,price,stock,thumbnail,status,created_at,updated_at)"
+                + " dbo.bs_Products(category_id,brand_id,sku,product_name,description,price,"
+                + "stock,thumbnail,status,created_at,updated_at)"
                 + " VALUES(?,?,?,?,?,?,?,?,?,SYSUTCDATETIME(),SYSUTCDATETIME())";
         try (Connection con = new DbClass().getConnection()) {
             con.setAutoCommit(false);
@@ -109,13 +160,14 @@ public class AdminProductRepository {
     public void update(AdminProduct p, int adminId) throws SQLException {
         String sql
                 = "UPDATE dbo.bs_Products SET"
-                + " category_id=?,brand_id=?,sku=?,product_name=?,description=?,price=?,thumbnail=?,status=?,updated_at=SYSUTCDATETIME()"
+                + " category_id=?,brand_id=?,product_name=?,description=?,price=?,thumbnail=?,"
+                + "status=?,updated_at=SYSUTCDATETIME()"
                 + " WHERE product_id=?";
         try (Connection con = new DbClass().getConnection()) {
             con.setAutoCommit(false);
             try (PreparedStatement ps = con.prepareStatement(sql)) {
                 bindUpdate(ps, p);
-                ps.setInt(9, p.getProductId());
+                ps.setInt(8, p.getProductId());
                 if (ps.executeUpdate() != 1) {
                     throw new SQLException("Product not found");
                 }
@@ -155,7 +207,8 @@ public class AdminProductRepository {
     }
 
     public boolean skuExists(String sku, int exceptId) throws SQLException {
-        try (Connection con = new DbClass().getConnection(); PreparedStatement ps
+        try (Connection con = new DbClass().getConnection();
+                PreparedStatement ps
                 = con.prepareStatement("SELECT 1 FROM dbo.bs_Products WHERE sku=? AND product_id<>?")) {
             ps.setString(1, sku);
             ps.setInt(2, exceptId);
@@ -173,7 +226,8 @@ public class AdminProductRepository {
                 int previous;
                 try (PreparedStatement lock
                         = con.prepareStatement(
-                                "SELECT stock FROM dbo.bs_Products WITH (UPDLOCK,ROWLOCK) WHERE product_id=?")) {
+                                "SELECT stock FROM dbo.bs_Products WITH (UPDLOCK,ROWLOCK)"
+                                + " WHERE product_id=?")) {
                     lock.setInt(1, productId);
                     try (ResultSet rs = lock.executeQuery()) {
                         if (!rs.next()) {
@@ -182,11 +236,12 @@ public class AdminProductRepository {
                         previous = rs.getInt(1);
                     }
                 }
-                int resulting = previous + quantity;
+                int resulting = quantity;
                 try (PreparedStatement update
                         = con.prepareStatement(
-                                "UPDATE dbo.bs_Products SET stock=?,status=CASE WHEN status='Out of Stock' THEN"
-                                + " 'Active' ELSE status END,updated_at=SYSUTCDATETIME() WHERE product_id=?")) {
+                                "UPDATE dbo.bs_Products SET stock=?,status=CASE"
+                                + " WHEN status='Out of Stock' THEN 'Active' ELSE status END,"
+                                + "updated_at=SYSUTCDATETIME() WHERE product_id=?")) {
                     update.setInt(1, resulting);
                     update.setInt(2, productId);
                     update.executeUpdate();
@@ -194,7 +249,8 @@ public class AdminProductRepository {
                 try (PreparedStatement receipt
                         = con.prepareStatement(
                                 "INSERT INTO"
-                                + " dbo.bs_StockReceipts(product_id,quantity,previous_stock,resulting_stock,note,admin_id)"
+                                + " dbo.bs_StockReceipts(product_id,quantity,previous_stock,"
+                                + "resulting_stock,note,admin_id)"
                                 + " VALUES(?,?,?,?,?,?)")) {
                     receipt.setInt(1, productId);
                     receipt.setInt(2, quantity);
@@ -210,7 +266,7 @@ public class AdminProductRepository {
                         "STOCK_RECEIPT",
                         "PRODUCT",
                         productId,
-                        "+"
+                        "SET "
                         + quantity
                         + " ("
                         + previous
@@ -229,12 +285,15 @@ public class AdminProductRepository {
     public List<StockReceipt> recentReceipts() throws SQLException {
         String sql
                 = "SELECT TOP 50"
-                + " r.receipt_id,r.product_id,p.sku,p.product_name,r.quantity,r.previous_stock,r.resulting_stock,r.note,u.full_name"
+                + " r.receipt_id,r.product_id,p.sku,p.product_name,r.quantity,"
+                + "r.previous_stock,r.resulting_stock,r.note,u.full_name"
                 + " admin_name,r.created_at FROM dbo.bs_StockReceipts r JOIN dbo.bs_Products p ON"
                 + " p.product_id=r.product_id JOIN dbo.bs_user u ON u.user_id=r.admin_id ORDER BY"
                 + " r.created_at DESC,r.receipt_id DESC";
         List<StockReceipt> out = new ArrayList<>();
-        try (Connection con = new DbClass().getConnection(); PreparedStatement ps = con.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+        try (Connection con = new DbClass().getConnection();
+                PreparedStatement ps = con.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 StockReceipt r = new StockReceipt();
                 r.setReceiptId(rs.getLong("receipt_id"));
@@ -268,18 +327,18 @@ public class AdminProductRepository {
     private void bindUpdate(PreparedStatement ps, AdminProduct p) throws SQLException {
         ps.setInt(1, p.getCategoryId());
         ps.setInt(2, p.getBrandId());
-        ps.setString(3, p.getSku());
-        ps.setString(4, p.getProductName());
-        ps.setString(5, p.getDescription());
-        ps.setBigDecimal(6, p.getPrice());
-        ps.setString(7, p.getThumbnail());
-        ps.setString(8, p.getStatus());
+        ps.setString(3, p.getProductName());
+        ps.setString(4, p.getDescription());
+        ps.setBigDecimal(5, p.getPrice());
+        ps.setString(6, p.getThumbnail());
+        ps.setString(7, p.getStatus());
     }
 
     private void saveSpecs(Connection con, AdminProduct p) throws SQLException {
         String sql
                 = "INSERT INTO"
-                + " dbo.bs_ProductSpecifications(product_id,spec_key,spec_label,spec_value,sort_order,created_at,updated_at)"
+                + " dbo.bs_ProductSpecifications(product_id,spec_key,spec_label,spec_value,"
+                + "sort_order,created_at,updated_at)"
                 + " VALUES(?,?,?,?,?,SYSUTCDATETIME(),SYSUTCDATETIME())";
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             int order = 0;
@@ -299,8 +358,8 @@ public class AdminProductRepository {
         Map<String, String> out = new LinkedHashMap<>();
         try (PreparedStatement ps
                 = con.prepareStatement(
-                        "SELECT spec_key,spec_value FROM dbo.bs_ProductSpecifications WHERE product_id=? ORDER"
-                        + " BY sort_order")) {
+                        "SELECT spec_key,spec_value FROM dbo.bs_ProductSpecifications"
+                        + " WHERE product_id=? ORDER BY sort_order")) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -313,7 +372,9 @@ public class AdminProductRepository {
 
     private List<LookupOption> lookups(String sql) throws SQLException {
         List<LookupOption> out = new ArrayList<>();
-        try (Connection con = new DbClass().getConnection(); PreparedStatement ps = con.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+        try (Connection con = new DbClass().getConnection();
+                PreparedStatement ps = con.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 out.add(new LookupOption(rs.getInt("id"), rs.getString("name")));
             }

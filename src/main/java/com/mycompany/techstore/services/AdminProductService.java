@@ -11,8 +11,9 @@ public class AdminProductService {
 
     private static final Set<String> STATUSES
             = Set.of("Active", "Out of Stock", "Hidden", "Inactive");
-    private static final Set<String> LAPTOP_SPECS
-            = Set.of("cpu", "ram", "storage", "gpu", "display", "battery", "os");
+    private static final int SKU_MAX_LENGTH = 80;
+    private static final int PRODUCT_NAME_MAX_LENGTH = 200;
+    private static final int THUMBNAIL_MAX_LENGTH = 500;
     private final AdminProductRepository repository = new AdminProductRepository();
 
     public PageResult<AdminProduct> findAll(
@@ -32,9 +33,16 @@ public class AdminProductService {
         return repository.brands();
     }
 
+    public Map<Integer, LinkedHashMap<String, String>> specificationTemplates()
+            throws SQLException {
+        return repository.specificationTemplates();
+    }
+
     public int create(AdminProduct product, int adminId) throws SQLException {
         product.setStock(0);
-        validate(product);
+        Set<String> templateKeys = templateKeys(product.getCategoryId());
+        normalizeTemplateSpecifications(product, null, templateKeys);
+        validate(product, templateKeys);
         return repository.create(product, adminId);
     }
 
@@ -43,8 +51,11 @@ public class AdminProductService {
         if (current == null) {
             throw new BackOfficeValidationException("Product not found.");
         }
+        product.setSku(current.getSku());
         product.setStock(current.getStock());
-        validate(product);
+        Set<String> templateKeys = templateKeys(product.getCategoryId());
+        normalizeTemplateSpecifications(product, current, templateKeys);
+        validate(product, templateKeys);
         repository.update(product, adminId);
     }
 
@@ -69,7 +80,7 @@ public class AdminProductService {
         return repository.recentReceipts();
     }
 
-    private void validate(AdminProduct p) throws SQLException {
+    private void validate(AdminProduct p, Set<String> templateKeys) throws SQLException {
         p.setSku(clean(p.getSku()));
         p.setProductName(clean(p.getProductName()));
         p.setDescription(clean(p.getDescription()));
@@ -78,8 +89,20 @@ public class AdminProductService {
         if (p.getSku().isEmpty()) {
             throw new BackOfficeValidationException("SKU is required.");
         }
+        if (p.getSku().length() > SKU_MAX_LENGTH) {
+            throw new BackOfficeValidationException(
+                    "SKU must not exceed " + SKU_MAX_LENGTH + " characters.");
+        }
         if (p.getProductName().isEmpty()) {
             throw new BackOfficeValidationException("Product name is required.");
+        }
+        if (p.getProductName().length() > PRODUCT_NAME_MAX_LENGTH) {
+            throw new BackOfficeValidationException(
+                    "Product name must not exceed " + PRODUCT_NAME_MAX_LENGTH + " characters.");
+        }
+        if (p.getThumbnail().length() > THUMBNAIL_MAX_LENGTH) {
+            throw new BackOfficeValidationException(
+                    "Thumbnail URL must not exceed " + THUMBNAIL_MAX_LENGTH + " characters.");
         }
         if (p.getCategoryId() <= 0 || p.getBrandId() <= 0) {
             throw new BackOfficeValidationException("Category and brand are required.");
@@ -99,23 +122,60 @@ public class AdminProductService {
         if (p.getStock() > 0 && "Out of Stock".equals(p.getStatus())) {
             p.setStatus("Active");
         }
-        if (isLaptop(p.getCategoryId())) {
-            for (String key : LAPTOP_SPECS) {
-                if (clean(p.getSpecifications().get(key)).isEmpty()) {
-                    throw new BackOfficeValidationException(
-                            "Laptop specification '" + key + "' is required.");
-                }
+        for (String key : templateKeys) {
+            if (clean(p.getSpecifications().get(key)).isEmpty()) {
+                throw new BackOfficeValidationException(
+                        "Specification '" + key + "' is required for the selected category.");
             }
         }
     }
 
-    private boolean isLaptop(int categoryId) throws SQLException {
-        for (LookupOption option : repository.categories()) {
-            if (option.getId() == categoryId) {
-                return "Laptops".equalsIgnoreCase(option.getName());
+    private Set<String> templateKeys(int categoryId) throws SQLException {
+        Map<String, String> template = repository.specificationTemplates().get(categoryId);
+        return template == null ? Collections.emptySet() : new LinkedHashSet<>(template.keySet());
+    }
+
+    private void normalizeTemplateSpecifications(
+            AdminProduct submitted, AdminProduct current, Set<String> templateKeys) {
+        Map<String, String> submittedSpecs = submitted.getSpecifications();
+        Map<String, String> currentSpecs
+                = current == null ? Collections.emptyMap() : current.getSpecifications();
+
+        for (String templateKey : templateKeys) {
+            String submittedValue = removeIgnoreCase(submittedSpecs, templateKey);
+            if (submittedValue != null) {
+                submittedSpecs.put(templateKey, submittedValue);
+                continue;
+            }
+
+            String currentValue = findIgnoreCase(currentSpecs, templateKey);
+            if (currentValue != null) {
+                throw new BackOfficeValidationException(
+                        "Specification key '" + templateKey + "' cannot be changed or removed.");
             }
         }
-        return false;
+    }
+
+    private String removeIgnoreCase(Map<String, String> specifications, String targetKey) {
+        String value = null;
+        Iterator<Map.Entry<String, String>> iterator = specifications.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<String, String> entry = iterator.next();
+            if (targetKey.equalsIgnoreCase(clean(entry.getKey()))) {
+                value = entry.getValue();
+                iterator.remove();
+            }
+        }
+        return value;
+    }
+
+    private String findIgnoreCase(Map<String, String> specifications, String targetKey) {
+        for (Map.Entry<String, String> entry : specifications.entrySet()) {
+            if (targetKey.equalsIgnoreCase(clean(entry.getKey()))) {
+                return entry.getValue();
+            }
+        }
+        return null;
     }
 
     private String canonicalStatus(String value) {

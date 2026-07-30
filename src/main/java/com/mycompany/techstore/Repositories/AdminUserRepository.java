@@ -14,7 +14,8 @@ public class AdminUserRepository {
             throws SQLException {
         String sql
                 = """
-    SELECT u.user_id,u.role_id,r.role_name,u.full_name,u.email,u.phone,u.isverified,u.status,u.created_at,u.updated_at,COUNT(*) OVER() total_rows
+    SELECT u.user_id,u.role_id,r.role_name,u.full_name,u.email,u.phone,u.isverified,
+           u.status,u.created_at,u.updated_at,COUNT(*) OVER() total_rows
 FROM dbo.bs_user u JOIN dbo.bs_Roles r ON r.role_id=u.role_id
 WHERE (?='' OR u.full_name LIKE ? OR u.email LIKE ? OR u.phone LIKE ?)
   AND (?=0 OR u.role_id=?) AND (?='' OR u.status=?)
@@ -22,7 +23,8 @@ ORDER BY u.created_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY""";
         List<AdminUser> items = new ArrayList<>();
         int total = 0;
         String search = clean(q), like = "%" + search + "%", s = clean(status);
-        try (Connection con = new DbClass().getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = new DbClass().getConnection();
+                PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, search);
             ps.setString(2, like);
             ps.setString(3, like);
@@ -45,11 +47,13 @@ ORDER BY u.created_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY""";
 
     public List<LookupOption> roles() throws SQLException {
         List<LookupOption> out = new ArrayList<>();
-        try (Connection con = new DbClass().getConnection(); PreparedStatement ps
+        try (Connection con = new DbClass().getConnection();
+                PreparedStatement ps
                 = con.prepareStatement(
                         "SELECT role_id,role_name FROM dbo.bs_Roles WHERE role_name IN"
                         + " ('Admin','Customer','User','Staff') ORDER BY CASE WHEN role_name='Admin' THEN 1"
-                        + " WHEN role_name='Staff' THEN 2 ELSE 3 END"); ResultSet rs = ps.executeQuery()) {
+                        + " WHEN role_name='Staff' THEN 2 ELSE 3 END");
+                ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 out.add(new LookupOption(rs.getInt(1), rs.getString(2)));
             }
@@ -60,9 +64,11 @@ ORDER BY u.created_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY""";
     public AdminUser findById(int id) throws SQLException {
         String sql
                 = "SELECT"
-                + " u.user_id,u.role_id,r.role_name,u.full_name,u.email,u.phone,u.isverified,u.status,u.created_at,u.updated_at"
-                + " FROM dbo.bs_user u JOIN dbo.bs_Roles r ON r.role_id=u.role_id WHERE u.user_id=?";
-        try (Connection con = new DbClass().getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+                + " u.user_id,u.role_id,r.role_name,u.full_name,u.email,u.phone,u.isverified,"
+                + "u.status,u.created_at,u.updated_at FROM dbo.bs_user u JOIN dbo.bs_Roles r ON"
+                + " r.role_id=u.role_id WHERE u.user_id=?";
+        try (Connection con = new DbClass().getConnection();
+                PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 return rs.next() ? map(rs) : null;
@@ -71,7 +77,8 @@ ORDER BY u.created_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY""";
     }
 
     public boolean isManagedRole(int roleId) throws SQLException {
-        try (Connection con = new DbClass().getConnection(); PreparedStatement ps
+        try (Connection con = new DbClass().getConnection();
+                PreparedStatement ps
                 = con.prepareStatement(
                         "SELECT 1 FROM dbo.bs_Roles WHERE role_id=? AND role_name IN"
                         + " ('Admin','Customer','User','Staff')")) {
@@ -83,7 +90,8 @@ ORDER BY u.created_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY""";
     }
 
     public int findRoleId(String roleName) throws SQLException {
-        try (Connection con = new DbClass().getConnection(); PreparedStatement ps
+        try (Connection con = new DbClass().getConnection();
+                PreparedStatement ps
                 = con.prepareStatement(
                         "SELECT role_id FROM dbo.bs_Roles WHERE role_name=? OR (role_name='User' AND"
                         + " ?='Customer') OR (role_name='Customer' AND ?='User')")) {
@@ -97,7 +105,8 @@ ORDER BY u.created_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY""";
     }
 
     public boolean emailExists(String email, int exceptId) throws SQLException {
-        try (Connection con = new DbClass().getConnection(); PreparedStatement ps
+        try (Connection con = new DbClass().getConnection();
+                PreparedStatement ps
                 = con.prepareStatement(
                         "SELECT 1 FROM dbo.bs_user WHERE LOWER(email)=LOWER(?) AND user_id<>?")) {
             ps.setString(1, email);
@@ -208,9 +217,24 @@ ORDER BY u.created_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY""";
     public boolean isLastActiveAdmin(int id) throws SQLException {
         String sql
                 = """
-    SELECT CASE WHEN EXISTS(SELECT 1 FROM dbo.bs_user u JOIN dbo.bs_Roles r ON r.role_id=u.role_id WHERE u.user_id=? AND r.role_name='Admin' AND u.status='Active')
-AND (SELECT COUNT(*) FROM dbo.bs_user u JOIN dbo.bs_Roles r ON r.role_id=u.role_id WHERE r.role_name='Admin' AND u.status='Active')<=1 THEN 1 ELSE 0 END""";
-        try (Connection con = new DbClass().getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+    SELECT CASE
+        WHEN EXISTS(
+            SELECT 1
+            FROM dbo.bs_user u
+            JOIN dbo.bs_Roles r ON r.role_id=u.role_id
+            WHERE u.user_id=? AND r.role_name='Admin' AND u.status='Active'
+        )
+        AND (
+            SELECT COUNT(*)
+            FROM dbo.bs_user u
+            JOIN dbo.bs_Roles r ON r.role_id=u.role_id
+            WHERE r.role_name='Admin' AND u.status='Active'
+        )<=1
+        THEN 1
+        ELSE 0
+    END""";
+        try (Connection con = new DbClass().getConnection();
+                PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 rs.next();

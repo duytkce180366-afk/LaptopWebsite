@@ -48,6 +48,23 @@
                     class="form-control"
                     type="password"
                     name="password"
+                    autocomplete="new-password"
+                    required
+                    minlength="8"
+                    pattern="(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,}"
+                    title="Use at least 8 characters, including uppercase, lowercase, and a number.">
+                <div class="form-text">
+                    At least 8 characters, including uppercase, lowercase, and a number.
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Repeat password</label>
+                <input
+                    class="form-control"
+                    type="password"
+                    name="repeatPassword"
+                    autocomplete="new-password"
                     required
                     minlength="8">
             </div>

@@ -74,23 +74,27 @@
                     <td><c:out value="${d.sku}" /></td>
                     <td><c:out value="${d.productName}" /></td>
                     <td>${d.quantity}</td>
-                    <td><fmt:formatNumber value="${d.unitPrice}" pattern="#,##0.00" /></td>
-                    <td><fmt:formatNumber value="${d.subtotal}" pattern="#,##0.00" /></td>
+                    <td><fmt:formatNumber value="${d.unitPrice}" pattern="#,###" /> &#8363;</td>
+                    <td><fmt:formatNumber value="${d.subtotal}" pattern="#,###" /> &#8363;</td>
                 </tr>
             </c:forEach>
         </tbody>
     </table>
 
     <div class="text-end mt-3">
-        <div>Subtotal: <fmt:formatNumber value="${order.totalAmount}" pattern="#,##0.00" /></div>
+        <div>Subtotal: <fmt:formatNumber value="${order.totalAmount}" pattern="#,###" /> &#8363;</div>
         <c:if test="${order.shippingFee > 0}">
-            <div>Shipping: <fmt:formatNumber value="${order.shippingFee}" pattern="#,##0.00" /></div>
+            <div>Shipping: <fmt:formatNumber value="${order.shippingFee}" pattern="#,###" /> &#8363;</div>
         </c:if>
         <div>
             Discount<c:if test="${not empty order.voucherCode}"> (<c:out value="${order.voucherCode}" />)</c:if>:
-            -<fmt:formatNumber value="${order.discountAmount != null ? order.discountAmount : 0}" pattern="#,##0.00" />
+            -<fmt:formatNumber
+                value="${order.discountAmount != null ? order.discountAmount : 0}"
+                pattern="#,###" /> &#8363;
         </div>
-        <strong class="fs-5">Total: <fmt:formatNumber value="${order.finalTotal}" pattern="#,##0.00" /></strong>
+        <strong class="fs-5">
+            Total: <fmt:formatNumber value="${order.finalTotal}" pattern="#,###" /> &#8363;
+        </strong>
     </div>
 </div>
 

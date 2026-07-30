@@ -1,4 +1,5 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="pageTitle" value="Dashboard" />
 <%@ include file="_start.jsp" %>
 
@@ -15,11 +16,15 @@
         </div>
 
         <div class="admin-actions" style="grid-column: span 3;">
-            <button class="btn btn-primary">Apply period</button>
-            <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/admin/dashboard?period=30">
+            <button class="btn ${activePeriod == 'custom' ? 'btn-primary' : 'btn-outline-primary'}">
+                Apply period
+            </button>
+            <a class="btn ${activePeriod == '30' ? 'btn-primary' : 'btn-outline-secondary'}"
+               href="${pageContext.request.contextPath}/admin/dashboard?period=30">
                 Last 30 days
             </a>
-            <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/admin/dashboard">
+            <a class="btn ${activePeriod == 'all' ? 'btn-primary' : 'btn-outline-secondary'}"
+               href="${pageContext.request.contextPath}/admin/dashboard">
                 All time
             </a>
             <a class="btn btn-outline-success"
@@ -28,12 +33,16 @@
             </a>
         </div>
     </form>
+    <small class="text-muted">
+        The period applies to revenue, orders, registered customers, added products, reviews,
+        sales and activity. Low stock always shows the current inventory.
+    </small>
 </div>
 
 <div class="metric-grid">
     <div class="metric">
         <small>Delivered revenue</small>
-        <strong>${stats.revenue}</strong>
+        <strong><fmt:formatNumber value="${stats.revenue}" pattern="#,###" /> &#8363;</strong>
     </div>
 
     <div class="metric">
@@ -42,17 +51,17 @@
     </div>
 
     <div class="metric">
-        <small>Customers</small>
+        <small>Customers registered</small>
         <strong>${stats.users}</strong>
     </div>
 
     <div class="metric">
-        <small>Products</small>
+        <small>Products added</small>
         <strong>${stats.products}</strong>
     </div>
 
     <div class="metric">
-        <small>Reviews</small>
+        <small>Reviews submitted</small>
         <strong>${stats.reviews}</strong>
     </div>
 </div>
@@ -151,7 +160,7 @@
                         <td>
                             <c:out value="${r.status}" />
                         </td>
-                        <td>${r.value}</td>
+                        <td><fmt:formatNumber value="${r.value}" pattern="#,###" /> &#8363;</td>
                     </tr>
                 </c:forEach>
 
@@ -171,7 +180,9 @@
                 <c:forEach var="r" items="${stats.dailyRevenue}">
                     <tr>
                         <td>${r.label}</td>
-                        <td class="text-end">${r.value}</td>
+                        <td class="text-end">
+                            <fmt:formatNumber value="${r.value}" pattern="#,###" /> &#8363;
+                        </td>
                     </tr>
                 </c:forEach>
 

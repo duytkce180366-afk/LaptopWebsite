@@ -42,7 +42,10 @@
             <c:forEach var="p" items="${result.items}">
                 <tr>
                     <td>
-                        <form id="receive-${p.productId}" method="post" action="${pageContext.request.contextPath}/admin/inventory">
+                        <form
+                            id="receive-${p.productId}"
+                            method="post"
+                            action="${pageContext.request.contextPath}/admin/inventory">
                             <input type="hidden" name="csrfToken" value="${sessionScope.adminCsrfToken}">
                             <input type="hidden" name="productId" value="${p.productId}">
                         </form>
@@ -60,6 +63,7 @@
                             name="quantity"
                             min="1"
                             max="100000"
+                            step="1"
                             required>
                     </td>
 
@@ -111,7 +115,7 @@
                     <td><fmt:formatDate value="${r.createdAt}" pattern="dd/MM/yyyy HH:mm:ss" /></td>
                     <td><c:out value="${r.sku}" /></td>
                     <td><c:out value="${r.productName}" /></td>
-                    <td>+${r.quantity}</td>
+                    <td>${r.quantity}</td>
                     <td>${r.previousStock} &rarr; ${r.resultingStock}</td>
                     <td><c:out value="${r.adminName}" /></td>
                     <td><c:out value="${r.note}" /></td>

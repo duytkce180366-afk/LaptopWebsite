@@ -89,11 +89,12 @@
                         <c:out value="${o.paymentMethod}" />
                     </td>
                     <td>
-                        <fmt:formatNumber value="${o.finalTotal}" pattern="#,##0.00" />
+                        <fmt:formatNumber value="${o.finalTotal}" pattern="#,###" /> &#8363;
                         <c:if test="${o.discountAmount > 0}">
                             <br>
                             <small class="text-success" style="font-size: 0.8rem;">
-                                Discount: -<fmt:formatNumber value="${o.discountAmount}" pattern="#,##0.00" />
+                                Discount:
+                                -<fmt:formatNumber value="${o.discountAmount}" pattern="#,###" /> &#8363;
                                 <c:if test="${not empty o.voucherCode}">
                                     (<c:out value="${o.voucherCode}" />)
                                 </c:if>

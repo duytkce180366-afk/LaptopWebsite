@@ -16,7 +16,7 @@ public class AdminUserService {
     public static final String ROLE_ADMIN = "Admin";
     public static final String ROLE_STAFF = "Staff";
     public static final String ROLE_CUSTOMER = "Customer";
-
+    private static final String PWD_FORMAT = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$";
     private final AdminUserRepository repository = new AdminUserRepository();
     private final EmailService emailService;
 
@@ -50,7 +50,12 @@ public class AdminUserService {
         if (!ROLE_STAFF.equals(actorRole)) {
             return roles();
         }
-        return roles().stream().filter(role -> ROLE_CUSTOMER.equals(role.getName()) || "User".equals(role.getName())).toList();
+        return roles().stream()
+                .filter(
+                        role
+                        -> ROLE_CUSTOMER.equals(role.getName())
+                        || "User".equals(role.getName()))
+                .toList();
     }
 
     public AdminUser findById(int id) throws SQLException {
@@ -114,18 +119,43 @@ public class AdminUserService {
         }
     }
 
-    public void createStaff(String name, String email, String phone, String password, int adminId)
+    public void createStaff(
+            String name,
+            String email,
+            String phone,
+            String password,
+            String repeatPassword,
+            int adminId)
             throws SQLException, NoSuchAlgorithmException, MessagingException {
         validateStaff(name, email, phone);
-        if (password == null || password.length() < 8) {
-            throw new BackOfficeValidationException("Password must contain at least 8 characters.");
-        }
+        validatePasswordConfirmation(password, repeatPassword);
+
         if (repository.emailExists(email, 0)) {
             throw new BackOfficeValidationException("Email is already in use.");
         }
-        repository.createStaff(name.trim(), email.trim(), clean(phone), PasswordUtil.hashPassword(password), adminId);
+        repository.createStaff(
+                name.trim(),
+                email.trim(),
+                clean(phone),
+                PasswordUtil.hashPassword(password),
+                adminId);
         if (emailService != null) {
             emailService.sendStaffCredentialsEmail(email.trim(), name.trim(), password);
+        }
+    }
+
+    static void validatePasswordConfirmation(String password, String repeatPassword) {
+        if (password == null || password.isEmpty()
+                || repeatPassword == null || repeatPassword.isEmpty()) {
+            throw new BackOfficeValidationException(
+                    "Enter both password and repeat password fields.");
+        }
+        if (!password.matches(PWD_FORMAT)) {
+            throw new BackOfficeValidationException("Password complexity does not meet.");
+        }
+        if (!password.equals(repeatPassword)) {
+            throw new BackOfficeValidationException(
+                    "Password and repeat password must be the same.");
         }
     }
 
