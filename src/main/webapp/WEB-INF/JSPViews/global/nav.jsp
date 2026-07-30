@@ -118,7 +118,6 @@
     <div class="category-menu">
         <button class="category-menu-button" type="button" data-action="toggle-category-menu" aria-expanded="false">
             Categories
-            <span aria-hidden="true">v</span>
         </button>
         <div class="mega-menu">
             <div class="mega-list">
@@ -172,30 +171,31 @@
         <input type="hidden" name="category" value="<%= nav_html(navSelectedCategoryId)%>" />
         <% }%>
         <input type="search" name="search" placeholder="Search products..." value="<%= nav_html(navSearchTerm)%>" aria-label="Search products" />
-        <button type="submit" aria-label="Search">&#128269;</button>
+        <button class="bi bi-search" type="submit" aria-label="Search"></button>
     </form>
 
     <div class="nav-links">
-        <a href="<%= request.getContextPath()%>/home#home">Home</a>
-        <a href="<%= request.getContextPath()%>/home#products">Products</a>
+        <a href="<%= request.getContextPath()%>/home#home"><i class="bi bi-house"></i></a>
+        <a href="<%= request.getContextPath()%>/home#products"><i class="bi bi-bag"></i></a>
+
+        <a href="${pageContext.request.contextPath}/cart"
+           class="cart-btn">
+            <i class="bi bi-cart3"></i>
+        </a>
+        <a href="${pageContext.request.contextPath}/order-history"
+           class="cart-btn">
+            <i class="bi bi-clock-history"></i>
+        </a>
         <% if (Boolean.TRUE.equals(request.getAttribute("isBackOfficeAccount"))) {%>
         <a href="<%= request.getContextPath()%>/admin/dashboard">Back to Dashboard</a>
         <% }%>
-        <a href="${pageContext.request.contextPath}/cart"
-           class="cart-btn">
-            <i class="fa-solid fa-cart-shopping"></i>
-            <span>Cart</span>
-        </a>
-        <a href="<%= request.getContextPath()%>/order-history">My Orders</a>
-
         <%
             User loggedUser = (User) session.getAttribute("loggedUser");
             if (loggedUser == null) {
         %>
         <div class="dropdown">
             <a class="btn btn-sm btn-outline-secondary dropdown-toggle" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                <span class="user-icon" aria-hidden="true">&#128100;</span>
-                <span class="visually-hidden">Account</span>
+                <i class="bi bi-person-circle"></i>
             </a>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                 <li><a class="dropdown-item" href="<%= request.getContextPath()%>/auth?action=signin">Sign in</a></li>
@@ -207,8 +207,8 @@
         %>
         <div class="dropdown">
             <a class="btn btn-sm btn-outline-secondary dropdown-toggle" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                <span>Account</span>
-                <span class="user-email"><%= nav_html(loggedUser.getEmail())%></span>
+                <i class="bi bi-person-circle"></i>
+                <span class="visually-hidden"><%= nav_html(loggedUser.getEmail())%></span>
             </a>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                 <% if (!loggedUser.isIsVerified()) {%>

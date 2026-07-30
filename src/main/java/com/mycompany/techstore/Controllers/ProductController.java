@@ -45,8 +45,19 @@ public class ProductController extends HttpServlet {
         String sortOrder = getParameterOrDefault(request, "sort", "recommended");
         PriceRange priceRange = getPriceRange(selectedPrice, priceRanges);
         long sliderMaxPrice = getSliderMaxPrice(products);
-        long selectedMinPrice = getPriceParameter(request, "minPrice", priceRange.getMin());
-        long selectedMaxPrice = getPriceParameter(request, "maxPrice", priceRange.getMax() == Long.MAX_VALUE ? sliderMaxPrice : priceRange.getMax());
+
+        // If the user selected a price range from the category menu (price param present),
+        // use the predefined range from `priceRange` so the price slider reflects that selection.
+        // Otherwise, respect explicit `minPrice`/`maxPrice` query parameters.
+        long selectedMinPrice;
+        long selectedMaxPrice;
+        if (request.getParameter("price") != null) {
+            selectedMinPrice = priceRange.getMin();
+            selectedMaxPrice = priceRange.getMax() == Long.MAX_VALUE ? sliderMaxPrice : priceRange.getMax();
+        } else {
+            selectedMinPrice = getPriceParameter(request, "minPrice", priceRange.getMin());
+            selectedMaxPrice = getPriceParameter(request, "maxPrice", priceRange.getMax() == Long.MAX_VALUE ? sliderMaxPrice : priceRange.getMax());
+        }
         selectedMinPrice = clampPrice(selectedMinPrice, 0, sliderMaxPrice);
         selectedMaxPrice = clampPrice(selectedMaxPrice, 0, sliderMaxPrice);
         if (selectedMinPrice > selectedMaxPrice) {
