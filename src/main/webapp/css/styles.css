@@ -1,7 +1,7 @@
 :root {
   --ink: #17212b;
   --muted: #617083;
-  --line: #d8e1ea;
+  --line: #c5d0dc;
   --panel: #ffffff;
   --soft: #f4f7fb;
   --page: #eef3f8;
@@ -66,7 +66,7 @@ a {
 .topbar {
   align-items: center;
   background: var(--topbar);
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1.5px solid var(--line);
   display: flex;
   gap: 14px;
   justify-content: flex-start;
@@ -204,7 +204,7 @@ a {
 
 .mega-list {
   background: var(--soft);
-  border-right: 1px solid var(--line);
+  border-right: 1.5px solid var(--line);
   display: grid;
   gap: 2px;
   padding: 10px;
