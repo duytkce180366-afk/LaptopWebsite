@@ -15,11 +15,11 @@ import jakarta.servlet.http.HttpSession;
 @WebServlet("/apply-voucher")
 public class ApplyVoucherController extends HttpServlet {
 
-    private VoucherService voucherService
+    private final VoucherService voucherService
             = new VoucherService();
-    private CartService cartService
+    private final CartService cartService
             = new CartService();
-    private OrderRepository orderRepository
+    private final OrderRepository orderRepository
             = new OrderRepository();
 
     @Override

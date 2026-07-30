@@ -124,7 +124,10 @@
                                     ${param.status=="Inactive"?"selected":""}>
                                 Inactive
                             </option>
-
+                            <option value="Expired"
+                                    ${param.status=="Expired"?"selected":""}>
+                                Expired
+                            </option>
                         </select>
 
                     </div>
@@ -271,9 +274,9 @@
 
                                     <a href="${pageContext.request.contextPath}/admin/voucher?action=delete&id=${v.voucherId}"
                                        class="btn btn-danger btn-sm"
-                                       onclick="return confirm('De-Active this voucher?')">
+                                       onclick="return confirm('Inactive this voucher?')">
 
-                                        De-Active
+                                        Inactive
 
                                     </a>
 

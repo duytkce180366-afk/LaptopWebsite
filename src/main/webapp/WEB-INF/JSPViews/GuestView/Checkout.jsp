@@ -183,6 +183,7 @@
                                     <fmt:formatNumber value="${item.subtotal}" pattern="#,###" /> đ
                                 </div>
                             </div>
+                            <input type="hidden" name="selectedItems" value="${item.cartItemId}">
                         </c:forEach>
                     </div>
 
@@ -232,6 +233,7 @@
         </form>
 
         <!-- Form ẩn dành riêng cho VNPay -->
+        <!-- Form ẩn dành riêng cho VNPay -->
         <form id="vnpayForm"
               action="${pageContext.request.contextPath}/vnpay-pay"
               method="post"
@@ -244,8 +246,8 @@
             <input type="hidden" name="voucherId"      id="vp_voucherId">
             <input type="hidden" name="discountAmount" id="vp_discountAmount">
             <input type="hidden" name="paymentMethod" value="VNPay" id="vp_paymentMethod">
+            <div id="vp_selectedItemsContainer"></div>
         </form>
-
         <%@include file="/WEB-INF/JSPViews/global/footer.jsp" %>
 
         <script>
@@ -355,6 +357,18 @@
                     document.getElementById("vp_amount").value = document.getElementById("hiddenFinalAmount").value;
                     document.getElementById("vp_voucherId").value = document.getElementById("hiddenVoucherId").value;
                     document.getElementById("vp_discountAmount").value = document.getElementById("hiddenDiscountAmount").value;
+
+                    // Copy selected cart item IDs from the COD form into the VNPay form
+                    var vpContainer = document.getElementById("vp_selectedItemsContainer");
+                    vpContainer.innerHTML = "";
+                    form.querySelectorAll('input[name="selectedItems"]').forEach(function (input) {
+                        var clone = document.createElement("input");
+                        clone.type = "hidden";
+                        clone.name = "selectedItems";
+                        clone.value = input.value;
+                        vpContainer.appendChild(clone);
+                    });
+
                     document.getElementById("vnpayForm").submit();
                 } else {
                     form.submit();

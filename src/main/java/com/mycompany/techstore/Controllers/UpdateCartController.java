@@ -14,7 +14,7 @@ import jakarta.servlet.http.HttpSession;
 @WebServlet("/cart/update")
 public class UpdateCartController extends HttpServlet {
 
-    private CartRepository repo
+    private final CartRepository repo
             = new CartRepository();
 
     @Override

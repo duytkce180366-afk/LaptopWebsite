@@ -89,11 +89,24 @@ public class VNPayController extends HttpServlet {
         }
 
         // Place order
+        // Get selected cart item IDs (same pattern as PlaceOrderController)
+        String[] selectedItems = request.getParameterValues("selectedItems");
+        List<Integer> selectedCartItemIds = new ArrayList<>();
+        if (selectedItems != null) {
+            for (String id : selectedItems) {
+                try {
+                    selectedCartItemIds.add(Integer.parseInt(id.trim()));
+                } catch (NumberFormatException e) {
+                    // ignore malformed id
+                }
+            }
+        }
+
         OrderService orderService = new OrderService();
         int orderId = orderService.placeOrder(
                 loggedUser.getUser_id(), "VNPay",
                 address, district, province, phone,
-                voucherId, discountAmount
+                voucherId, discountAmount, selectedCartItemIds
         );
 
         if (orderId == -2) {

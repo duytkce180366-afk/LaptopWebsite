@@ -26,7 +26,7 @@ import java.util.List;
 @WebServlet("/admin/voucher")
 public class AdminVoucherController extends HttpServlet {
 
-    private VoucherService service
+    private final VoucherService service
             = new VoucherService();
 
     @Override
@@ -42,34 +42,6 @@ public class AdminVoucherController extends HttpServlet {
         }
 
         switch (action) {
-
-            case "create":
-
-                request.getRequestDispatcher(
-                        "/WEB-INF/JSPViews/AdminView/CreateVoucher.jsp")
-                        .forward(request, response);
-                break;
-
-            case "edit":
-
-                int id = Integer.parseInt(
-                        request.getParameter("id"));
-
-                Voucher voucher
-                        = service.getVoucherById(id);
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                request.setAttribute(
-                        "expiredDate",
-                        sdf.format(voucher.getExpiredDate()));
-
-                request.setAttribute(
-                        "voucher",
-                        voucher);
-
-                request.getRequestDispatcher(
-                        "/WEB-INF/JSPViews/AdminView/EditVoucher.jsp")
-                        .forward(request, response);
-                break;
 
             case "list":
 
@@ -197,6 +169,26 @@ public class AdminVoucherController extends HttpServlet {
         Voucher voucher = new Voucher();
 
         voucher.setCode(request.getParameter("code"));
+        if (service.isVoucherCodeExists(voucher.getCode())) {
+
+            request.setAttribute(
+                    "error",
+                    "Voucher code already exists.");
+
+            request.setAttribute(
+                    "voucherList",
+                    service.getAllVoucher());
+
+            request.setAttribute(
+                    "showCreateModal",
+                    true);
+
+            request.getRequestDispatcher(
+                    "/WEB-INF/JSPViews/AdminView/VoucherManagement.jsp")
+                    .forward(request, response);
+
+            return;
+        }
         double discount = Double.parseDouble(
                 request.getParameter("discountPercent"));
 
@@ -206,21 +198,43 @@ public class AdminVoucherController extends HttpServlet {
                     "error",
                     "Discount percent must be between 1 and 100.");
 
+            request.setAttribute("voucherList", service.getAllVoucher());
+            request.setAttribute("showCreateModal", true);
+
             request.getRequestDispatcher(
-                    "/WEB-INF/JSPViews/AdminView/CreateVoucher.jsp")
+                    "/WEB-INF/JSPViews/AdminView/VoucherManagement.jsp")
+                    .forward(request, response);
+
+            return;
+        }
+        int quantity = Integer.parseInt(request.getParameter("quantity"));
+
+        if (quantity <= 0) {
+
+            request.setAttribute(
+                    "error",
+                    "Quantity must be greater than 0.");
+
+            request.setAttribute(
+                    "voucherList",
+                    service.getAllVoucher());
+
+            request.setAttribute(
+                    "showCreateModal",
+                    true);
+
+            request.getRequestDispatcher(
+                    "/WEB-INF/JSPViews/AdminView/VoucherManagement.jsp")
                     .forward(request, response);
 
             return;
         }
 
+        voucher.setQuantity(quantity);
         voucher.setDiscountPercent(discount);
 
-        voucher.setQuantity(
-                Integer.parseInt(request.getParameter("quantity")));
         voucher.setDiscountPercent(
                 Double.parseDouble(request.getParameter("discountPercent")));
-        voucher.setQuantity(
-                Integer.parseInt(request.getParameter("quantity")));
 
         try {
 
@@ -235,8 +249,8 @@ public class AdminVoucherController extends HttpServlet {
 
                 request.setAttribute("voucherList", service.getAllVoucher());
 
-                request.setAttribute("editVoucher", voucher);
-                request.setAttribute("showEditModal", true);
+                request.setAttribute("createVoucher", voucher);
+                request.setAttribute("showCreateModal", true);
 
                 request.getRequestDispatcher(
                         "/WEB-INF/JSPViews/AdminView/VoucherManagement.jsp")
@@ -276,24 +290,71 @@ public class AdminVoucherController extends HttpServlet {
                     "error",
                     "Discount percent must be between 1 and 100.");
 
+            request.setAttribute("voucherList", service.getAllVoucher());
+            request.setAttribute("showCreateModal", true);
+
             request.getRequestDispatcher(
-                    "/WEB-INF/JSPViews/AdminView/CreateVoucher.jsp")
+                    "/WEB-INF/JSPViews/AdminView/VoucherManagement.jsp")
                     .forward(request, response);
 
             return;
         }
 
+        int quantity = Integer.parseInt(request.getParameter("quantity"));
+
+        if (quantity <= 0) {
+
+            request.setAttribute(
+                    "error",
+                    "Quantity must be greater than 0.");
+
+            request.setAttribute(
+                    "voucherList",
+                    service.getAllVoucher());
+
+            request.setAttribute(
+                    "showEditModal",
+                    true);
+
+            request.getRequestDispatcher(
+                    "/WEB-INF/JSPViews/AdminView/VoucherManagement.jsp")
+                    .forward(request, response);
+
+            return;
+        }
+
+        voucher.setQuantity(quantity);
         voucher.setDiscountPercent(discount);
 
-        voucher.setQuantity(
-                Integer.parseInt(request.getParameter("quantity")));
         voucher.setCode(request.getParameter("code"));
+        if (service.isVoucherCodeExistsExceptCurrent(
+                voucher.getVoucherId(),
+                voucher.getCode())) {
 
+            request.setAttribute(
+                    "error",
+                    "Voucher code already exists.");
+
+            request.setAttribute(
+                    "voucherList",
+                    service.getAllVoucher());
+
+            request.setAttribute(
+                    "editVoucher",
+                    voucher);
+
+            request.setAttribute(
+                    "showEditModal",
+                    true);
+
+            request.getRequestDispatcher(
+                    "/WEB-INF/JSPViews/AdminView/VoucherManagement.jsp")
+                    .forward(request, response);
+
+            return;
+        }
         voucher.setDiscountPercent(
                 Double.parseDouble(request.getParameter("discountPercent")));
-
-        voucher.setQuantity(
-                Integer.parseInt(request.getParameter("quantity")));
 
         try {
 
@@ -322,7 +383,7 @@ public class AdminVoucherController extends HttpServlet {
             voucher.setExpiredDate(expiredDate);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
 
         voucher.setStatus(request.getParameter("status"));

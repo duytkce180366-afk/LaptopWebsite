@@ -132,7 +132,25 @@
                                             </button>
 
                                         </form>
+                                        <form action="${pageContext.request.contextPath}/checkout"
+                                              method="get">
 
+                                            <input type="hidden"
+                                                   name="cartItemId"
+                                                   value="${item.cartItemId}"/>
+
+                                            <button type="submit"
+                                                    class="btn-checkout-item"
+                                                    style="background:#2563eb;
+                                                    color:white;
+                                                    border:none;
+                                                    border-radius:8px;
+                                                    padding:10px 18px;
+                                                    cursor:pointer;">
+                                                Checkout
+                                            </button>
+
+                                        </form>
                                     </div>
 
                                 </td>

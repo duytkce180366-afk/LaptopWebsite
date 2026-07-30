@@ -78,9 +78,11 @@
     font-size:15px;
 }
 .cart-actions{
-    display:flex;
-    justify-content:center;
-    gap:10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 .btn-update{
     background:#2563eb;
@@ -100,21 +102,23 @@
     transform:translateY(-2px);
 }
 .btn-remove{
-    background:#dc2626;
-    color:white;
+    background:#ffffff;
+    color:#dc2626;
 
-    border:none;
+    border:1.5px solid #fca5a5;
     border-radius:10px;
 
-    padding:10px 16px;
+    padding:9px 16px;
+    font-size:13px;
+    font-weight:600;
     cursor:pointer;
 
     transition:.25s;
 }
 
 .btn-remove:hover{
-    background:#b91c1c;
-    transform:translateY(-2px);
+    background:#fef2f2;
+    border-color:#dc2626;
 }
 .cart-container{
     max-width:1100px;
@@ -144,6 +148,7 @@
     transform:translateY(-2px);
 }
 /* Biến form thành inline hoặc flex để không bị nhảy hàng */
+/* Biến form thành inline hoặc flex để không bị nhảy hàng */
 .cart-actions form,
 .qty-box form {
     display: inline-block;
@@ -151,24 +156,44 @@
     padding: 0;
 }
 
+/* Gom cụm số lượng vào 1 khối bo tròn, tách biệt rõ với các nút khác */
+.qty-box {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: #f3f4f6;
+    border-radius: 24px;
+    padding: 4px 6px;
+}
+
+.qty-box span {
+    min-width: 22px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 14px;
+    color: #111827;
+}
+
 /* Định dạng lại giao diện cho các nút cộng trừ (+ / -) */
 .qty-box button {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     border: none;
     border-radius: 50%;
     cursor: pointer;
-    background: #e5e7eb; /* Thêm màu nền cho nút */
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgba(0,0,0,.1);
     font-weight: bold;
-    font-size: 16px;
+    font-size: 15px;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: 0.2s;
+    color: #374151;
 }
 
 .qty-box button:hover {
-    background: #d1d5db;
+    background: #e5e7eb;
 }
 .alert-stock{
     background:#fee2e2;
@@ -258,4 +283,25 @@
 .cart-btn:disabled{
     background:#9ca3af;
     cursor:not-allowed;
+}
+/* Checkout từng sản phẩm */
+.btn-checkout-item {
+    padding: 9px 18px;
+    border: none;
+    border-radius: 10px;
+    background: #2563eb;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s ease;
+    white-space: nowrap;
+}
+
+.btn-checkout-item:hover {
+    background: #1d4ed8;
+}
+
+.btn-checkout-item:active {
+    transform: scale(.97);
 }
