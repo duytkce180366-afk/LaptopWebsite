@@ -167,7 +167,7 @@ a {
   color: #fff;
   cursor: pointer;
   display: flex;
-  font-weight: 600;
+  font-weight: 200;
   gap: 10px;
   min-height: 44px;
   padding: 0 18px;
@@ -178,20 +178,28 @@ a {
   border: 1px solid var(--line);
   border-radius: 8px;
   box-shadow: 0 24px 70px var(--shadow);
-  display: none;
+  display: grid;
   grid-template-columns: 260px minmax(520px, 1fr);
   left: 0;
   min-height: 430px;
+  opacity: 0;
   overflow: hidden;
+  pointer-events: none;
   position: absolute;
   top: calc(100% + 10px);
+  transform: translateY(-8px);
+  transition: opacity 180ms ease, transform 180ms ease, visibility 180ms ease;
+  visibility: hidden;
   width: min(1080px, calc(100vw - 32px));
 }
 
 .category-menu:hover .mega-menu,
 .category-menu:focus-within .mega-menu,
 .category-menu.open .mega-menu {
-  display: grid;
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+  visibility: visible;
 }
 
 .mega-list {
@@ -210,7 +218,7 @@ a {
   color: var(--ink);
   cursor: pointer;
   display: flex;
-  font-weight: 500;
+  font-weight: 200;
   justify-content: space-between;
   min-height: 38px;
   padding: 8px 12px;
@@ -237,7 +245,7 @@ a {
 
 .mega-panel h3 {
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 200;
   margin: 0 0 12px;
 }
 
@@ -282,7 +290,7 @@ a {
   border-radius: 6px;
   color: var(--ink);
   cursor: pointer;
-  font-weight: 500;
+  font-weight: 200;
   padding: 8px 10px;
   text-decoration: none;
 }
@@ -302,7 +310,7 @@ a {
   cursor: pointer;
   display: inline-flex;
   font: inherit;
-  font-weight: 600;
+  font-weight: 200;
   justify-content: center;
   line-height: 1;
   min-height: 38px;
@@ -395,10 +403,11 @@ a {
   border: 0;
   border-radius: 6px;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 200;
   min-height: 42px;
   padding: 11px 16px;
   text-decoration: none;
+  text-align: center;
 }
 
 .primary-action,
@@ -520,7 +529,7 @@ a {
 
 .category-card span {
   font-size: 1.15rem;
-  font-weight: 600;
+  font-weight: 200;
 }
 
 .category-card small {
@@ -557,7 +566,7 @@ a {
 .filters span {
   color: var(--muted);
   font-size: 0.85rem;
-  font-weight: 500;
+  font-weight: 200;
 }
 
 .filters input,
@@ -585,7 +594,7 @@ a {
   color: var(--ink);
   cursor: pointer;
   display: flex;
-  font-weight: 600;
+  font-weight: 200;
   gap: 10px;
   justify-content: space-between;
   min-height: 42px;
@@ -635,7 +644,7 @@ a {
 .price-slider-heading output {
   color: var(--muted);
   font-size: 0.95rem;
-  font-weight: 600;
+  font-weight: 200;
 }
 
 .price-slider-values {
@@ -807,7 +816,7 @@ a {
 
 .result-count {
   color: var(--muted);
-  font-weight: 500;
+  font-weight: 200;
   margin: 20px 0;
 }
 
@@ -844,7 +853,7 @@ a {
   display: flex;
   flex-wrap: wrap;
   font-size: 0.82rem;
-  font-weight: 500;
+  font-weight: 200;
   gap: 8px;
 }
 
@@ -975,7 +984,7 @@ a {
   border-radius: 6px;
   color: var(--ink);
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 200;
   margin-left: clamp(16px, 5vw, 64px);
   min-height: 42px;
   padding: 10px 14px;
@@ -1227,29 +1236,36 @@ a {
 }
 
 .nav-search {
-  display: grid;
-  flex: 1 1 420px;
-  grid-template-columns: minmax(160px, 1fr) 72px;
-  max-width: 620px;
+    display: grid;
+    flex: 1 1 420px;
+    grid-template-columns: minmax(160px, 1fr) 72px;
+    max-width: 620px;
+
+    border-radius: 12px;
+    overflow: hidden;
 }
 
 .nav-search input {
-  background: #fff;
-  border: 1px solid #d9dde4;
-  border-right: 0;
-  color: #111827;
-  min-height: 48px;
-  padding: 0 16px;
-  width: 100%;
+    background: #fff;
+    border: 1px solid #d9dde4;
+    border-right: 0;
+    color: #111827;
+    min-height: 48px;
+    padding: 0 16px;
+    width: 100%;
+
+    border-radius: 12px 0 0 12px;
 }
 
 .nav-search button {
-  background: #f0f0f1;
-  border: 1px solid #d9dde4;
-  color: #9b1c1c;
-  cursor: pointer;
-  font-size: 1.9rem;
-  line-height: 1;
+    background: #f0f0f1;
+    border: 1px solid #d9dde4;
+    color: #9b1c1c;
+    cursor: pointer;
+    font-size: 1.9rem;
+    line-height: 1;
+
+    border-radius: 0 12px 12px 0;
 }
 
 .nav-links {
@@ -1306,7 +1322,7 @@ a {
 
 .hero-slide p {
   font-size: 1.1rem;
-  font-weight: 800;
+  font-weight: 200;
   margin: 0 0 8px;
   text-transform: uppercase;
 }
@@ -1314,7 +1330,7 @@ a {
 .hero-slide h1 {
   color: #fff;
   font-size: clamp(2.8rem, 7vw, 5.8rem);
-  font-weight: 900;
+  font-weight: 200;
   line-height: 0.95;
   margin: 0 0 18px;
   max-width: 720px;
@@ -1326,7 +1342,7 @@ a {
   border-radius: 6px;
   color: #8a661b;
   display: inline-flex;
-  font-weight: 800;
+  font-weight: 200;
   padding: 10px 16px;
 }
 
@@ -1371,7 +1387,7 @@ a {
 
 .mini-promo span {
   font-size: 1.08rem;
-  font-weight: 800;
+  font-weight: 200;
 }
 
 .featured-categories {
@@ -1490,7 +1506,7 @@ a {
 .filter-title {
   border-bottom: 1px solid #dfe3e8;
   font-size: 1.25rem;
-  font-weight: 800;
+  font-weight: 200;
   margin: 0 -18px;
   padding: 18px;
 }
@@ -1504,7 +1520,7 @@ a {
 .price-slider-field > span {
   color: #111827;
   font-size: 1rem;
-  font-weight: 800;
+  font-weight: 200;
 }
 
 .filters input,
@@ -1595,7 +1611,7 @@ a {
   color: #111827;
   display: inline-flex;
   font-size: 0.92rem;
-  font-weight: 800;
+  font-weight: 200;
   justify-content: center;
   min-height: 34px;
   padding: 8px 14px;
@@ -1627,7 +1643,7 @@ a {
   border-radius: 6px;
   color: #111827;
   display: inline-flex;
-  font-weight: 700;
+  font-weight: 200;
   min-height: 38px;
   min-width: 38px;
   padding: 8px 12px;

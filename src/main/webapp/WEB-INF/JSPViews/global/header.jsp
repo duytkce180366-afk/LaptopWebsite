@@ -17,3 +17,4 @@
 <script defer src="<%= request.getContextPath()%>/js/megaMenu.js"></script>
 <script defer src="<%= request.getContextPath()%>/js/priceSlider.js?v=price-slider"></script>
 <script defer src="<%= request.getContextPath()%>/lib/bootstrap/dist/js/bootstrap.bundle.min.js" integrity="" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">

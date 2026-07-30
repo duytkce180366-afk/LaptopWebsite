@@ -178,6 +178,7 @@
     <body id="top">
         <main class="app-shell" id="app">
             <%@include file="/WEB-INF/JSPViews/global/nav.jsp" %>
+            <div class="container-fluid px-3 px-lg-5">
             <%                String storeNotice = (String) session.getAttribute("storeNotice");
                 if (storeNotice != null) {
                     session.removeAttribute("storeNotice");
@@ -194,7 +195,7 @@
                 Error: <%= Jsoup.clean(error, Safelist.basic())%>
             </div>
             <% }%>
-            <section class="storefront-hero" id="home" aria-label="Promotions">
+            <section class="storefront-hero py-5" id="home" aria-label="Promotions">
                 <div id="bannerCarousel" class="carousel slide hero-carousel" data-bs-ride="carousel">
                     <div class="carousel-inner">
                         <%                            int heroSlides = Math.min(3, products.size());
@@ -476,6 +477,7 @@
                     </div>
                 </div>
             </section>
+            </div>
         </main>
         <%@include file="/WEB-INF/JSPViews/global/footer.jsp" %>
     </body>
