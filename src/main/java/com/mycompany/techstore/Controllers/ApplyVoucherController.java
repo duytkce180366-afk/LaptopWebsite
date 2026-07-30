@@ -1,5 +1,6 @@
 package com.mycompany.techstore.Controllers;
 
+import com.mycompany.techstore.Models.Objects.CartItem;
 import com.mycompany.techstore.Models.Objects.User;
 import com.mycompany.techstore.Models.Objects.Voucher;
 import com.mycompany.techstore.services.CartService;
@@ -64,9 +65,35 @@ public class ApplyVoucherController extends HttpServlet {
             );
             return;
         }
-        double total
-                = cartService.getCartTotal(
-                        user.getUser_id());
+        Integer checkoutCartItemId
+                = (Integer) session.getAttribute("checkoutCartItemId");
+        double total;
+
+        if (checkoutCartItemId != null) {
+
+            CartItem item
+                    = cartService.getCartItemById(
+                            checkoutCartItemId,
+                            user.getUser_id());
+
+            if (item == null) {
+                response.getWriter().write("""
+            {
+              "success": false,
+              "message": "Cart item not found"
+            }
+        """);
+                return;
+            }
+
+            total = item.getSubtotal();
+
+        } else {
+
+            total = cartService.getCartTotal(
+                    user.getUser_id());
+
+        }
         double discount
                 = total
                 * voucher.getDiscountPercent()
