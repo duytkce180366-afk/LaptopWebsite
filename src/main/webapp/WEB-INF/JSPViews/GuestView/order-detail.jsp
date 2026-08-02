@@ -141,7 +141,7 @@
                     %>
                     <% for (OrderDetail d : details) { %>
 
-                    <div class="product-row">
+                    <div class="product-row" id="product-<%=d.getProductId()%>">
                         <% if (d.getThumbnail() != null && !d.getThumbnail().isEmpty()) {%>
                         <img src="<%=d.getThumbnail()%>"
                              alt="<%=d.getProductName()%>"
@@ -175,6 +175,10 @@
                             <% }%>
                         </div>
                         <p style="font-size:13px; color:#374151; margin:6px 0 0;"><%=existingReview.getComment()%></p>
+                        <a href="<%=request.getContextPath()%>/review?orderId=<%=order.getOrderId()%>&productId=<%=d.getProductId()%>"
+                           class="btn-write-review">
+                            Edit Review
+                        </a>
                     </div>
                     <% } else if (canReview && !isReviewed) {%>
                     <a href="<%=request.getContextPath()%>/review?orderId=<%=order.getOrderId()%>&productId=<%=d.getProductId()%>"
